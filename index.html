@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="3D walk-through of Ying Fai Court Block A flat 2 on 36/F, comparing three room layouts with the real view from each window.">
 <title>Ying Fai A2 36/F Tour</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +34,8 @@
   --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
   --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --land: #3a4a3c; --chip: #22303a; --mark: #ef8a63; color-scheme: dark }
 
-html, body { height: 100%; }
+html, body { height: 100%; margin: 0; }
+[hidden] { display: none !important; }
 body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
 .app { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
 .stage { position: relative; min-width: 0; min-height: 320px; background: #cfe0e8; overflow: hidden; outline: none; }
@@ -115,6 +122,8 @@ details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction:
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
+</head>
+<body>
 
 <div class="app">
   <div class="stage" id="stage" tabindex="0" aria-label="3D walk-through of Block A flat 2 on 36/F">
@@ -1478,3 +1487,6 @@ requestAnimationFrame(loop);
 window.__tour = { st, cs, goStop, setLayout, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT };
 })();
 </script>
+
+</body>
+</html>
