@@ -1,0 +1,1480 @@
+<title>Ying Fai A2 36/F Tour</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 3D walk-through on the left, tour column on the right (stacks on phones). Survey-sheet palette shared with the view models. */
+:root {
+  --paper: #f2f3ee;
+  --panel: #fbfbf8;
+  --ink: #1d2a33;
+  --ink-2: #51606a;
+  --rule: #d6d9d0;
+  --sea: #1f7aa3;
+  --sea-soft: #9fcbe0;
+  --bay: #0b5a7d;
+  --land: #c9d2bf;
+  --chip: #e7eae2;
+  --mark: #c2512b;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --land: #3a4a3c; --chip: #22303a; --mark: #ef8a63; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --land: #3a4a3c; --chip: #22303a; --mark: #ef8a63; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
+.stage { position: relative; min-width: 0; min-height: 320px; background: #cfe0e8; overflow: hidden; outline: none; }
+#gl { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#gl:active { cursor: grabbing; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; transform: translate(-50%, -100%); font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #13232c; background: rgba(255,255,255,.8); padding: 1px 6px; border-radius: 2px; white-space: nowrap; }
+.lbl.sea { color: #0b4a68; }
+.lbl.room { background: #13232c; color: #fff; text-transform: none; letter-spacing: .02em; font-size: 14px; text-align: center; line-height: 1.15; padding: 3px 7px; }
+.lbl.room small { display: block; font-family: var(--f-data); font-size: 11px; font-weight: 400; opacity: .8; }
+.lbl.hid { opacity: .55; font-weight: 500; }
+.hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.hud span { font-family: var(--f-data); font-size: 12px; background: rgba(19,35,44,.82); color: #eef4f6; padding: 3px 8px; border-radius: 2px; }
+.hint { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 10px; left: 12px; text-align: right; font-size: 12px; color: #13232c; pointer-events: none; }
+.hint span { background: rgba(255,255,255,.78); padding: 2px 8px; border-radius: 2px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-data); font-size: 13px; color: #13232c; background: #cfe0e8; }
+
+.side { background: var(--panel); border-left: 1px solid var(--rule); overflow-y: auto; padding-block: 18px 28px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-family: var(--f-display); font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1.02; margin: 2px 0 0; text-wrap: balance; letter-spacing: .01em; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 22px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { color: var(--ink-2); font-size: 14px; margin: 6px 0 0; }
+.ctl { display: flex; flex-direction: column; gap: 8px; }
+.t { font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.seg button { font: 600 14px/1.2 var(--f-body); color: var(--ink); background: transparent; border: 0; padding: 8px 6px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg.four button { padding: 7px 4px; line-height: 1.15; text-wrap: balance; }
+.seg.four button small { display: block; font-weight: 400; font-size: 11.5px; opacity: .78; margin-top: 2px; }
+.ldesc { margin: 0; font-size: 14px; color: var(--ink-2); }
+table.cmp td { font-size: 12.5px; line-height: 1.3; }
+table.cmp td b { font-family: var(--f-data); font-weight: 500; font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+table.cmp td:first-child { color: var(--ink-2); padding-right: 4px; }
+table.cmp td.on { background: color-mix(in srgb, var(--sea-soft) 30%, transparent); }
+table.cmp th.on { color: var(--ink); }
+.checks { display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.check { display: flex; gap: 7px; align-items: center; font-size: 14px; }
+.check input { accent-color: var(--ink); margin: 0; }
+.stops { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.stops button { text-align: left; font: 600 14px/1.2 var(--f-body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 3px; padding: 7px 9px; cursor: pointer; min-width: 0; }
+.stops button small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.stops button:hover { border-color: var(--ink-2); }
+.stops button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.stops button[aria-pressed="true"] small { color: var(--panel); opacity: .75; }
+.stops .wide { grid-column: 1 / -1; }
+button:focus-visible, input:focus-visible, summary:focus-visible, .stage:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.card { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.card p { margin: 0; font-size: 14.5px; }
+.verdict { font-family: var(--f-display); font-weight: 600; font-size: 22px; line-height: 1.15; }
+.verdict b { color: var(--sea); }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; margin: 0; }
+.facts dt { color: var(--ink-2); }
+.facts dd { margin: 0; font-family: var(--f-data); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 0; }
+.compass svg, .planbox svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 12px; height: 8px; margin-right: 5px; vertical-align: middle; }
+.planbox { border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); cursor: crosshair; }
+.planbox .rm { fill: var(--chip); }
+.planbox .rm.sea { fill: color-mix(in srgb, var(--sea-soft) 45%, var(--chip)); }
+.planbox .wl { fill: var(--ink); }
+.planbox .pt { fill: var(--ink-2); }
+.planbox .wn { fill: var(--sea); }
+.planbox .fn { fill: var(--mark); }
+.planbox .fu { fill: none; stroke: var(--ink-2); stroke-width: 22; opacity: .55; }
+.planbox .rl { font-family: var(--f-display); font-weight: 600; font-size: 330px; fill: var(--ink); text-anchor: middle; }
+.planbox .rs { font-family: var(--f-data); font-size: 230px; fill: var(--ink-2); text-anchor: middle; }
+.planbox .cone { fill: var(--mark); opacity: .22; }
+.planbox .dot { fill: var(--mark); stroke: var(--panel); stroke-width: 50; }
+.planbox .na { fill: var(--ink-2); font-family: var(--f-display); font-weight: 700; font-size: 360px; text-anchor: middle; }
+table.rt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.rt th { text-align: left; font-weight: 600; color: var(--ink-2); font-size: 12px; padding: 0 6px 4px 0; }
+table.rt td { border-top: 1px solid var(--rule); padding: 5px 6px 5px 0; vertical-align: top; }
+table.rt td.n { font-family: var(--f-data); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.rt td.s { font-family: var(--f-data); font-size: 12.5px; color: var(--sea); font-weight: 500; white-space: nowrap; text-align: right; }
+details { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2); }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: var(--ink); }
+details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 64vh; min-height: 360px; }
+  .side { border-left: 0; border-top: 1px solid var(--rule); overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <div class="stage" id="stage" tabindex="0" aria-label="3D walk-through of Block A flat 2 on 36/F">
+    <canvas id="gl"></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="hud" id="hud"></div>
+    <div class="hint"><span id="hint"></span></div>
+    <div class="loading" id="loading">Building the flat…</div>
+  </div>
+
+  <aside class="side">
+    <div>
+      <div class="eyebrow">Ying Fai Court · Block A · 36/F</div>
+      <h1>Flat 2 walk-through</h1>
+      <p class="sub">560 sq ft, laid out from the HA floor plan. Compare three ways to split it into rooms, walk through each one, and look out of every window at the real hills and sea from 36/F.</p>
+    </div>
+
+    <div class="ctl">
+      <span class="t" id="layLbl">Layout</span>
+      <div class="seg four" id="lays" role="group" aria-labelledby="layLbl"></div>
+      <p class="ldesc" id="ldesc"></p>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="furn" checked> Furniture</label>
+        <label class="check"><input type="checkbox" id="trees"> 10 m of trees on the hills</label>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <span class="t">Tour</span>
+      <div class="stops" id="stops"></div>
+    </div>
+
+    <section class="card" aria-live="polite">
+      <h2 id="stopTitle"></h2>
+      <p id="stopDesc"></p>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow">From where you stand</div>
+      <div class="verdict" id="verdict"></div>
+      <dl class="facts" id="facts"></dl>
+      <div class="compass" id="compass"></div>
+      <div class="legend">
+        <span><i style="background:var(--bay)"></i>Silverstrand Bay</span>
+        <span><i style="background:var(--sea-soft)"></i>Sea further out</span>
+        <span><i style="background:var(--land)"></i>Hills and sky</span>
+        <span><i style="background:var(--chip)"></i>Walls</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow">Floor plan · tap to stand there</div>
+      <div class="planbox"><svg id="plan" role="img" aria-label="Floor plan of flat 2 with your position"></svg></div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow">Compare the plans</div>
+      <table class="rt cmp" id="cmp"></table>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" id="winsT">Sea from each window</div>
+      <table class="rt" id="wins"></table>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" id="roomsT">Rooms</div>
+      <table class="rt" id="rooms"></table>
+    </section>
+
+    <details>
+      <summary>How this was built</summary>
+      <ul>
+        <li>Walls, rooms and windows follow the Block A typical floor plan (3/F to 39/F) in the HA sales brochure. Sizes come from its dimension strings; window sill and head heights are estimates.</li>
+        <li>36/F is at about +151.05 mPD (2/F at +57.55 and 2.75 m per floor). Eye level is 1.55 m above the floor.</li>
+        <li>Plans A, B and C add light 75 mm partitions. In plan B the master bedroom's new wall meets the east window part-way along its north half, so it has to land on a window frame post; where the real posts are may move it by a few hundred millimetres. Any partition needs HA approval under the flat's decoration guidelines before you build it.</li>
+        <li>A room with no window, like the helper's room in plan B, needs mechanical ventilation such as an extractor fan or air-con.</li>
+        <li>The acoustic fin sits in line with the north wall and sticks out 1.5 m past the east facade.</li>
+        <li>Outside, the terrain is SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Village houses, trees (unless ticked) and islands more than 7 km away are not modelled.</li>
+        <li>"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
+      </ul>
+    </details>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+const NEAR_TXT = `!COadfcccddfhlledddgcWZbSXYVROWXabbdiWpW~De~Ce~1
+!CRZddcdcedeglnfdadhdZdbQVVWTSVTabZeiicTidfe~Ce~2
+!CYWabdedddfgjqiYacihfeZMTVWWSUSacXffdeebbeefe~4
+!CbVZbdddddeikojZadilebZPSVWVOTUcbXcgfdbdbeefe~4
+!CbXaacdceddikmiedeijdZYRTVXTKRYbcaaffcbfYidefe~3
+!CbYaabededdgkkiihfhhaYXQVVWULTXcddZZddcefdedefe~2
+!CbXbacededcgimikhggfZaYSVVTXRSXcbaZXddbecchfeeee~1
+!CZYcbbedddefhllmgegeaacWVXVWOWcaZVZWeecbYajfddeee~0
+!CZZbbbecedefglmkhffecaZYXYWWRbcZYTYYdedcXXXnddcee~Igffe~n
+!CZaaacddeeeegmkiihdfeZWZZYXaddaZWSWYcedaUXYjccced~Igffe~n
+!CWZadddeeddeglkjigcefaYYaacdjfZYXXVWcabYRVYbhbbdd~Ig~Ce~m
+!CUYcgedceccegkljigeecbcYabddigaZaYYXYZYXPSYdgbadc~Hg~De~m
+!CZVeliZYcbbeelmjehfececXcecdigddbYcZUVXVLRYcRqZcc~Hg~De~m
+!CiZejfWWabcccmnicggdggaXdfdeghffdbaYWWWUIUZZfXXbc~Hg~De~m
+!CucgeZTVZbcaclmicfgfifcacfedgigfhcXWZXTTMWZUDrZbc~Hg~Ce~n
+!C5egeYUQXZZadhkk~CggfggdeceihcehcaSZZPRRXXNYZZcc~Hg~Ce~n
+!DAffebUOWWWaeeinheggegjjeceegfcdeeaSYYORRUUNeZZcd~Hg~De~m
+!DEfdffUPWVUZbdhmjgggghkjedefbdecdccSVXQQORQUhZadd~Hg~De~m
+!C/gdhgXSWVVZYbhligggikjieegeadecbbcSTWPNOSTWgaade~Hg~De~m
+!C4gfghbWXWVXXciiffghkljhfghecfdaZaaRRVNMMWXUhabd~Ig~De~m
+!CxcehjeaaYSVZdhffehjnkijgggghfcbYSWOQTNRPXVTjbcd~Jgffe~n
+!CqbfgihccYSWbcfiffhlojiigegihedcVKVPPTOVTVWWfbce~Kge~o
+!ChbdfkifebUZaafihgkmnhggfegigecaQLWOPSRWWXYUecdd~1
+!CTWbhmkiggdbbYdghkqkieefgeeigcZVRRTIRTSYZZZYXjcee~0
+!CNRafomjhhhgbYdghkpkeeeggeghebVUUROIRVUaaZacaeeeeffe~x
+!B/OZhnlnlgjkhceedjph~CegggfaWWVSOONUWWbcbbcddddeefefe~v
+!B0MYimlpnkllkfdcciohghefefedXVYWTKURWWWbddcaeSmdeeeeee~v
+!BnObfkmrmmomjjfbdgjikhfedacbYYWXWPVUXWXbddccbXfddeedee~v
+!BZTZdjlullqllpjedefhkhgdaYZabcYZYRXXYZYbbccbcaUgcedded~v
+!BSSYdhnwokommokkfdefhihaYXcbcdbcaUVXZYXbZccbcfVModdddee~u
+!BLSaZdpzojmqnnnohedeehfbYdfdZbbfeYUTYXVbadcbdeXTQocddde~u
+!BJSZWZq0mjnqonpsifeddggdcgfcZbbecXWSYYWdccbYcdXVZcccddd~u
+!BFTWXcqtmkrnnopvlifbegieffddcgbYZWXTZYXcceaWdbVZEqdbddee~Ggffe~i
+!A+QYckmlilvoornvrpcadgihhgcehgYWXWZTYYVbdfbZeYQYTZbbdcee~Ggffe~i
+!A6NdimihgkupqsowtqebafjkkhchheVYYVYSVWWcegdZdYNTSbbbcdde~Gg~Ce~h
+!AzTgqhedimpoott!CVrifcdefimmggfdYWWUVTXUYfedbZdYKSRbbbccde~Gg~Ce~h
+!AyYkjdgcjkqpntt+wkldbccfkpi~CaUVQUWZWZdddZYdYLT!ABpiaccde~Gg~Ce~h
+!Axajigecfkpppxu6unogZZdbhokihgYWWQUWZYXcdbXYcXMUNZjaccde~Gg~Ce~h
+!Avafigecgkppqyx3ojpmcccYbjnnmkbWXWQTYXXaZWXZaWRVRZkabcde~Gg~Ce~h
+!Arbacfiijlooswu1pioojbaVaioopngaYURQVXVZWVXYZYSXQYnZccde~Gg~Ce~h
+!AlcXadjqklplovtyokvriaYTdkllpnjfdUVMSWVZTVXXXVWYRbmaccde~Fg~Ce~i
+!AidZZciqkkqklyutmm1reZYTdllkmmnhcYXLSYWXRVYVWWWZJwbaccde~Fg~Ce~i
++dabdgnjlpmnzoomp3qdYXUclnlmkmjdbXNUZWWRWYUWXVZWjaaccee~Eg~De~i
+6bafhffjmqoptlmnt3oYWYZeijmplmjhbZQXaWXUWVTXWTXXiaadcee~Eg~De~i
+5aZgieeintomolpqr3qRVZbffhlslojihbRYaXYVVUQWXTWWhaaddd~Gg~Ce~i
+6Zafgdfhoukkupqow2fQVWVeegmrnpjlofWZZZZWVROXXSXWbbadde~u
+5ZcfedfjlsmqznoqwucUUSRadhmrmonmoiadbZaVUQQYVTYUYbbcd~v
+2XggeeeilqqxwkptunfYRQNXbilnjrqmnmgedYZUSSSZWWY!ABqbbdd~v
+vbkgdeehkvuxrkqqppmZRQMPWjjihrqnokligZXQSVWZaaZSQYcdd~v
+sfkfbehhmwtrppsknwoaSTJLSfjihnopoilljbVORXZbcacVPUbde~Xg~Ie~M
+ubhgcejjmunoutqlr2lXURJNPbffjmlmrlkjkdTLTZYcgedZOScdd~Vg~Le~L
+2Ueheffinumoyqmmw5kWTRJOQaccklhhrplhkeTNWZYdhfbVQZbdd~Vg~Me~K
+/Qdfhecfowmmwpjkx/mYTPKPQYachjfhnooikeURYaaeebZBpccdde~Ug~Le~L
+9ahdgcYdnwmlrpnis!CDudPPMSOVXaehhkimpkjcZUYaZdbZYXgcbddee~Gg~Ce~h
+4klfYZZdmsnooosfp!CAyfQQMPRTTYefjjjmnkjdbXXXXcbYZcjbbddefeeffgfg~Ceffe~f
+6koiNZcbhrqnpoqgo!B5zhXRJPQPSbffhhllnjjgfbXVTabVZXnXnddeee~Dg~Defee~f
+3jslSTWYfumlrppkkzzscTJSMPUffggghmqlijjebXOWYTZcehifdeee~Dgffefeeeee~e
+wjwubQJXksjjrnqkjtwxeUNQOQWcffhgilrmikigdYPWZRYaeemgcfee~Geeedeee~e
+xdrumWKZnradlmqkjpw0hYPPOTUYgfghklslhjkleaTXaSYVcfgfddeggi~Cefdededde~Tge~I
+0flkedbgmkTahnqllns2laORQSTYggdgllulhmnneaVZZVZWadddcdefgVpffglOocdded~Qgfgfefe~G
+yjhcemmfiWUcikrmmqrwlcTTOSVWfedfjlwnkpqnfaWZYVcZabbcbcdhgfgdbeiXggdced~Nggfg~Cefee~F
+wgZelnqhcZWediqmkoqumhWROUUVe~CijtrpoooidXaaWZbbbYcccdijjfcbdbYedccdd~Fggffgfggfg~Dcfhedefe~C
+vbYjpjnkcdfcWeqklokoqnYRPVUVdghggjrppqnohdbccYYYcaZcddfkkifccccaXbabdee~Cgggggggfgggecefgjeddeeefefe
+wachnfqmebeaZahmqsgmspYSQVUWefgghkpqpnklfdegfdYXcccecdhlifebbddYVYUjceeffhghhhhghggfgPsfgggdbVkfeeeef
+zebfljojfZacbaelnuomokZTQWWYdegfhkptpjgifdgjifbYddfecdhkfeccZcbaXVdbdeefgghjhihhhggghcegfdebaYjgeeeee
+2ecenkgghaYbgdgiitolljbVRXYZcegggjrsmhefeeknkgcaffgfcdghdedbYaaaaVbcdeefhhhjijhaijjF!Aiaefcacbabcngeeee
+1ebcnfchmcXckkideonmjjdYUYZXbehfgionl~CehnolhfehhhhfedbcccdYZYbaVRoefaghiikdQf1lkklgaccVZccbdeaojdZi
+yebeifchlgYclrnbYlmkiibbWYYZcfjgdfkjlgfhhiomjiiihijjgddbaZddZaXYaWaffcdghhiRwjkkmlkifbbZTbdcdgfYWsSfp
+weefedffhdeenunVaijjhgdcYXbbdiklacejheejmkmkfinmjiohgedbZZcdbcWWWYaYZfiiilmkjmkklkhfdYaaaeeeefdadeccd
+ufefddfegdgglmkaZglnidbfZadbdjkjediegdagmlmifinpkkniheebZZcdccWUWaZWcfjipklplmmkjhfZdXacehfefccbffcaX
+ueegecffegfgmlkbVguxhZRacdcZdklhffgcddbekkmigknnlmpjhgcbaYcccdWUXaaYfhijrlkplomliecZcWbehiheebabdfbaX
+tefgfeefdhghpkmSUot2jUTYVeeWlfjieeheYXefiiliillnlstigeeZZYcdccXVXbccfjnklmnomnljhecbdXcghiifcaaZacdaY
+sffg~CeefhiqmbPfqk2lWZXVebZfdkjgegeYYehhhjigilqpusggffZZXdeedVUXadchkqkjlnrmmkhgedcebdefhigeZbaababW
+rffgggedgffgjkbcjjespfUTbhdfefkgcefeZahghihhfflssvohihfbaYceecWWYccchknllmosmnhgeeccfgecbgigdbdabcZZV
+sdegifefgfehhgdjncZiniSXilcfgfjgadddbeghhhiiefnrqspjkgfcbaadccabbdcbgilloonomogffdebeifbaegedcdbcdbXX
+rdfghgefgdgjibelmfYcliUbnjZekdhhbcaddefjigkheiopnopklhfcddZbbccgfccbfhjlqqokllggfedcfhecZeedcbeccebaZ
+qdefhhffeehjfcehkobckeZdlfagjdchceacegemkihedopokjmllhhdfgaabeehhdbaehhkqrrnhighdeegieYbbddbbacdddeda
+odeggghfefjgdeehhkfjgabghfefhecedgcbgfemkihdfppqlklhhihgfhcbefehicYaehgkqqrokifgddekhaXYcfbcbYbcdefdb
+obhhhdfghiiceefgfeikfdfeeefghgbagfcfhecikifehnouopnefgfigehghfegiZZcffhkqmlrnjhgefdgdXXacdcddZZYcffdc
+odhifcfgilhcedffeejhbfliddfigdZaiedihdcijebfikmurqrhefgfgeijjighgZabefilqkiqokgifgebbUXbbddfeaZXbefcb
+oehiceghilhfbeeheclgYcnphZfhfaXdhffiieiieaVehkkusqvkggfdfehknkjihYabcelmpjhnnmiifedbZRXcbcefebaZbcebb
+oggccikhfghfefkphYhfTTksjdjhdWZgjffijklhXWUdehlrsswpihgecdgjqnmkhaZadfjpnhhlnnkhdcbaXRYecacedcdbaaebc
+ogebgjjgeedgiirthThgPOhlkomjaRdkjafkmmfYYZZcdgkrrtvqlhgebcfjpnnnkaYagfinpkimkmigfcaYWTaeaZadcddaZaded
+miedhihegedhjissgXfWUZedoqhkaZhodVgmkiWPbfeecflrpqyrphfebadjpknpkbYciiilqpmpmhgefabZVWaaXZZabadZYadfc
+ogfeghfeghejkijpofUQdjfYllcnrcdiaYgniVSVdgihdejmmqyrqjfecbdhokkmkdaejjkmqpopphgfcbZbWVaYTaYZZYbZaaedY
+qffeggeeghgjmhdirmQTonieXXds2gYWcejjaNUdghmiffegkptrslhddddgmjhijhdfikonqomppmggdaadVTZWRbVXYXbbbbdbX
+qffehgeffefiigdchnYf0vexGJZnvrcVkhfWQSdiikojjjcbiikmuojgefcdjjhfhkgfjmqpqmlprnijfcdWTPYWOXVWYYdedddcZ
+offghgdedfiiheccggdou1nvQ!AgPooliilcSRVYgjjnrkmleaefchsqliffdchjhehkhgimrsukmqpnlkiebPRNXWNWVYZYeggfedY
+meghifcdelkhdccdfinkauwpYGVpfinldXNVbfhlmprllqhabgabilmkggeegihfgjggimvtxmlrmpmkkeWORMWTMXYabaekjdccY
+lefijfedepkdbbbggjnnhcZfcfghenlfYXVbcilomnollrkcbeeZbhkighgfgijihdfgimwvvmltmnlklcWQSLTSOZZedagjgeddX
+kehijefcfnlaaadnkcmuhTRdfghijliaUbdfflnqmlnkipmhccdbaffegiggjjnmiXcfgmxwvlltmlkkjcXRSMPSVacgdcgfehfcY
+`;
+const FAR_TXT = `!BnObbbabcYbRMUckifXdefgfpqeRbbffge~GgefflgzmFeYfgfefgfijcfhfgifhgbdjpZTce~DgflZgdffgf
+!BqJWdgdVYYXUUaXejhZde~CnxhGgbefge~Ggefijh0nKPe~EgfgjffghchjhgdbkmcTafeffgffjbfeffgf
+!BtIOZjoXXUSTdZVgcfde~DhvpQXbdfge~GgefiiyvXSQcd~EgiefhjhefmgcedjjeWXee~EjhZ~Che
+!BpKPRblnfUQVfWaaYe~CgefhlvYSaffge~GgefhmyuSQXcdee~CgffhgkjffhhffdgjmeXRce~Digb~Cgt
+!BkMNQWfjkhaaWUaVcdfge~CiiqgTbdfge~GgefhkzsTQZbgdd~DgffikjehjgfbfeimiZMfdfge~Fhey
+!BgLQQYZfjtnaMLXaee~GkshRcc~JgeffjnxWUfZheafge~CgjlieilgiafcheZbaddfgefgeffhigs
+!BbPPQUbhjppbLMYbe~DgfefjskTacd~Mhhjkabegbffge~DgmmhkjigbdcefWVffe~Dgeffgjvl
+!BcNOPPdgipmZMScde~GgjvnYUWd~OiirXZfbffgegeffgpmjiknhbUYfiaWad~Egeffjmqm
+!BUOSVQOiomjXFhed~HikwibdPae~JgeffhjqgWeXffgegeffikmkgqqoWTWacbWfeffg~Ceffidsn
+!BFSVbURVljrVNgee~GijqpZYeWbgfee~KgitvRSYffge~DgjiiqopoZbXUXXbfe~Ighdr
+!A0WcbXZTajpaS~Ce~CgfgiosdTZhdigacde~HgffhrwWRWffge~CgfidjsnkrkfRTYaVfgfee~Hgf
+!ApWeeWYZbejfZicfeffggggktmURfilohWUbe~HgefhmzeLXffge~CgfnaglhotviNRWabecffe~Hgf
+/UbibXcdegeeideeffghlgjsgPWjohneTVc~MirlRZe~FgfunaTfptwfYWVXcZlhTfheee~Eg
+2YZgeaceffhfheceffgikdfkfXeoqldTUdd~Mgikcafe~FgjsobWduvucQQeZXdncXbfgd~F
+tadfhaedfghciedeffghhdffeeisupZJSefge~LgfgfeeffgeffgjnrvdNez0iNShbRXlnUekQe~F
+nbfghddfee~CggdeffggfeefhmstuVNPYfge~Mghfed~EidzslonMUrzlSfgUQRfrjacSYe~E
+kefdgfee~Fhgeeee~DgfkqvvTSRVfge~Mhkbed~DgfyxtmijSSlnoimcSQLbhndURe~F
+kfedffe~Dgegjfjcbc~CgefimvsRMaefge~LgimWee~CgfryypjhcWTpmgtseQQOSXefSbe~F
+leedgeekedeifdkikcWddffgefiismGggcfge~Lgffgee~Chiu1wmkkYeWameotncVNPRQeYZe~F
+ocegddhlcdkliUkqgaTacggeefhjmoRZd~Sge~Dhe6tpsrsUcfZfdblqonOPLDcfSe~F
+uccfccikhcwlUSkqjYUUfigecffikjUfe~VgefggypvxvtUZabjlcXhppcUM!AVTjZZe~E
+3ecaYgeilcxlQankcUWajkcabffggffee~Zgixz2wpbaQcknodQchgeVGEZegfe~D
+!ArfYPbnYdlasmdemjbLTcjlfUb~fgegfyyx0nYYaahopkXRNbjhRGVefge~D
+!A2fVKcocffctolcmbTQSYihWhc~fgefguyzueZalZYoomeZGPgfeTQe~G
+!A8TVSiojbeZoupZeXUTTYfZffe~fgefhe5xrfSmjOenrqiYKNUcdXfe~G
+!A5OZgnlkeeWiykUafcVUUTZfe~ggeffgf20aYsZGksuopbeHLQde~I
+!A3XjegislZUcucZcomaRNEYe~lherrcptMIjuurlgoYMGRe~I
+!BCbhfcgqqZRYnmbalocML!ABgdffge~hggeka7wJIff2rphphVJEgdffge~D
+!BVZdjeekhWYUpphZScXQQLgdffge~hgeffmZ6LbbjczmlngkU!ABhcffge~D
+!BeYiohahdUWTkolZMLTWbSgd~pidffgdfgkatlkhcLcdffge~D
+!BlZnuiefUVTPbjhaSGPYgade~qhffd~ChfeihhfYfe~H
+!B2ZlvqjgVMJJVbfbTISfacdfe~mgfe~Dgfegffgigebhde~G
+!B6dlt1ucSMB!BQUZddXJfcVXYfe~ugffggmrmeOVfe~G
+!B4jou5zdJHBBTcZdabcVSRSgee~ogffefgfnnelvqjJSOfe~F
+!B7imv31pCFBGRXXbefYbUOLhdffe~mgfeffgfrvnjpqnHOPTeffgeff
+!B9ojnwwwVDAHOQaagjcYRLJjbffe~rgqovtpqoiHIKQeffgffg
+!CDohgmspvQBDIPWbfledOKQZcbe~she2wtuusbHIMLX~Cghd
+!B+wfackpwmL!B3HNXbemiaRMTVZYgd~rgfu0ytrqiMKHJV~Cgfr
+!B9pecNgmuuiABNZcclibWaZSVHjaffgfe~nid7yznrqTEKORYhcgfs
+!BzdfdTWlwtxLINcTZkgfadgYQKMfefgfe~oht01vnoZINdTRPgefm
+!BfaZglOiuywcQSdOSfjhidcZMIQZffgfe~Uge~OgefirtysjplOTkbU!AGdcfg
+!BRRYglYgvuurSOebRbhmjhaPGKUc~Zge~OgefgwrojhqxaSpmMFJaeg
+!A7SZgkcjr0rpbHYmealkfgUIHUVfe~Tggfee~TidsjlnrygbnqGCNadf
+!A3IaifekyxipcFUsqigjeYSLPZThde~ShjhZdffgfe~OheimsrsmhgfpQ!ATVWff
+!BCDPbgjh1klpcFSussjfbaaTRYZOgd~OgeffjorTVde~OgeffhnstpofiZXsaBPYff
+!BILIQdhkxamqhKVnuxucjfYRQaYDhbffge~KgeffgxrZSUgd~Cge~Igeffhf4usgWkcRke!AHdbef
+!BNNFPWgknaipjWffr41dfmYNRZVDeaffge~KgeffgtokaXQhcffge~Nku1oWcclOaYThdef
+!BOEHPcddhijgfjZls1zkXqlRLQRIjaffge~KgfefgqqlohMLjcd~Pip3PVgcuYPideeff
+!BBKKSdbeliqcadbitu1fYopbQQOQabffge~OgrmkpoZOLib~PgjbmYffoWfe~E
+!A2QUUZddijindUbguy0WOkspbPNJbd~SgfqmnpnfMGe~Qggdffhefe~F
+!A0VcSUYbiijfebdhvx0cEYmrkMXXRd~Fg~Ce~IgpqjmriKHc~f
+!A1ShVaQaqvQWiheasu2jFOgnmUWPhdefge~Qgn1cigIXe~f
+!A5RgWVPjcmpcSfpRmsvuJLfmqeQSbfhgede~PhefomdZXe~Rg~Ceffgfe~D
+!BBSWWTVkXetvIahjbhuwRKdmvnWTZaakYgd~Dhefe~Ihggciede~f
+!A/WUaXWeifWbhcendaqsZNdkwjgaadiaYTfgiiYmeZhdffe~s
+!A9ZVXdXdlrJPigehekhnbTehmhokjgaYVR~CwlaXbZ~De~r
+!BCcfXVXkmhLIdgfdgmdrWYigcgmpriYZTWgprocYgcaXZYgd~Dgfefgfe~g
+!BLifXSTjfgTGYffgfihlZcgfagjoxjaaWZlrsicedcZWZRaefgefg~Ee~g
+!BVidVWYdXfUHVfehgfigdffcdjisqjgbfbgtqgfZaZabZXNefge~o
+!BclXZSiZPUTPacfgjegeigbeifaqykfllZgpqjaTZbZadWIe~r
+!BiiWcSdcPWNVYZehglnWdmgciUekzrdiqdksrfXTTXXaZWRefge~o
+!BtgWdTZcQUMRVbffghfosOpdQhqihqifjirvtnTLNVeZTYZeefe~o
+!BzmPfYbXKOMVRchfibkkZhjYgrpocbhindsztmRHTdgZSWOfgd~Dg~Ce~g
+!B5bLcnoNDMOURfmbdfegfggpivnkbZfhrclvtlTMcijVPVaYPfefge~l
+!B2WNZosUBHONakigebdfgfrpjoshcXcimiosqjYPVlkSTbWQQfefge~l
+!B0QQVovWCFKThhhgiYdegiqtmwjeaaZhmlwsnfaMQbecbXPVYbe~Cggfefe~f
+!BxHNamgYQNHdgcegjaeelikvvuiaZaacksxuthZHJWeiVUbZMe~CgiiZffgfeffe~a
+!BkQKXbfXTQUgdefghdcgjkdsv0oPUgehmtwtrpTILWcdXcZFeaffg~DiclgYe~c
+!BaRKOPhbYdddddefhefehkhiy0oTUefhoyvpsrNQPSadaXMNhdegffzxhKXcaceffge~Y
+!BWPJGUdddmWibefehghfcghhx0oaVcfhtwrkxqVRMQebWNKagefhd2luYSfcSXeffgfe~X
+!BNQJFbclaceeffefjkjYceghptscceehmpvrxtZQINefOLUhdcfiomnviVejUDfgd~a
+!BFQHNccfdeegegehihececijmmskcdfdfoz2zpVNMKUeTXbeabfforlwqZgnXQJSe~a
+!A+NGZbbdeffheffghfegddjinlhpefechu1v5fNQNNRZhhaVXdffmvnwtiglfSF!ABfgdffge~U
+!AsNUcfZagfe~Cgggffedflknhimicdfjwyu3hFOSUSZmiYQYicfhsosuuknkOCSAfgd~X
+!ApbdOZZbfgdgefgggeffhehonhifibekkqwz4jLWSQLemcVSbjedgnhntxwsiONRU!ABfgd~W
+!A5kWWVXQYed~Dghegehhhonigfdbdmksww30dKMHPcmbSVcjfgmqfakvxylWTSRP!ABfe~W
+!BRdRVcRYUcTb~Cgffegjkilndffhcbglv0v34lKGMQUhiUSalkponfXesrsphQSSPSCfe~V
+!BpTRfZJVUgHZ~GgkjmigedjifZhqvtt59vMHQOKZjXSWmrvtkiUZtknmjVSSNPPTfe~U
+!BvRWhWMMPRUe~GhkjlgZhelkbbohuwz183bDKLKXdVTbouovvjRWoonmkTQUPUV!ACfdffge~Q
+!BpRVXeXJMTV~Hhkiiddgcgiaihf43zu31nIJMKYcUVeosqmxrXVpqslbFLRSRWHhcffge~Q
+!BhNTUiZL!AB~Jgjhfedefgfehent5xwwqsjQMIUdWWemntrnrfgmrpdPJLKJNSfgd~U
+!BbOKXfW!ABka~Jghfd~CgghefvwttqrtvugKKPYXXekpwrgnqgkjfVQILNRNXeffge~S
+!BKYQOVH~Ogefgfgfhehw4sonowqs0VCJSWTgrxpmicbhmngQPRZYRJKeffge~S
+!A+VWQEfge~Mhfdgffggdky1pkmrwouxbHGLTYipupkcZWhsvtUWWaYOD!ABeffge~S
+!A9QPaH~Pg~Cegfgfnwsjoomqt2mcILONaqpliggVamvwskRUXbT!AgCcffge~S
+!AxPPP~Rg~Cg~Ckqmnqnnmt5lYMNPMZvtabdjZhornneSLabeFReffge~S
+!AnPJ~Ugefhgehojoqqjov7nXKNLJZtpXdelhjjkkmcT!ABrcWfhc~W
+9Cjb~Tgefigfennjopju40gRMPOGUknceiqhlklgcYMLlceeee~W
+gka~Wgh~Cmpminqz3hTQRUTAficfksofulbaTEffe~b
+gge~VhfgegfhrtsppzhRRPTUMjaffgwqebwnaTAfe~d
+g~Xheffhfk2wswngRKOTTUhcffgftlabtqdTNa~e
+g~Wggeehgfnz2zmhcTINSWae~CgicffjbwfWYdfgegfe~Y
+g~VggeffgiftxrmfltiIMNUYd~Cgfgffgdffgeefg~Ce~Y
+g~VgfggchigyigjhwxrRQLNQhdffe~Igfe~d
+g~XhfdifgsZfnny2wcPHJVaZfe~q
+g~Wggfggffibhmpuy0jaGEHgeffe~p
+g~Whfgfihchfdhkhv3wcJ!AKdYeg~Ie~h
+g~Tgeiffgdhhgjdegeekv4iSBWafgfe~p
+g~TgqjTeicfhljfdcdhfi8rPKOe~Jggefe~e
+g~ThpoWXgdfinifgaffcn6pPMLe~Ighgede~e
+g~SiiprdPYeflmjhdeddjyrkWSOQfkdfeeeehefndZe~e
+`;
+
+// ---------------- terrain data ----------------
+const A64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+const IDX = {}; for (let i = 0; i < A64.length; i++) IDX[A64[i]] = i;
+function decode(txt, nx, qm) {
+  const rows = txt.split('\n').filter(r => r.length);
+  const out = new Float32Array(rows.length * nx);
+  rows.forEach((r, j) => {
+    let prev = 0, k = 0, i = 0;
+    while (i < r.length) {
+      const c = r[i];
+      if (c === '~') { const n = IDX[r[i + 1]] + 1; for (let t = 0; t < n; t++) out[j * nx + k++] = prev * qm; i += 2; }
+      else if (c === '!') { const v = IDX[r[i + 1]] * 64 + IDX[r[i + 2]]; out[j * nx + k++] = v * qm; prev = v; i += 3; }
+      else { const v = prev + IDX[c] - 31; out[j * nx + k++] = v * qm; prev = v; i += 1; }
+    }
+  });
+  return { nx, ny: rows.length, z: out };
+}
+// grids in local metres: x east, y north, origin = east tip of Block A's east wing
+const NEAR = Object.assign(decode(NEAR_TXT, 101, 1), { x0: -800, y1: 1500, s: 30 });
+const FAR = Object.assign(decode(FAR_TXT, 91, 2), { x0: -2000, y1: 5000, s: 100 });
+// Low sea-noise cells in Port Shelter become sea; Tseung Kwan O's reclaimed land is left alone.
+function reclass(g) {
+  const out = g.z.slice();
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const x = g.x0 + i * g.s, y = g.y1 - j * g.s, v = g.z[j * g.nx + i];
+    if (x <= 400 || y <= -1300 || v === 0 || v > 2) continue;
+    let ok = true;
+    for (let dj = -2; dj <= 2 && ok; dj++) for (let di = -2; di <= 2; di++) {
+      const jj = j + dj, ii = i + di;
+      if (jj >= 0 && jj < g.ny && ii >= 0 && ii < g.nx && g.z[jj * g.nx + ii] > 4) { ok = false; break; }
+    }
+    if (ok) out[j * g.nx + i] = 0;
+  }
+  g.z = out;
+}
+reclass(NEAR); reclass(FAR);
+function samp(g, x, y) {
+  const fx = (x - g.x0) / g.s, fy = (g.y1 - y) / g.s;
+  const i = Math.floor(fx), j = Math.floor(fy);
+  if (i < 0 || j < 0 || i >= g.nx - 1 || j >= g.ny - 1) return null;
+  const tx = fx - i, ty = fy - j, z = g.z, nx = g.nx;
+  const a = z[j * nx + i], b = z[j * nx + i + 1], c = z[(j + 1) * nx + i], d = z[(j + 1) * nx + i + 1];
+  const wn = z[(j + (ty > .5 ? 1 : 0)) * nx + i + (tx > .5 ? 1 : 0)] === 0;
+  return [a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty, wn];
+}
+function elev(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y); }
+const R = 6371000;
+
+// ---------------- the flat ----------------
+const FL = 57.55 + (36 - 2) * 2.75;        // 36/F floor level, mPD
+const CEIL = 2.6, EYE = 1.55, EYE_H = FL + EYE;
+// plan coordinates in mm: X east from the inside face of the west wall, Y south from the inside face of the north wall
+const wx = X => (X - 8115) / 1000;          // -> world metres east (east facade at 0)
+const wy = Y => 5.3375 - Y / 1000;          // -> world metres north
+const pX = x => x * 1000 + 8115, pY = y => (5.3375 - y) * 1000;
+const P = (x, y, h) => new THREE.Vector3(x, h, -y);
+
+// [kind, X0, X1, Y0, Y1, opts]; kinds: wall, win (opening with sill/head), mull, door, open
+const PIECES = [
+  ['wall', -250, 0, -250, 5805],
+  ['wall', 0, 450, -250, 0],
+  ['win', 450, 1800, -250, 0, { sill: .9, head: 2.3, id: 'north' }],
+  ['wall', 1800, 3650, -250, 0],
+  ['open', 3650, 4800, -250, 0, { head: 2.3 }],
+  ['wall', 4800, 8115, -250, 0],
+  ['wall', 2500, 2750, -2500, -250],
+  ['wall', 2500, 5175, -2500, -2250],
+  ['wall', 4900, 5175, -2250, -2100],
+  ['win', 4900, 5175, -2100, -400, { sill: .9, head: 2.3, id: 'bay' }],
+  ['wall', 4900, 5175, -400, -250],
+  ['win', 7965, 8115, 0, 2510, { sill: .55, head: 2.3, id: 'eastN' }],
+  ['mull', 7965, 8115, 2510, 2570, { sill: .55, head: 2.3 }],
+  ['win', 7965, 8115, 2570, 4525, { sill: .55, head: 2.3, id: 'eastS' }],
+  ['wall', 7965, 8115, 4525, 4775],
+  ['wall', 3440, 4550, 4525, 4775],
+  ['win', 4550, 4950, 4525, 4775, { sill: 1.5, head: 2.2, id: 'bathW' }],
+  ['wall', 4950, 6000, 4525, 4775],
+  ['win', 6000, 6500, 4525, 4775, { sill: .9, head: 2.3, id: 'south' }],
+  ['wall', 6500, 7965, 4525, 4775],
+  ['wall', 3440, 3665, 4775, 5100],
+  ['win', 3440, 3665, 5100, 5850, { sill: 1.05, head: 2.2, id: 'kitW' }],
+  ['wall', 3440, 3665, 5850, 6150],
+  ['wall', 1600, 3440, 5935, 6150],
+  ['wall', 1600, 1800, 3835, 5935],
+  ['wall', -250, 600, 5555, 5805],
+  ['door', 600, 1500, 5555, 5805, { head: 2.1 }],
+  ['wall', 1500, 1600, 5555, 5805],
+  ['wall', 1600, 2650, 3835, 3920],
+  ['door', 2650, 3400, 3835, 3920, { head: 2.05 }],
+  ['wall', 3400, 3440, 3835, 3920],
+  ['wall', 3440, 5080, 2440, 2525],
+  ['wall', 3440, 3525, 2525, 2600],
+  ['door', 3440, 3525, 2600, 3300, { head: 2.05 }],
+  ['wall', 3440, 3525, 3300, 4525],
+  ['wall', 4995, 5080, 2525, 4525]
+];
+const WIN_NAMES = { north: 'north window', bay: 'bay window', eastN: 'east window (north half)', eastS: 'east window (south half)', bathW: 'bathroom window', south: 'small south window', kitW: 'kitchen window' };
+// floor slabs (include wall footprints); material key
+const FLOORS = [
+  ['main', -250, 8115, -250, 2440], ['main', -250, 3440, 2440, 3835], ['bath', 3440, 5080, 2440, 4775],
+  ['main', 5080, 8115, 2440, 4775], ['main', -250, 1600, 3835, 5805], ['kit', 1600, 3440, 3835, 6150],
+  ['kit', 3440, 3665, 4775, 6150], ['main', 2500, 5175, -2500, -250]
+];
+// neighbouring flats and the rest of the tower (plan mm, absolute mPD)
+const NEIGH = [
+  [-18000, -250, -250, 6150], [-18000, 1600, 5805, 16000], [1600, 3665, 6150, 16000], [3665, 8115, 9075, 16000]
+];
+const COLUMN = [[-250, 8115, -250, 4775], [-250, 3665, 4775, 6150], [2500, 5175, -2500, -250]];
+const FIN = [8115, 9615, -250, 0];
+// other arms of Block A, world metres [cx, cy, sx, sy, rot]
+const ARMS = [[-25.7, 3.3, 14, 14, 0], [-38.7, 3.3, 26, 14, 0], [-25.7, 16.3, 14, 26, 0], [-25.7, -9.7, 14, 26, 0], [-38.7, 16.3, 22, 12, Math.PI / 4]];
+const TOWER_BASE = 45, TOWER_TOP = 162;
+
+
+// furniture [X0, X1, Y0, Y1, z0, z1, material, onPlan]; 'all' items appear in both layouts
+const FURN_ALL = [
+  // kitchen: counters, sink, hob, wall cabinets
+  [1800, 3440, 5335, 5935, 0, .85, 'white', 1], [1800, 3440, 5335, 5935, .85, .89, 'worktop'],
+  [2840, 3440, 4600, 5335, 0, .85, 'white', 1], [2840, 3440, 4600, 5335, .85, .89, 'worktop'],
+  [2930, 3380, 4760, 5200, .89, .895, 'steel'], [2250, 2850, 5420, 5850, .89, .9, 'black'],
+  [1800, 3440, 5585, 5935, 1.5, 2.2, 'white'], [3090, 3440, 4600, 5050, 1.5, 2.2, 'white'],
+  // bathroom: shower, toilet, basin, mirror
+  [3525, 4400, 3700, 4525, 0, .04, 'white', 1], [4385, 4400, 3700, 4525, .04, 2.0, 'glass'], [3525, 4100, 3700, 3715, .04, 2.0, 'glass'],
+  [3600, 3700, 4440, 4525, 1.95, 2.0, 'steel'],
+  [4620, 4880, 3980, 4380, 0, .4, 'white', 1], [4590, 4910, 3930, 4420, .4, .43, 'white'], [4570, 4930, 4340, 4525, .4, .8, 'white'],
+  [4545, 4995, 2650, 3150, 0, .8, 'white', 1], [4545, 4995, 2650, 3150, .8, .85, 'white'], [4985, 4995, 2700, 3100, 1.1, 1.8, 'mirror']
+];
+
+// ---------------- layouts ----------------
+// Each plan adds light 75 mm partitions: [kind, X0, X1, Y0, Y1, opts]
+//   part = partition, pdoor = door opening in it, jamb = frame post where a partition meets the window
+// furniture rows: [X0, X1, Y0, Y1, z0, z1, material, drawOnPlan]
+const KIDS_NW_PARTS = [
+  ['part', 2450, 2525, 0, 1650], ['pdoor', 2450, 2525, 1650, 2400, { head: 2.1 }], ['part', 2450, 2525, 2400, 2525],
+  ['part', 0, 2525, 2525, 2600]
+];
+const FURN_COMMON = [
+  [1810, 2480, 3930, 4600, 0, 1.75, 'steel', 1], [1820, 2420, 5322, 5335, .05, .82, 'white'],   // fridge, washing machine
+  [0, 380, 3950, 5150, 0, 1.0, 'oak', 1]                                                          // shoe cabinet
+];
+const A_FURN = [
+  // master bedroom
+  [0, 1370, 625, 2525, 0, .3, 'oak', 1], [20, 1350, 660, 2490, .3, .5, 'linen'], [10, 1360, 650, 1900, .5, .56, 'navy'],
+  [90, 640, 2060, 2440, .5, .62, 'linen'], [730, 1280, 2060, 2440, .5, .62, 'linen'], [0, 1370, 2475, 2525, .3, 1.05, 'fabric'],
+  [0, 1370, 2175, 2525, 1.9, 2.35, 'white'], [1900, 2450, 0, 1550, 0, 2.2, 'white', 1], [1890, 1900, 770, 780, .9, 1.3, 'steel'],
+  // kids & office: bunk bed, desk, chair, wardrobe
+  [5080, 5130, 3575, 3625, 0, 1.7, 'white'], [6980, 7030, 3575, 3625, 0, 1.7, 'white'], [5080, 5130, 4475, 4525, 0, 1.7, 'white'], [6980, 7030, 4475, 4525, 0, 1.7, 'white'],
+  [5080, 7030, 3575, 4525, .18, .28, 'white', 1], [5110, 7000, 3605, 4495, .28, .44, 'linen'], [5400, 7000, 3600, 4500, .44, .5, 'terracotta'],
+  [5080, 7030, 3575, 4525, 1.08, 1.16, 'white'], [5110, 7000, 3605, 4495, 1.16, 1.32, 'linen'], [5400, 7000, 3600, 4500, 1.32, 1.38, 'navy'],
+  [5650, 7030, 3575, 3605, 1.45, 1.5, 'white'], [5650, 5680, 3575, 3605, 1.16, 1.5, 'white'],
+  [5160, 5190, 3545, 3575, 0, 1.5, 'white'], [5560, 5590, 3545, 3575, 0, 1.5, 'white'],
+  [5190, 5560, 3550, 3570, .55, .58, 'white'], [5190, 5560, 3550, 3570, .8, .83, 'white'], [5190, 5560, 3550, 3570, 1.05, 1.08, 'white'],
+  [7365, 7965, 2700, 3500, .72, .76, 'oak', 1], [7385, 7945, 2700, 2730, 0, .72, 'oak'], [7385, 7945, 3470, 3500, 0, .72, 'oak'],
+  [7550, 7850, 2950, 3300, .76, .78, 'charcoal'],
+  [6950, 7350, 2900, 3300, .44, .5, 'charcoal', 1], [6950, 6990, 2900, 3300, .5, .95, 'charcoal'], [7120, 7180, 3070, 3130, 0, .44, 'steel'],
+  [5950, 6850, 2600, 3050, 0, 2.1, 'white', 1], [6395, 6405, 3050, 3058, .9, 1.3, 'steel'],
+  // helper's room
+  [2750, 4650, -2250, -1350, 0, .3, 'oak', 1], [2770, 4630, -2230, -1370, .3, .46, 'linen'], [3300, 4630, -2240, -1360, .46, .51, 'sage'],
+  [2790, 3150, -2180, -1420, .46, .58, 'linen'], [2750, 3350, -800, -250, 0, 1.9, 'white', 1], [2750, 4650, -2250, -2050, 1.55, 1.58, 'oak'],
+  // living
+  [6100, 7700, 0, 420, 0, .45, 'oak', 1], [6350, 7450, 40, 90, .75, 1.4, 'black'],
+  [6000, 7800, 1700, 2525, .12, .42, 'fabric', 1], [6000, 7800, 2300, 2525, .42, .86, 'fabric'],
+  [6000, 6160, 1700, 2525, .42, .62, 'fabric'], [7640, 7800, 1700, 2525, .42, .62, 'fabric'],
+  [6160, 6890, 1720, 2300, .42, .52, 'fabric2'], [6910, 7640, 1720, 2300, .42, .52, 'fabric2'],
+  [6250, 6620, 2160, 2290, .52, .84, 'terracotta'], [7280, 7600, 2160, 2290, .52, .84, 'sage'],
+  [6450, 7350, 1000, 1450, .36, .4, 'oak', 1], [6600, 7200, 1100, 1350, 0, .36, 'charcoal'],
+  [6150, 7650, 550, 2000, 0, .008, 'rug'],
+  // dining
+  [3300, 4400, 1000, 1700, .72, .76, 'oak', 1],
+  [3330, 3380, 1030, 1080, 0, .72, 'oak'], [4320, 4370, 1030, 1080, 0, .72, 'oak'], [3330, 3380, 1620, 1670, 0, .72, 'oak'], [4320, 4370, 1620, 1670, 0, .72, 'oak']
+];
+// kids' room in the north-west corner (plans B and C): bunk beds, desk under the window, wardrobe, play rug
+const KIDS_NW_FURN = [
+  [0, 50, 575, 625, 0, 1.7, 'white'], [900, 950, 575, 625, 0, 1.7, 'white'], [0, 50, 2475, 2525, 0, 1.7, 'white'], [900, 950, 2475, 2525, 0, 1.7, 'white'],
+  [0, 950, 575, 2525, .18, .28, 'white', 1], [30, 920, 605, 2495, .28, .44, 'linen'], [25, 925, 950, 2500, .44, .5, 'terracotta'], [100, 850, 640, 900, .44, .54, 'linen'],
+  [0, 950, 575, 2525, 1.08, 1.16, 'white'], [30, 920, 605, 2495, 1.16, 1.32, 'linen'], [25, 925, 950, 2500, 1.32, 1.38, 'navy'], [100, 850, 640, 900, 1.32, 1.42, 'linen'],
+  [920, 950, 1100, 2525, 1.45, 1.5, 'white'], [920, 950, 1100, 1130, 1.16, 1.5, 'white'],
+  [950, 980, 640, 670, 0, 1.5, 'white'], [950, 980, 1000, 1030, 0, 1.5, 'white'],
+  [955, 975, 670, 1000, .55, .58, 'white'], [955, 975, 670, 1000, .8, .83, 'white'], [955, 975, 670, 1000, 1.05, 1.08, 'white'],
+  [1050, 1900, 0, 550, .72, .76, 'oak', 1], [1070, 1100, 20, 530, 0, .72, 'oak'], [1850, 1880, 20, 530, 0, .72, 'oak'], [1250, 1550, 120, 360, .76, .79, 'navy'],
+  [1280, 1680, 700, 1100, .44, .5, 'charcoal', 1], [1280, 1680, 1060, 1100, .5, .95, 'charcoal'], [1450, 1510, 870, 930, 0, .44, 'steel'],
+  [1950, 2450, 0, 1550, 0, 2.2, 'white', 1], [1940, 1950, 770, 780, .9, 1.3, 'steel'],
+  [1100, 2350, 1650, 2450, 0, .008, 'mat']
+];
+const B_FURN = KIDS_NW_FURN.concat([
+  // master bedroom: 5' queen bed, wardrobe on the new wall, desk at the window
+  [5080, 6980, 2950, 4470, 0, .3, 'oak', 1], [5130, 6960, 2970, 4450, .3, .5, 'linen'], [5700, 6970, 2960, 4460, .5, .56, 'sage'],
+  [5080, 5130, 2950, 4470, .3, 1.05, 'fabric'], [5160, 5560, 3030, 3670, .5, .62, 'linen'], [5160, 5560, 3750, 4390, .5, .62, 'linen'],
+  [5130, 5530, 2500, 2900, 0, .5, 'oak'], [5280, 5380, 2650, 2750, .5, .78, 'linen'],
+  [5700, 7400, 1700, 2300, 0, 2.2, 'white', 1], [6540, 6560, 2300, 2310, .9, 1.3, 'steel'],
+  [7400, 7965, 3000, 4000, .72, .76, 'oak', 1], [7420, 7450, 3020, 3980, 0, .72, 'oak'], [7915, 7945, 3020, 3980, 0, .72, 'oak'], [7100, 7350, 3350, 3650, 0, .45, 'charcoal'],
+  // helper's room at the back of the bay: single bed, high shelf, narrow wardrobe
+  [2750, 3650, -2250, -350, 0, .3, 'oak', 1], [2770, 3630, -2230, -370, .3, .46, 'linen'], [2760, 3640, -1700, -360, .46, .51, 'sage'], [2800, 3600, -2200, -1900, .46, .58, 'linen'],
+  [2750, 3050, -2250, -350, 1.6, 1.63, 'oak'], [3650, 4050, -2250, -1750, 0, 1.9, 'white', 1],
+  // window seat in the front of the bay
+  [4550, 4900, -2250, -250, 0, .45, 'oak', 1], [4560, 4890, -2100, -400, .45, .52, 'terracotta'], [4600, 4880, -2050, -1750, .52, .8, 'sage'], [4180, 4480, -2200, -1900, 0, .3, 'sage'],
+  // dining by the kids' room
+  [2900, 3900, 550, 1250, .72, .76, 'oak', 1], [2930, 2980, 580, 630, 0, .72, 'oak'], [3820, 3870, 580, 630, 0, .72, 'oak'], [2930, 2980, 1170, 1220, 0, .72, 'oak'], [3820, 3870, 1170, 1220, 0, .72, 'oak'],
+  // sofa facing the sea, and the play zone along the window
+  [5100, 5950, 100, 1550, .12, .42, 'fabric', 1], [5100, 5330, 100, 1550, .42, .86, 'fabric'],
+  [5100, 5950, 100, 260, .42, .62, 'fabric'], [5100, 5950, 1390, 1550, .42, .62, 'fabric'],
+  [5330, 5930, 270, 815, .42, .52, 'fabric2'], [5330, 5930, 835, 1380, .42, .52, 'fabric2'],
+  [5340, 5470, 330, 700, .52, .84, 'terracotta'], [5340, 5470, 950, 1320, .52, .84, 'sage'],
+  [6150, 7800, 150, 1250, 0, .02, 'mat', 1], [6150, 7650, 1325, 1625, 0, .5, 'white', 1],
+  [6500, 6650, 500, 650, .02, .17, 'terracotta'], [6700, 6850, 520, 670, .02, .17, 'navy'], [6600, 6750, 700, 850, .02, .17, 'sage'], [6520, 6630, 520, 630, .17, .28, 'sage']
+]);
+const C_FURN = KIDS_NW_FURN.concat([
+  // master suite: 4'6" double bed against the north wall, wardrobes in the dressing area
+  [6230, 7600, 0, 1900, 0, .3, 'oak', 1], [6230, 7600, 0, 50, .3, 1.05, 'fabric'], [6250, 7580, 50, 1880, .3, .5, 'linen'], [6240, 7590, 650, 1890, .5, .56, 'sage'],
+  [6320, 6870, 90, 490, .5, .62, 'linen'], [6960, 7510, 90, 490, .5, .62, 'linen'],
+  [5885, 6215, 0, 400, 0, .5, 'oak'], [7615, 7955, 0, 400, 0, .5, 'oak'], [6000, 6100, 150, 250, .5, .78, 'linen'],
+  [6775, 7375, 2650, 4525, 0, 2.2, 'white', 1], [7375, 7385, 3550, 3570, .9, 1.3, 'steel'], [7550, 7850, 3700, 4000, 0, .45, 'charcoal'],
+  // helper's room: single bed under the small south window, narrow wardrobe
+  [5800, 6700, 2625, 4525, 0, .3, 'oak', 1], [5820, 6680, 2645, 4505, .3, .46, 'linen'], [5810, 6690, 3100, 4515, .46, .51, 'sage'], [5850, 6650, 2680, 3000, .46, .58, 'linen'],
+  [5080, 5530, 4025, 4525, 0, 1.9, 'white', 1],
+  // dining by the kids' room, sofa against the master suite wall, play mat between
+  [2700, 3700, 500, 1200, .72, .76, 'oak', 1], [2730, 2780, 530, 580, 0, .72, 'oak'], [3620, 3670, 530, 580, 0, .72, 'oak'], [2730, 2780, 1120, 1170, 0, .72, 'oak'], [3620, 3670, 1120, 1170, 0, .72, 'oak'],
+  [4950, 5800, 150, 1650, .12, .42, 'fabric', 1], [5570, 5800, 150, 1650, .42, .86, 'fabric'],
+  [4950, 5800, 150, 310, .42, .62, 'fabric'], [4950, 5800, 1490, 1650, .42, .62, 'fabric'],
+  [4970, 5570, 320, 890, .42, .52, 'fabric2'], [4970, 5570, 910, 1480, .42, .52, 'fabric2'],
+  [5430, 5560, 380, 750, .52, .84, 'terracotta'], [5430, 5560, 1050, 1420, .52, .84, 'sage'],
+  [3900, 4800, 150, 1500, 0, .02, 'mat', 1],
+  // the whole bay as a playroom
+  [2850, 4800, -2150, -350, 0, .02, 'mat', 1], [2750, 3050, -2250, -700, 0, .9, 'white', 1],
+  [3400, 4000, -1700, -1100, .45, .5, 'oak', 1], [3420, 3450, -1680, -1650, 0, .45, 'oak'], [3950, 3980, -1680, -1650, 0, .45, 'oak'], [3420, 3450, -1150, -1120, 0, .45, 'oak'], [3950, 3980, -1150, -1120, 0, .45, 'oak'],
+  [3180, 3360, -1500, -1300, 0, .28, 'terracotta'], [4040, 4220, -1500, -1300, 0, .28, 'navy'],
+  [4550, 4880, -2000, -500, 0, .2, 'sage'], [3500, 3650, -700, -550, .02, .17, 'terracotta'], [3700, 3850, -650, -500, .02, .17, 'navy']
+]);
+
+const KITCHEN_ROOM = { id: 'kitchen', name: 'Kitchen', rects: [[1800, 3440, 3920, 5935]], at: [2620, 4950], win: 'East, into the gap' };
+const BATH_ROOM = { id: 'bath', name: 'Bathroom', rects: [[3525, 4995, 2525, 4525]], at: [4260, 3420], win: 'South, into the gap', only: ['bathW'] };
+const FOYER_ROOM = { id: 'foyer', name: 'Foyer', rects: [[0, 1600, 2600, 5555], [1600, 3440, 2600, 3835]], at: [800, 4650] };
+const KIDS_NW_ROOM = { id: 'kids', name: 'Kids’ room', rects: [[0, 2450, 0, 2525]], at: [1225, 1050], win: 'North, hillside', only: ['north'], role: 'kids' };
+const KITCHEN_ROW = ['Kitchen', 'east, down the gap', 2950, 5475, ['kitW']];
+// rows: [room, window, X, Y, windows counted, role]; X null = no window
+const LAYOUTS = {
+  A: {
+    name: 'Plan A', sub: 'Master on the hill side', furnished: true, play: 'Rug by the sofa',
+    desc: 'The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5080, 5150, 2525, 2600], ['pdoor', 5150, 5900, 2525, 2600, { head: 2.1 }], ['part', 5900, 7965, 2525, 2600],
+      ['pdoor', 3650, 4400, -175, -100, { head: 2.1 }], ['part', 4400, 4800, -175, -100]
+    ],
+    leaves: [[3650, 3690, -950, -200, 0, 2.05, 'white']],
+    rooms: [
+      { id: 'master', name: 'Master bedroom', rects: [[0, 2450, 0, 2525]], at: [1225, 1050], win: 'North, hillside', only: ['north'], role: 'master' },
+      { id: 'kids', name: 'Kids & office', rects: [[5080, 7965, 2600, 4525]], at: [6520, 3340], win: 'East, sea', sea: true, only: ['eastS', 'south'], role: 'kids' },
+      { id: 'helper', name: "Helper's room", rects: [[2750, 4900, -2250, -250]], at: [3825, -1500], win: 'East (bay), sea slice', sea: true, only: ['bay'], role: 'helper' },
+      { id: 'living', name: 'Living & dining', rects: [[2525, 7965, 0, 2440], [2525, 3440, 2440, 2525]], at: [5000, 1280], win: 'East, sea', sea: true, role: 'living' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: A_FURN, chairs: [[3600, 770, 'N'], [4100, 770, 'N'], [3600, 1930, 'S'], [4100, 1930, 'S']], pend: [3850, 1350], plant: [7830, 290],
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'kids', 'master', 'helper', 'doll'],
+    over: {},
+    wins: [
+      ['Living room', 'east, north half', 6540, 1255, ['eastN'], 'living'],
+      ['Kids & office', 'east, south half', 6540, 3547, ['eastS', 'south'], 'kids'],
+      ["Helper's room", 'bay, faces east', 4037, -1250, ['bay'], 'helper'],
+      ['Master bedroom', 'north', 1125, 1375, ['north'], 'master'],
+      KITCHEN_ROW
+    ]
+  },
+  B: {
+    name: 'Plan B', sub: 'Sea-view master', furnished: true, play: 'Sea-window strip (about 3.6 m² clear) + window seat',
+    desc: 'The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5005, 7965, 1625, 1700], ['part', 5005, 5080, 1700, 1720], ['pdoor', 5005, 5080, 1720, 2440, { head: 2.1 }],
+      ['jamb', 7965, 8115, 1625, 1700, { sill: .55, head: 2.3 }],
+      ['part', 3650, 4050, -250, 0], ['part', 4050, 4125, -2250, -1050], ['pdoor', 4050, 4125, -1050, -350, { head: 2.1 }], ['part', 4050, 4125, -350, 0]
+    ],
+    leaves: [],
+    rooms: [
+      KIDS_NW_ROOM,
+      { id: 'master', name: 'Master bedroom', rects: [[5080, 7965, 1700, 4525]], at: [6520, 3150], win: 'East, sea', sea: true, only: ['eastN', 'eastS', 'south'], role: 'master' },
+      { id: 'helper', name: "Helper's room", rects: [[2750, 4050, -2250, -250]], at: [3400, -1300], win: 'None', only: [], role: 'helper' },
+      { id: 'living', name: 'Living & play', rects: [[2525, 5005, 0, 2440], [5005, 7965, 0, 1625], [2525, 3440, 2440, 2525], [4125, 4900, -2250, -250], [4125, 4800, -250, 0]], at: [4500, 1100], win: 'East + bay seat', sea: true, role: 'living' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: B_FURN, chairs: [[3150, 330, 'N'], [3650, 330, 'N'], [3150, 1470, 'S'], [3650, 1470, 'S']], pend: [3400, 900], plant: [7830, 290],
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'nook', 'kids', 'master', 'helper', 'doll'],
+    over: {
+      dining: { X: 4700, Y: 2050, yaw: 295, pitch: -10,
+        text: 'The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.' },
+      living: { sub: 'Sofa facing the sea', X: 4400, Y: 850, yaw: 90, pitch: -8,
+        text: 'Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.' },
+      window: { name: 'Play zone', sub: 'At the sea window',
+        text: 'In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.' },
+      kids: { name: 'Kids’ room', sub: '2.45 × 2.5 m', X: 2150, Y: 2200, yaw: 318, pitch: -10,
+        text: 'Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.' },
+      master: { sub: '2.9 × 2.8 m', X: 5650, Y: 2600, yaw: 118, pitch: -16,
+        text: 'A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.' },
+      helper: { sub: '1.3 × 2.0 m, no window', X: 3900, Y: -420, yaw: 335, pitch: -24,
+        text: 'A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.' }
+    },
+    wins: [
+      ['Master bedroom', 'east, south half + 0.9 m', 6465, 3112, ['eastN', 'eastS', 'south'], 'master'],
+      ['Living & play', 'east, north part', 6465, 812, ['eastN'], 'living'],
+      ['Window seat', 'bay, faces east', 4350, -1250, ['bay'], 'play'],
+      ['Kids’ room', 'north', 1125, 1375, ['north'], 'kids'],
+      ["Helper's room", 'none', null, null, [], 'helper'],
+      KITCHEN_ROW
+    ]
+  },
+  C: {
+    name: 'Plan C', sub: 'Master suite', furnished: true, play: 'Bay playroom (4.6 m²) + mat by the sofa',
+    desc: 'The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5800, 5875, 0, 1700], ['pdoor', 5800, 5875, 1700, 2400, { head: 2.1 }], ['part', 5800, 5875, 2400, 2525],
+      ['part', 5080, 5100, 2525, 2600], ['pdoor', 5100, 5800, 2525, 2600, { head: 2.1 }], ['part', 5800, 6775, 2525, 2600],
+      ['part', 6700, 6775, 2600, 4525]
+    ],
+    leaves: [],
+    rooms: [
+      KIDS_NW_ROOM,
+      { id: 'master', name: 'Master suite', rects: [[5875, 7965, 0, 2525], [6775, 7965, 2525, 4525]], at: [6920, 1250], win: 'East, whole window', sea: true, only: ['eastN', 'eastS'], role: 'master' },
+      { id: 'helper', name: "Helper's room", rects: [[5080, 6700, 2600, 4525]], at: [5890, 3560], win: 'Small south window', only: ['south'], role: 'helper' },
+      { id: 'living', name: 'Living & dining', rects: [[2525, 5800, 0, 2440], [2525, 3440, 2440, 2525], [5080, 5800, 2440, 2525]], at: [4300, 1750], win: 'None of its own', role: 'living' },
+      { id: 'play', name: 'Playroom', rects: [[2750, 4900, -2250, -250], [3650, 4800, -250, 0]], at: [3825, -1350], win: 'Bay, sea', sea: true, role: 'play' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: C_FURN, chairs: [[2950, 280, 'N'], [3450, 280, 'N'], [2950, 1420, 'S'], [3450, 1420, 'S']], pend: [3200, 850], plant: null,
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'play', 'kids', 'master', 'dress', 'helper', 'doll'],
+    over: {
+      dining: { X: 4600, Y: 2050, yaw: 290, pitch: -10,
+        text: 'The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.' },
+      living: { sub: 'Sofa and play mat', X: 3300, Y: 1900, yaw: 55, pitch: -10,
+        text: 'The sofa backs onto the master suite wall, with a play mat in front that runs into the bay playroom. The living room has no window of its own in this plan: its daylight and its sea view come through the playroom.' },
+      kids: { name: 'Kids’ room', sub: '2.45 × 2.5 m', X: 2150, Y: 2200, yaw: 318, pitch: -10,
+        text: 'Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.' },
+      master: { name: 'Master suite', sub: '2.1 × 2.5 m + dressing', X: 6000, Y: 2350, yaw: 40, pitch: -10,
+        text: 'The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.' },
+      helper: { sub: '1.6 × 1.9 m', X: 5400, Y: 2850, yaw: 150, pitch: -20,
+        text: 'A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.' }
+    },
+    wins: [
+      ['Master suite', 'whole east window', 6465, 2300, ['eastN', 'eastS'], 'master'],
+      ['Playroom', 'bay, faces east', 4037, -1250, ['bay'], 'play'],
+      ['Living & dining', 'through the playroom', 4200, 1300, ['bay'], 'living'],
+      ['Kids’ room', 'north', 1125, 1375, ['north'], 'kids'],
+      ["Helper's room", 'small south window', 6250, 3025, ['south'], 'helper'],
+      KITCHEN_ROW
+    ]
+  },
+  bare: {
+    name: 'Bare', sub: 'As handed over', furnished: false,
+    desc: 'The flat as the HA hands it over: one open L-shaped space, with only the kitchen and bathroom enclosed.',
+    parts: [], leaves: [],
+    rooms: [
+      { id: 'open', name: 'Open-plan living', rects: [[0, 7965, 0, 2525], [5080, 7965, 2525, 4525], [0, 3440, 2525, 3835], [0, 1600, 3835, 5555], [2750, 4900, -2250, -250], [3650, 4800, -250, 0]], at: [4600, 1280], sea: true, role: 'living' },
+      { id: 'kitchen', name: 'Kitchen', rects: [[1800, 3440, 3920, 5935]], at: [2620, 4950] },
+      { id: 'bath', name: 'Bathroom', rects: [[3525, 4995, 2525, 4525]], at: [4260, 3420], only: ['bathW'] }
+    ],
+    furn: [], chairs: [], pend: null, plant: null,
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'kids', 'master', 'helper', 'doll'],
+    over: {
+      door: { text: 'Inside the front door. As handed over, the flat is one open L-shaped space; only the kitchen and bathroom are enclosed.' },
+      hall: { text: 'The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.' },
+      kitchen: { text: 'The HA hands over the sink and the gas and washing-machine connections. The window looks east down the gap between flats 2 and 3.' },
+      dining: { name: 'Middle of the room', sub: 'Open plan', text: 'The middle of the open plan. The bay is straight ahead and the east window to the right.' },
+      living: { sub: 'Main room', text: 'The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.' },
+      kids: { name: 'South-east corner', sub: '2.9 × 2.0 m', text: 'The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.' },
+      master: { name: 'North-west corner', sub: '2.45 × 2.5 m', text: 'The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.' },
+      helper: { name: 'The bay', sub: '2.15 × 2.0 m', text: 'A 2.15 × 2.0 m bay off the main room, with its own east window.' },
+      doll: { text: 'The whole flat as handed over, with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
+    },
+    wins: [
+      ['Main room', 'east window', 6465, 2262, ['eastN', 'eastS']],
+      ['The bay', 'faces east', 4037, -1250, ['bay']],
+      ['North-west corner', 'north', 1125, 1375, ['north']],
+      KITCHEN_ROW
+    ]
+  }
+};
+const LAYOUT_KEYS = ['A', 'B', 'C', 'bare'];
+
+// ---------------- tour stops (plan A positions; plans override) ----------------
+const STOPDEF = {
+  door: { name: 'Front door', sub: 'Foyer', X: 700, Y: 5330, yaw: 18, pitch: -6,
+    text: 'Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.' },
+  hall: { name: 'Hall', sub: 'Kitchen, bath, living', X: 1050, Y: 3250, yaw: 90, pitch: -8,
+    text: 'The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.' },
+  kitchen: { name: 'Kitchen', sub: '1.6 × 2.0 m', X: 2650, Y: 3980, yaw: 165, pitch: -22,
+    text: 'Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.' },
+  bath: { name: 'Bathroom', sub: '1.5 × 2.0 m', X: 3680, Y: 2780, yaw: 140, pitch: -18,
+    text: 'Shower on the right, toilet under a small south window, basin and mirror by the door.' },
+  dining: { name: 'Dining', sub: 'Table for four', X: 2950, Y: 2250, yaw: 50, pitch: -6,
+    text: 'The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.' },
+  living: { name: 'Living room', sub: 'Sofa and TV', X: 5300, Y: 1250, yaw: 90, pitch: -4,
+    text: 'About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.' },
+  window: { name: 'Living-room window', sub: 'Best view', X: 7250, Y: 750, yaw: 92, pitch: -7,
+    text: 'Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.' },
+  kids: { name: 'Kids & office', sub: '2.9 × 1.9 m', X: 6650, Y: 3200, yaw: 95, pitch: -7,
+    text: 'Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.' },
+  master: { name: 'Master bedroom', sub: '2.45 × 2.5 m', X: 1650, Y: 2150, yaw: 335, pitch: -8,
+    text: 'A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.' },
+  helper: { name: "Helper's room", sub: '2.15 × 2.0 m', X: 3750, Y: -1000, yaw: 85, pitch: -10,
+    text: 'The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.' },
+  nook: { name: 'Window seat', sub: 'Front of the bay', X: 4250, Y: -300, yaw: 62, pitch: -14,
+    text: 'The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.' },
+  play: { name: 'Playroom', sub: 'The whole bay', X: 3200, Y: -500, yaw: 60, pitch: -12,
+    text: 'With the helper moved out, the whole bay becomes an open playroom off the living room: play mat, toy shelves and a kids’ table, plus the bay window’s slice of sea.' },
+  dress: { name: 'Dressing area', sub: 'South half of the window', X: 7600, Y: 2250, yaw: 160, pitch: -12,
+    text: 'The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.' },
+  doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
+    text: 'The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
+};
+function stopFor(id, layout) {
+  const L = LAYOUTS[layout || st.layout];
+  if (!L.stops.includes(id)) return null;
+  return Object.assign({ id }, STOPDEF[id], L.over[id] || {});
+}
+
+// ---------------- state ----------------
+const st = { layout: 'B', furn: true, trees: false, mode: 'doll', stop: 'doll' };
+const cs = { x: wx(1050), y: wy(5250), yaw: 90, pitch: -6 };   // walking eye
+
+// ---------------- sight from the window: hills and sea ----------------
+function ray(ox, oy, H, canopy, az) {
+  const a = az * Math.PI / 180, sa = Math.sin(a), ca = Math.cos(a);
+  let maxT = -1e9, first = 0;
+  for (let d = 30; d <= 9000; d += (d < 1500 ? 10 : 25)) {
+    const r = elev(ox + sa * d, oy + ca * d); if (!r) break;
+    const w = r[1];
+    const e = (w ? 0 : r[0] + (d > 60 ? canopy : 0)) - d * d / (2 * R) * 0.87;
+    const t = (e - H) / d;
+    if (w && t >= maxT && !first) first = d;
+    if (t > maxT) maxT = t;
+  }
+  return first;
+}
+let SEA = null;   // first visible sea distance per 1° of azimuth, from the flat at 36/F
+function seaTable() {
+  const t = new Float32Array(360), can = st.trees ? 10 : 0;
+  for (let az = 0; az < 360; az++) t[az] = ray(-4, 3.2, EYE_H, can, az + .5);
+  SEA = t;
+}
+
+// ---------------- 2D sight lines inside the flat ----------------
+function obbFromPlan(X0, X1, Y0, Y1) { const x0 = wx(X0), x1 = wx(X1), y0 = wy(Y1), y1 = wy(Y0); return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, hx: (x1 - x0) / 2, hy: (y1 - y0) / 2, c: 1, s: 0 }; }
+function obb(cx, cy, sx, sy, rot) { return { cx, cy, hx: sx / 2, hy: sy / 2, c: Math.cos(rot), s: Math.sin(rot) }; }
+function hitT(b, ox, oy, dx, dy) {
+  const rx = ox - b.cx, ry = oy - b.cy;
+  const lx = b.c * rx + b.s * ry, ly = -b.s * rx + b.c * ry;
+  const ldx = b.c * dx + b.s * dy, ldy = -b.s * dx + b.c * dy;
+  let tmin = -Infinity, tmax = Infinity;
+  if (Math.abs(ldx) < 1e-12) { if (Math.abs(lx) > b.hx) return Infinity; }
+  else { let t1 = (-b.hx - lx) / ldx, t2 = (b.hx - lx) / ldx; if (t1 > t2) [t1, t2] = [t2, t1]; tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2); }
+  if (Math.abs(ldy) < 1e-12) { if (Math.abs(ly) > b.hy) return Infinity; }
+  else { let t1 = (-b.hy - ly) / ldy, t2 = (b.hy - ly) / ldy; if (t1 > t2) [t1, t2] = [t2, t1]; tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2); }
+  if (tmax < Math.max(tmin, 0)) return Infinity;
+  return Math.max(tmin, 0);
+}
+let SIGHT = [], WALK = [], WINBOX = [];
+function buildBlockers(layout) {
+  SIGHT = []; WALK = []; WINBOX = [];
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES.concat(LAYOUTS[layout || st.layout].parts)) {
+    const b = obbFromPlan(X0, X1, Y0, Y1);
+    if (k === 'wall' || k === 'mull' || k === 'part' || k === 'jamb') { SIGHT.push(b); WALK.push(b); }
+    if (k === 'pdoor') SIGHT.push(b);   // bedroom doors count as shut for sight lines, but you can walk through
+    if (k === 'win') { WALK.push(b); WINBOX.push(Object.assign(b, { id: o.id })); }
+  }
+  for (const [X0, X1, Y0, Y1] of NEIGH.concat([FIN])) { const b = obbFromPlan(X0, X1, Y0, Y1); SIGHT.push(b); WALK.push(b); }
+  for (const [cx, cy, sx, sy, rot] of ARMS) SIGHT.push(obb(cx, cy, sx, sy, rot));
+}
+// per degree: 0 wall, 1 hills/sky, 2 sea; plus the window each ray leaves through
+function sightFrom(x, y) {
+  const bins = new Uint8Array(360), via = new Array(360).fill(null), dist = new Float32Array(360);
+  for (let az = 0; az < 360; az++) {
+    const a = (az + .5) * Math.PI / 180, dx = Math.sin(a), dy = Math.cos(a);
+    let near = Infinity;
+    for (const b of SIGHT) { const t = hitT(b, x, y, dx, dy); if (t < near) near = t; }
+    if (near < 150) continue;
+    let wt = Infinity, wid = null;
+    for (const b of WINBOX) { const t = hitT(b, x, y, dx, dy); if (t < wt) { wt = t; wid = b.id; } }
+    via[az] = wid;
+    if (SEA[az] > 0) { bins[az] = 2; dist[az] = SEA[az]; } else bins[az] = 1;
+  }
+  return { bins, via, dist };
+}
+const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+const dirName = az => DIRS[Math.round(((az % 360) + 360) % 360 / 22.5) % 16];
+function seaSegments(bins) {
+  const segs = []; let s = -1;
+  for (let az = 0; az <= 360; az++) {
+    const on = az < 360 && bins[az] === 2;
+    if (on && s < 0) s = az;
+    if (!on && s >= 0) { segs.push([s, az - 1]); s = -1; }
+  }
+  if (segs.length > 1 && segs[0][0] === 0 && segs[segs.length - 1][1] === 359) { const last = segs.pop(); segs[0][0] = last[0] - 360; }
+  return segs;
+}
+function summarise(sight, only, exclude) {
+  let deg = 0, out = 0, near = 0; const wins = new Set(), bins = new Uint8Array(360);
+  for (let az = 0; az < 360; az++) {
+    if (only && !only.includes(sight.via[az])) continue;
+    if (exclude && exclude.includes(sight.via[az])) continue;
+    bins[az] = sight.bins[az];
+    if (sight.bins[az]) { out++; if (sight.via[az]) wins.add(sight.via[az]); }
+    if (sight.bins[az] === 2) { deg++; if (!near || sight.dist[az] < near) near = sight.dist[az]; }
+  }
+  return { deg, out, near, wins: [...wins], segs: seaSegments(bins), bins, dist: sight.dist };
+}
+
+// ---------------- three.js scene ----------------
+const $ = id => document.getElementById(id);
+const canvas = $('gl'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.localClippingEnabled = true;
+const scene = new THREE.Scene();
+const HORIZON = new THREE.Color('#dbe6ea');
+scene.background = HORIZON;
+scene.fog = new THREE.Fog(HORIZON, 3500, 32000);
+const cam = new THREE.PerspectiveCamera(70, 1, 0.05, 60000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xa59a88, 0.72));
+scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+const sun = new THREE.DirectionalLight(0xfff3e0, 0.5); sun.position.copy(P(400, 150, 700)); scene.add(sun);
+
+// sky dome
+(() => {
+  const g = new THREE.SphereGeometry(40000, 32, 16), col = [], top = new THREE.Color('#8fb3cf');
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const t = Math.max(0, pos.getY(i) / 40000); const c = HORIZON.clone().lerp(top, Math.pow(t, .6)); col.push(c.r, c.g, c.b); }
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false })));
+})();
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(90000, 90000), new THREE.MeshLambertMaterial({ color: 0x3d7ea3 }));
+sea.rotation.x = -Math.PI / 2; scene.add(sea);
+
+// terrain
+function colorFor(h, out) {
+  const stops = [[-1, [0.78, 0.74, 0.60]], [6, [0.78, 0.74, 0.60]], [14, [0.47, 0.58, 0.38]], [80, [0.34, 0.48, 0.28]], [200, [0.40, 0.46, 0.30]], [330, [0.55, 0.52, 0.42]]];
+  for (let i = 1; i < stops.length; i++) {
+    if (h <= stops[i][0] || i === stops.length - 1) {
+      const [h0, c0] = stops[i - 1], [h1, c1] = stops[i]; const t = Math.max(0, Math.min(1, (h - h0) / (h1 - h0)));
+      out[0] = c0[0] + (c1[0] - c0[0]) * t; out[1] = c0[1] + (c1[1] - c0[1]) * t; out[2] = c0[2] + (c1[2] - c0[2]) * t; return;
+    }
+  }
+}
+function inNearInterior(x, y) { return x > NEAR.x0 + NEAR.s && x < NEAR.x0 + (NEAR.nx - 2) * NEAR.s && y < NEAR.y1 - NEAR.s && y > NEAR.y1 - (NEAR.ny - 2) * NEAR.s; }
+function buildMesh(g, isFar, canopy) {
+  const n = g.nx * g.ny, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = [0, 0, 0];
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s;
+    let h = g.z[k];
+    if (isFar && inNearInterior(x, y)) { const r = samp(NEAR, x, y); if (r) h = r[0]; h -= 4; }
+    let hv = h === 0 ? -4 : h;
+    if (canopy && h > 0 && Math.hypot(x + 30, y + 30) > 110) hv += canopy;
+    pos[k * 3] = x; pos[k * 3 + 1] = hv; pos[k * 3 + 2] = -y;
+    colorFor(h === 0 ? -1 : h, c); col[k * 3] = c[0]; col[k * 3 + 1] = c[1]; col[k * 3 + 2] = c[2];
+  }
+  const idx = [];
+  for (let j = 0; j < g.ny - 1; j++) for (let i = 0; i < g.nx - 1; i++) { const a = j * g.nx + i, b = a + 1, d = a + g.nx, e = d + 1; idx.push(a, d, b, b, d, e); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  return geo;
+}
+const terrMat = new THREE.MeshLambertMaterial({ vertexColors: true });
+const farMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat), nearMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat);
+scene.add(farMesh, nearMesh);
+let builtCanopy = -1;
+function rebuildTerrain() {
+  const c = st.trees ? 10 : 0; if (c === builtCanopy) return; builtCanopy = c;
+  farMesh.geometry.dispose(); nearMesh.geometry.dispose();
+  farMesh.geometry = buildMesh(FAR, true, c); nearMesh.geometry = buildMesh(NEAR, false, c);
+}
+
+// materials (interior ones are clipped in the dollhouse)
+const CLIP = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e7);
+const mat = (color, extra) => new THREE.MeshLambertMaterial(Object.assign({ color, clippingPlanes: [CLIP] }, extra || {}));
+const M = {
+  wall: mat(0xeeeae2), part: mat(0xe6e2d8), ceil: mat(0xf7f6f2), frame: mat(0xb7bcc0), door: mat(0xa77d57),
+  glass: new THREE.MeshBasicMaterial({ color: 0xa9cbdc, transparent: true, opacity: .14, depthWrite: false, clippingPlanes: [CLIP] }),
+  screed: mat(0xb9b5ac), wood: mat(0xc9a47c), bath: mat(0xd9dad6), kit: mat(0xd2cdc3),
+  white: mat(0xf3f1ec), worktop: mat(0x8d9094), steel: mat(0xaeb3b7), black: mat(0x1f2326), oak: mat(0xc49a6c),
+  linen: mat(0xf4f2ec), navy: mat(0x3f5573), terracotta: mat(0xc46e4f), sage: mat(0x9aab92), fabric: mat(0x7f8b86), fabric2: mat(0x8c9893),
+  charcoal: mat(0x4f565e), rug: mat(0xd8cdbb), mat: mat(0x9fc4b4), mirror: mat(0xc9d6dc), plant: mat(0x5f8550), pot: mat(0xb98a63),
+  facade: mat(0xe6e1d5), fin: mat(0xd5cdbf)
+};
+function box(g, X0, X1, Y0, Y1, z0, z1, m, abs) {
+  const sx = (X1 - X0) / 1000, sy = (Y1 - Y0) / 1000, sz = z1 - z0;
+  if (sx <= 0 || sy <= 0 || sz <= 0) return null;
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sz, sy), m);
+  mesh.position.copy(P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), (abs ? 0 : FL) + (z0 + z1) / 2));
+  g.add(mesh); return mesh;
+}
+const shell = new THREE.Group(), ceilGrp = new THREE.Group(), outside = new THREE.Group(), above = new THREE.Group();
+const capGrp = new THREE.Group(), commonFurn = new THREE.Group(), capCommon = new THREE.Group();
+scene.add(shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon);
+// per plan: partitions, furniture, and their dollhouse caps
+const LG = {};
+for (const k of LAYOUT_KEYS) {
+  LG[k] = { parts: new THREE.Group(), furn: new THREE.Group(), capP: new THREE.Group(), capF: new THREE.Group() };
+  scene.add(LG[k].parts, LG[k].furn, LG[k].capP, LG[k].capF);
+}
+const CUT = 1.3;
+const CAP = {
+  wall: new THREE.MeshBasicMaterial({ color: 0x2a363d }), part: new THREE.MeshBasicMaterial({ color: 0x66737a }),
+  glass: new THREE.MeshBasicMaterial({ color: 0x7fb0c8 }), next: new THREE.MeshBasicMaterial({ color: 0xa8a397 }),
+  fin: new THREE.MeshBasicMaterial({ color: 0x8c8273 })
+};
+const floorMeshes = [], mainFloors = [];
+
+function addWindow(g, X0, X1, Y0, Y1, o, wallMat) {
+  box(g, X0, X1, Y0, Y1, 0, o.sill, wallMat);
+  box(g, X0, X1, Y0, Y1, o.head, CEIL, wallMat);
+  const alongY = (X1 - X0) < (Y1 - Y0);
+  const a0 = alongY ? Y0 : X0, a1 = alongY ? Y1 : X1, len = a1 - a0, mid = alongY ? (X0 + X1) / 2 : (Y0 + Y1) / 2;
+  const seg = (b0, b1, z0, z1, m) => alongY ? box(g, mid - 35, mid + 35, b0, b1, z0, z1, m) : box(g, b0, b1, mid - 35, mid + 35, z0, z1, m);
+  seg(a0, a1, o.sill, o.sill + .05, M.frame); seg(a0, a1, o.head - .05, o.head, M.frame);
+  seg(a0, a0 + 50, o.sill, o.head, M.frame); seg(a1 - 50, a1, o.sill, o.head, M.frame);
+  const n = Math.max(1, Math.round(len / 1250));
+  for (let i = 1; i < n; i++) { const a = a0 + len * i / n; seg(a - 25, a + 25, o.sill, o.head, M.frame); }
+  if (o.head - o.sill > 1.4) seg(a0, a1, o.head - .45, o.head - .4, M.frame);
+  alongY ? box(g, mid - 3, mid + 3, a0, a1, o.sill, o.head, M.glass) : box(g, a0, a1, mid - 3, mid + 3, o.sill, o.head, M.glass);
+}
+function buildShell() {
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
+    const g = shell, wm = M.wall;
+    if (k === 'wall') box(g, X0, X1, Y0, Y1, 0, CEIL, wm);
+    else if (k === 'win') addWindow(g, X0, X1, Y0, Y1, o, wm);
+    else if (k === 'mull') { box(g, X0, X1, Y0, Y1, 0, o.sill, wm); box(g, X0, X1, Y0, Y1, o.sill, o.head, M.frame); box(g, X0, X1, Y0, Y1, o.head, CEIL, wm); }
+    else box(g, X0, X1, Y0, Y1, o.head, CEIL, wm);   // door, open: lintel
+  }
+  // door leaves, drawn open
+  box(shell, 600, 1500, 5555, 5600, 0, 2.1, M.door);        // front door, shut behind you
+  box(shell, 1900, 2650, 3790, 3830, 0, 2.05, M.white);     // kitchen sliding door, parked
+  box(shell, 3525, 4225, 2600, 2640, 0, 2.05, M.white);     // bathroom door, open inwards
+  // floors and ceilings
+  for (const [k, X0, X1, Y0, Y1] of FLOORS) {
+    const f = box(shell, X0, X1, Y0, Y1, -.15, 0, k === 'bath' ? M.bath : k === 'kit' ? M.kit : M.screed);
+    floorMeshes.push(f); if (k === 'main') mainFloors.push(f);
+    box(ceilGrp, X0, X1, Y0, Y1, CEIL, CEIL + .15, M.ceil);
+  }
+  // fin, neighbouring flats, the tower
+  box(outside, FIN[0], FIN[1], FIN[2], FIN[3], TOWER_BASE, TOWER_TOP, M.fin, true);
+  for (const [X0, X1, Y0, Y1] of NEIGH) box(outside, X0, X1, Y0, Y1, TOWER_BASE, TOWER_TOP, M.facade, true);
+  for (const [X0, X1, Y0, Y1] of COLUMN) { box(outside, X0, X1, Y0, Y1, TOWER_BASE, FL - .15, M.facade, true); box(above, X0, X1, Y0, Y1, FL + 2.75, TOWER_TOP, M.facade, true); }
+  for (const [cx, cy, sx, sy, rot] of ARMS) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, TOWER_TOP - TOWER_BASE, sy), M.facade);
+    m.position.copy(P(cx, cy, (TOWER_BASE + TOWER_TOP) / 2)); m.rotation.y = rot; outside.add(m);
+  }
+  // dollhouse section caps: solid tops where the walls are cut at 1.3 m
+  const c0 = CUT - .03, c1 = CUT - .001;
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
+    if (k === 'wall' || (k === 'win' && o.sill > CUT)) box(capGrp, X0, X1, Y0, Y1, c0, c1, CAP.wall);
+    else if (k === 'win' || k === 'mull') box(capGrp, X0, X1, Y0, Y1, c0, c1, CAP.glass);
+  }
+  for (const [X0, X1, Y0, Y1] of NEIGH) box(capGrp, X0, X1, Y0, Y1, FL + c0, FL + c1, CAP.next, true);
+  box(capGrp, FIN[0], FIN[1], FIN[2], FIN[3], FL + c0, FL + c1, CAP.fin, true);
+  for (const [cx, cy, sx, sy, rot] of ARMS) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, c1 - c0, sy), CAP.next);
+    m.position.copy(P(cx, cy, FL + (c0 + c1) / 2)); m.rotation.y = rot; capGrp.add(m);
+  }
+  // each plan's partitions, door lintels, frame posts and open door leaves
+  for (const k of LAYOUT_KEYS) {
+    const g = LG[k].parts, cg = LG[k].capP;
+    for (const [kind, X0, X1, Y0, Y1, o] of LAYOUTS[k].parts) {
+      if (kind === 'part') { box(g, X0, X1, Y0, Y1, 0, CEIL, M.part); box(cg, X0, X1, Y0, Y1, c0, c1, CAP.part); }
+      else if (kind === 'pdoor') box(g, X0, X1, Y0, Y1, o.head, CEIL, M.part);
+      else if (kind === 'jamb') { box(g, X0 + 40, X1 - 40, Y0, Y1, o.sill, o.head, M.frame); box(cg, X0 + 40, X1 - 40, Y0, Y1, c0, c1, CAP.part); }
+    }
+    for (const [X0, X1, Y0, Y1, z0, z1, mk] of LAYOUTS[k].leaves) box(g, X0, X1, Y0, Y1, z0, z1, M[mk]);
+  }
+}
+function buildFurniture() {
+  const cut = (g, X0, X1, Y0, Y1, z0, z1, mk) => { if (z0 < CUT && z1 > CUT) box(g, X0, X1, Y0, Y1, CUT - .02, CUT - .001, M[mk]); };
+  for (const [X0, X1, Y0, Y1, z0, z1, mk] of FURN_ALL) { box(shell, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(capGrp, X0, X1, Y0, Y1, z0, z1, mk); }
+  for (const [X0, X1, Y0, Y1, z0, z1, mk] of FURN_COMMON) { box(commonFurn, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(capCommon, X0, X1, Y0, Y1, z0, z1, mk); }
+  for (const k of LAYOUT_KEYS) {
+    const L = LAYOUTS[k], g = LG[k].furn, cg = LG[k].capF;
+    for (const [X0, X1, Y0, Y1, z0, z1, mk] of L.furn) { box(g, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(cg, X0, X1, Y0, Y1, z0, z1, mk); }
+    for (const [cx, cy, side] of L.chairs) {
+      box(g, cx - 210, cx + 210, cy - 210, cy + 210, .44, .48, M.charcoal);
+      box(g, cx - 30, cx + 30, cy - 30, cy + 30, 0, .44, M.steel);
+      const by = side === 'N' ? [cy - 210, cy - 170] : [cy + 170, cy + 210];
+      box(g, cx - 210, cx + 210, by[0], by[1], .48, .88, M.charcoal);
+    }
+    // pendant over the table, and a plant
+    if (L.pend) {
+      const [X, Y] = L.pend;
+      const pend = new THREE.Mesh(new THREE.CylinderGeometry(.06, .2, .16, 20), M.charcoal); pend.position.copy(P(wx(X), wy(Y), FL + 1.9)); g.add(pend);
+      box(g, X - 5, X + 5, Y - 5, Y + 5, 1.98, CEIL, M.black);
+    }
+    if (L.plant) {
+      const [X, Y] = L.plant;
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(.14, .11, .34, 18), M.pot); pot.position.copy(P(wx(X), wy(Y), FL + .17)); g.add(pot);
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(.3, 14, 10), M.plant); leaf.position.copy(P(wx(X), wy(Y), FL + .72)); leaf.scale.set(1, 1.3, 1); g.add(leaf);
+    }
+  }
+}
+
+// labels
+const XLABELS = [
+  { t: 'Silverstrand Bay', x: 1900, y: -170, h: 2, sea: true },
+  { t: 'Silverstrand Beach', x: 631, y: -195, h: 8 },
+  { t: 'Port Shelter', x: 2900, y: 2700, h: 2, sea: true },
+  { t: 'Kau Sai Chau', x: 4530, y: 5040, h: 60 },
+  { t: 'Clear Water Bay hills', x: 1650, y: -1650, h: 240 },
+  { t: 'Hillside behind the estate', x: 0, y: 395, h: 178 },
+  { t: 'Acoustic fin', x: .9, y: 5.46, h: FL + 2.0, fin: true }
+];
+const labelHost = $('labels');
+function mkLabel(cls, html) { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = html; labelHost.appendChild(el); return el; }
+XLABELS.forEach(L => { L.el = mkLabel(L.sea ? 'sea' : '', L.t); L.v = P(L.x, L.y, L.h); });
+let roomLabels = [];
+function buildRoomLabels() {
+  roomLabels.forEach(r => r.el.remove());
+  roomLabels = LAYOUTS[st.layout].rooms.map(r => {
+    const area = r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
+    const el = mkLabel('room', `${r.name}<small>${area.toFixed(1)} m² · ${Math.round(area * 10.764)} sq ft</small>`);
+    return { el, v: P(wx(r.at[0]), wy(r.at[1]), FL + 1.45) };
+  });
+}
+function terrainHides(L) {
+  const can = st.trees ? 10 : 0, ex = cs.x, ey = cs.y, H = EYE_H;
+  const D = Math.hypot(L.x - ex, L.y - ey);
+  for (let k = 1; k < 120; k++) {
+    const f = k / 120, x = ex + (L.x - ex) * f, y = ey + (L.y - ey) * f, d = D * f;
+    if (d < 40) continue;
+    const r = elev(x, y); if (!r || r[1]) continue;
+    if (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * 0.87 > H + (L.h - H) * f + 1) return true;
+  }
+  return false;
+}
+function updateLabelVisibility() {
+  for (const L of XLABELS) {
+    L.hidden = true; L.behind = false;
+    if (st.mode !== 'walk') continue;
+    const D = Math.hypot(L.x - cs.x, L.y - cs.y), dx = (L.x - cs.x) / D, dy = (L.y - cs.y) / D;
+    let near = Infinity;
+    for (const b of SIGHT) { const t = hitT(b, cs.x, cs.y, dx, dy); if (t < near) near = t; }
+    if (near < D - .4) continue;
+    L.hidden = false;
+    if (!L.fin) L.behind = terrainHides(L);
+    L.el.classList.toggle('hid', L.behind);
+    L.el.textContent = L.t + (L.behind ? ' · behind the hill' : '');
+  }
+}
+function placeLabels() {
+  const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
+  const put = (el, vec, show) => {
+    if (!show) { el.hidden = true; return; }
+    v.copy(vec).project(cam);
+    const ok = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02;
+    el.hidden = !ok;
+    if (ok) { el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
+  };
+  for (const L of XLABELS) put(L.el, L.v, !L.hidden);
+  for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll');
+}
+
+// ---------------- cameras ----------------
+const controls = new THREE.OrbitControls(cam, canvas);
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 70;
+const FLAT_C = P(wx(4000), wy(1900), FL + .3);
+controls.target.copy(FLAT_C);
+let dollPose = { pos: P(wx(4000) - 6.8, wy(1900) - 8, FL + 10.1), tgt: FLAT_C.clone() };
+let dirty = true;
+controls.addEventListener('change', () => { dirty = true; });
+function applyWalkCam() {
+  cam.position.copy(P(cs.x, cs.y, FL + EYE));
+  const a = cs.yaw * Math.PI / 180, p = cs.pitch * Math.PI / 180;
+  cam.lookAt(cam.position.clone().add(new THREE.Vector3(Math.sin(a) * Math.cos(p), Math.sin(p), -Math.cos(a) * Math.cos(p))));
+}
+function setMode(m) {
+  st.mode = m;
+  const doll = m === 'doll';
+  controls.enabled = doll;
+  CLIP.constant = doll ? FL + CUT : 1e7;
+  setVis();
+  cam.fov = doll ? 45 : 70; cam.near = doll ? .5 : .05; cam.updateProjectionMatrix();
+  $('hint').textContent = doll ? 'Drag to turn · scroll or pinch to zoom · tap a room to step inside' : 'Drag to look around · tap the floor to walk · arrow keys or WASD to move';
+  updateSight(); updateLabelVisibility(); updateCompassMarker();
+  dirty = true;
+}
+
+// glide between viewpoints
+let glide = null;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function glideTo(x, y, yaw, pitch, ms) {
+  const dyaw = ((yaw - cs.yaw + 540) % 360) - 180;
+  glide = { t0: performance.now(), ms: ms || 900, from: { x: cs.x, y: cs.y, yaw: cs.yaw, pitch: cs.pitch }, to: { x, y, yaw: cs.yaw + dyaw, pitch } };
+}
+function goStop(id) {
+  const s = stopFor(id); if (!s) return;
+  st.stop = id;
+  if (s.doll) {
+    if (st.mode !== 'doll') { setMode('doll'); cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update(); }
+  } else {
+    if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }
+    else glideTo(wx(s.X), wy(s.Y), s.yaw, s.pitch);
+  }
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+}
+
+// pointer: drag to look (walk) or orbit (doll); tap to walk
+let drag = null;
+const ray3 = new THREE.Raycaster(), ndc = new THREE.Vector2();
+canvas.addEventListener('pointerdown', e => { stage.focus({ preventScroll: true }); drag = { x: e.clientX, y: e.clientY, yaw: cs.yaw, pitch: cs.pitch, moved: false }; if (st.mode === 'walk') canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) drag.moved = true;
+  if (st.mode === 'walk' && drag.moved) {
+    const k = 80 / canvas.clientWidth;
+    cs.yaw = drag.yaw - (e.clientX - drag.x) * k;
+    cs.pitch = Math.max(-60, Math.min(45, drag.pitch + (e.clientY - drag.y) * k));
+    glide = null; applyWalkCam(); dirty = true; updateCompassMarker();
+  }
+});
+window.addEventListener('pointerup', e => {
+  if (!drag) return; const d = drag; drag = null;
+  if (d.moved) return;
+  const r = canvas.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray3.setFromCamera(ndc, cam);
+  const hit = ray3.intersectObjects(floorMeshes, false)[0];
+  if (!hit) return;
+  const x = hit.point.x, y = -hit.point.z;
+  if (!walkable(x, y)) return;
+  st.stop = null;
+  if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = x; cs.y = y; cs.pitch = -6; applyWalkCam(); }
+  else glideTo(x, y, cs.yaw, cs.pitch, 600);
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+});
+canvas.addEventListener('wheel', e => { if (st.mode !== 'walk') return; e.preventDefault(); cam.fov = Math.max(35, Math.min(80, cam.fov + Math.sign(e.deltaY) * 4)); cam.updateProjectionMatrix(); dirty = true; }, { passive: false });
+
+function walkable(x, y) {
+  const X = pX(x), Y = pY(y);
+  const onFloor = FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1);
+  if (!onFloor) return false;
+  const r = .18;
+  for (const b of WALK) {
+    const rx = x - b.cx, ry = y - b.cy, lx = b.c * rx + b.s * ry, ly = -b.s * rx + b.c * ry;
+    if (Math.abs(lx) < b.hx + r && Math.abs(ly) < b.hy + r) return false;
+  }
+  return true;
+}
+const keys = new Set();
+stage.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k) && st.mode === 'walk') { keys.add(k); e.preventDefault(); }
+});
+stage.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+stage.addEventListener('blur', () => keys.clear());
+
+// ---------------- panel ----------------
+function drawStops() {
+  $('stops').innerHTML = LAYOUTS[st.layout].stops.map(id => stopFor(id)).map(s => `<button data-id="${s.id}" class="${s.doll ? 'wide' : ''}" aria-pressed="${st.stop === s.id}">${s.name}<small>${s.sub}</small></button>`).join('');
+  $('stops').querySelectorAll('button').forEach(b => b.onclick = () => goStop(b.dataset.id));
+}
+function refreshPanel() {
+  const s = st.stop ? stopFor(st.stop) : null;
+  $('stops').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === st.stop)));
+  $('stopTitle').textContent = s ? s.name : 'Your own spot';
+  $('stopDesc').textContent = s ? s.text : 'Drag to look around. The panel below updates for wherever you stand.';
+}
+let lastSightKey = '', lastSight = null;
+function updateSight() {
+  if (st.mode === 'doll') {
+    $('verdict').textContent = 'Step inside to check the view';
+    $('facts').innerHTML = '<dt>Tip</dt><dd>Pick a tour stop or tap a room</dd>';
+    $('compass').innerHTML = compassSVG(null);
+    return;
+  }
+  const key = cs.x.toFixed(2) + ',' + cs.y.toFixed(2) + st.layout + st.trees;
+  if (key !== lastSightKey) {
+    lastSightKey = key;
+    const raw = sightFrom(cs.x, cs.y), room = roomAt(cs.x, cs.y);
+    lastSight = summarise(raw, room ? room.only : null, room && room.id === 'bath' ? null : ['bathW']);
+    lastSight.room = room;
+  }
+  const S = lastSight;
+  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${(a + 360) % 360}° ${dirName(a)}` : `${(a + 360) % 360}–${b}° (${dirName(a)} to ${dirName(b)})`).join(', ') : 'none';
+  if (!S.out) $('verdict').textContent = 'No view out from here, only walls or the next flat.';
+  else if (!S.deg) $('verdict').textContent = 'No sea from here, only hills and sky.';
+  else $('verdict').innerHTML = `<b>${S.deg}°</b> of sea in view from here`;
+  $('facts').innerHTML = `<dt>Sea directions</dt><dd>${fmt(S.segs)}</dd>`
+    + `<dt>Nearest sea</dt><dd>${S.near ? (S.near / 1000).toFixed(2) + ' km' : '–'}</dd>`
+    + `<dt>Through</dt><dd>${S.wins.length ? S.wins.map(w => WIN_NAMES[w]).join(', ') : '–'}</dd>`
+    + (S.room ? `<dt>Counting</dt><dd>This room's own window, door shut</dd>` : LAYOUTS[st.layout].parts.some(p => p[0] === 'pdoor') ? `<dt>Counting</dt><dd>Bedroom doors shut</dd>` : '');
+  $('compass').innerHTML = compassSVG(S);
+}
+// bedrooms and bathroom: inside one, only its own window counts (door shut); elsewhere the bathroom door is shut
+function roomAt(x, y) {
+  const X = pX(x), Y = pY(y), e = 80;
+  return LAYOUTS[st.layout].rooms.find(r => r.only && r.rects.some(([X0, X1, Y0, Y1]) => X >= X0 - e && X <= X1 + e && Y >= Y0 - e && Y <= Y1 + e)) || null;
+}
+function compassSVG(sight) {
+  const W = 360, H = 46, x = az => 10 + az / 360 * (W - 20);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="What you can see in each compass direction">`;
+  s += `<rect x="10" y="10" width="${W - 20}" height="14" fill="var(--chip)"/>`;
+  if (sight) for (let az = 0; az < 360; az++) {
+    const b = sight.bins[az]; if (!b) continue;
+    const c = b === 1 ? 'var(--land)' : sight.dist[az] < 1500 ? 'var(--bay)' : 'var(--sea-soft)';
+    s += `<rect x="${x(az) - .3}" y="10" width="${(W - 20) / 360 + .6}" height="14" fill="${c}"/>`;
+  }
+  [[0, 'N'], [90, 'E'], [180, 'S'], [270, 'W'], [360, 'N']].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="24" y2="29" stroke="var(--ink-2)"/><text x="${x(a)}" y="41" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
+  s += `<path id="cmark" d="" fill="var(--mark)"/>`;
+  return s + '</svg>';
+}
+function updateCompassMarker() {
+  const m = document.getElementById('cmark'); if (!m) return;
+  if (st.mode !== 'walk') { m.setAttribute('d', ''); return; }
+  const az = ((cs.yaw % 360) + 360) % 360, x = 10 + az / 360 * 340;
+  m.setAttribute('d', `M${x - 5} 2 L${x + 5} 2 L${x} 9 Z`);
+  // plan marker
+  const X = pX(cs.x), Y = pY(cs.y), L = 2600;
+  const half = Math.min(60, Math.atan(Math.tan(cam.fov * Math.PI / 360) * cam.aspect) * 180 / Math.PI);
+  const pt = a => `${X + L * Math.sin(a * Math.PI / 180)} ${Y - L * Math.cos(a * Math.PI / 180)}`;
+  const cone = document.getElementById('cone'), dot = document.getElementById('dot');
+  if (cone) cone.setAttribute('d', `M${X} ${Y} L${pt(az - half)} L${pt(az + half)} Z`);
+  if (dot) { dot.setAttribute('cx', X); dot.setAttribute('cy', Y); }
+}
+const SHORT = { "Helper's room": 'Helper', 'Living & dining': 'Living', 'Living & play': 'Living', 'Master bedroom': 'Master', 'Master suite': 'Master', 'Kids’ room': 'Kids', 'Kids & office': 'Kids', 'Open-plan living': 'Open plan' };
+function drawPlan() {
+  const L = LAYOUTS[st.layout], furn = L.furnished && st.furn;
+  let s = '';
+  for (const r of L.rooms) for (const [X0, X1, Y0, Y1] of r.rects) s += `<rect class="rm${r.sea ? ' sea' : ''}" x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}"/>`;
+  if (furn) for (const f of L.furn.concat(FURN_COMMON)) if (f[7]) s += `<rect class="fu" x="${f[0]}" y="${f[2]}" width="${f[1] - f[0]}" height="${f[3] - f[2]}"/>`;
+  for (const f of FURN_ALL) if (f[7]) s += `<rect class="fu" x="${f[0]}" y="${f[2]}" width="${f[1] - f[0]}" height="${f[3] - f[2]}"/>`;
+  for (const [k, X0, X1, Y0, Y1] of PIECES.concat(L.parts)) {
+    const cls = k === 'wall' || k === 'mull' ? 'wl' : k === 'part' || k === 'jamb' ? 'pt' : k === 'win' ? 'wn' : null;
+    if (cls) s += `<rect class="${cls}" x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}"/>`;
+  }
+  s += `<rect class="fn" x="${FIN[0]}" y="${FIN[2]}" width="${FIN[1] - FIN[0]}" height="${FIN[3] - FIN[2]}"/>`;
+  for (const r of L.rooms) if (r.id !== 'foyer') s += `<text class="rl" x="${r.at[0]}" y="${r.at[1] + 120}">${SHORT[r.name] || r.name}</text>`;
+  s += `<text class="na" x="9300" y="-1900">N</text><path d="M9300 -2600 L9120 -2250 L9480 -2250 Z" fill="var(--ink-2)"/>`;
+  s += `<path id="cone" class="cone" d=""/><circle id="dot" class="dot" r="170" cx="-9999" cy="-9999"/>`;
+  const svg = $('plan'); svg.setAttribute('viewBox', '-600 -2900 10600 9300'); svg.innerHTML = s;
+  updateCompassMarker();
+}
+$('plan').addEventListener('click', e => {
+  const svg = $('plan'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse()), x = wx(p.x), y = wy(p.y);
+  if (!walkable(x, y)) return;
+  st.stop = null;
+  if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = x; cs.y = y; cs.pitch = -6; applyWalkCam(); }
+  else glideTo(x, y, cs.yaw, cs.pitch, 700);
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+});
+// sea through each window, per plan (cached; trees change it)
+const winCache = {};
+function winRows(layout) {
+  const key = layout + st.trees;
+  if (winCache[key]) return winCache[key];
+  buildBlockers(layout);
+  const rows = LAYOUTS[layout].wins.map(([n, w, X, Y, only, role]) => ({ n, w, role, north: (only || []).includes('north'), deg: X == null ? null : summarise(sightFrom(wx(X), wy(Y)), only).deg }));
+  buildBlockers();
+  return (winCache[key] = rows);
+}
+function windowTable() {
+  const rows = winRows(st.layout).map(r => `<tr><td>${r.n}</td><td>${r.w}</td><td class="s">${r.deg == null ? '–' : r.deg ? r.deg + '°' : 'none'}</td></tr>`);
+  $('winsT').textContent = `Sea from each window · ${LAYOUTS[st.layout].name}`;
+  $('wins').innerHTML = `<tr><th>Room</th><th>Window</th><th style="text-align:right">Sea</th></tr>` + rows.join('');
+}
+const rectArea = r => r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
+function roomTable() {
+  const L = LAYOUTS[st.layout];
+  const rows = L.rooms.filter(r => r.win || r.role).map(r => {
+    const area = rectArea(r), [X0, X1, Y0, Y1] = r.rects[0];
+    const dims = r.rects.length === 1 ? `${((X1 - X0) / 1000).toFixed(2)} × ${((Y1 - Y0) / 1000).toFixed(2)} m<br>` : '';
+    return `<tr><td>${r.name}</td><td class="n">${dims}${area.toFixed(1)} m² · ${Math.round(area * 10.764)} sq ft</td><td>${r.win || '–'}</td></tr>`;
+  });
+  $('roomsT').textContent = `Rooms · ${L.name}`;
+  $('rooms').innerHTML = `<tr><th>Room</th><th>Size</th><th>Window</th></tr>` + rows.join('');
+}
+function compareTable() {
+  const keys = ['A', 'B', 'C'];
+  const cell = (k, roles) => {
+    const L = LAYOUTS[k], area = L.rooms.filter(r => roles.includes(r.role)).reduce((s, r) => s + rectArea(r), 0);
+    const rows = winRows(k).filter(r => roles.includes(r.role));
+    let view;
+    if (roles.includes('living')) {
+      const liv = rows.find(r => r.role === 'living'), play = rows.find(r => r.role === 'play');
+      view = [liv ? (liv.deg ? `${liv.deg}° sea` : 'no window') : '', play ? `${play.n.toLowerCase()} ${play.deg}°` : ''].filter(Boolean).join(' · ');
+    } else {
+      const r = rows[0];
+      view = !r || r.deg == null ? 'no window' : r.deg ? `${r.deg}° sea` : r.north ? 'hillside' : 'window, no sea';
+    }
+    return `<td class="${k === st.layout ? 'on' : ''}"><b>${area.toFixed(1)} m²</b><br>${view}</td>`;
+  };
+  const head = `<tr><th></th>${keys.map(k => `<th class="${k === st.layout ? 'on' : ''}">${LAYOUTS[k].name}</th>`).join('')}</tr>`;
+  const rows = [['Master', ['master']], ['Kids', ['kids']], ['Helper', ['helper']], ['Living & play', ['living', 'play']]]
+    .map(([n, roles]) => `<tr><td>${n}</td>${keys.map(k => cell(k, roles)).join('')}</tr>`);
+  rows.push(`<tr><td>Play space</td>${keys.map(k => `<td class="${k === st.layout ? 'on' : ''}">${LAYOUTS[k].play}</td>`).join('')}</tr>`);
+  $('cmp').innerHTML = head + rows.join('');
+}
+
+function setVis() {
+  const doll = st.mode === 'doll', furn = LAYOUTS[st.layout].furnished && st.furn;
+  for (const k of LAYOUT_KEYS) {
+    const on = k === st.layout;
+    LG[k].parts.visible = on; LG[k].furn.visible = on && furn;
+    LG[k].capP.visible = on && doll; LG[k].capF.visible = on && doll && furn;
+  }
+  commonFurn.visible = furn; capCommon.visible = furn && doll; capGrp.visible = doll;
+  ceilGrp.visible = !doll; above.visible = !doll;
+  for (const f of mainFloors) f.material = furn ? M.wood : M.screed;
+}
+function drawLayoutButtons() {
+  $('lays').innerHTML = LAYOUT_KEYS.map(k => `<button data-l="${k}" aria-pressed="${k === st.layout}">${LAYOUTS[k].name}<small>${LAYOUTS[k].sub}</small></button>`).join('');
+  $('lays').querySelectorAll('button').forEach(b => b.onclick = () => setLayout(b.dataset.l));
+  $('ldesc').textContent = LAYOUTS[st.layout].desc;
+}
+function applyLayout() {
+  setVis();
+  if (st.stop && !stopFor(st.stop)) st.stop = null;
+  buildBlockers(); buildRoomLabels(); drawLayoutButtons(); drawStops(); refreshPanel(); drawPlan();
+  windowTable(); roomTable(); compareTable();
+  lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true;
+}
+function setLayout(k) {
+  st.layout = k; applyLayout();
+  // stay on the same tour stop if the new plan has it (it may have moved)
+  if (st.stop && st.stop !== 'doll' && st.mode === 'walk') goStop(st.stop);
+}
+$('furn').addEventListener('change', e => { st.furn = e.target.checked; applyLayout(); });
+$('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuildTerrain(); seaTable(); windowTable(); compareTable(); lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true; });
+
+function hud() {
+  if (st.mode === 'walk') {
+    const az = ((cs.yaw % 360) + 360) % 360;
+    $('hud').innerHTML = `<span>${LAYOUTS[st.layout].name}</span><span>36/F · eye +${EYE_H.toFixed(1)} mPD</span><span>Facing ${Math.round(az)}° ${dirName(az)}</span>`;
+  } else $('hud').innerHTML = `<span>Flat 2 · 36/F · ${LAYOUTS[st.layout].name}</span><span>Walls cut at 1.3 m</span>`;
+}
+
+// ---------------- main loop ----------------
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix(); dirty = true; }
+new ResizeObserver(resize).observe(stage);
+let lastT = performance.now(), sightTimer = 0;
+function loop(t) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(.05, (t - lastT) / 1000); lastT = t;
+  if (st.mode === 'walk') {
+    if (glide) {
+      const f = Math.min(1, (t - glide.t0) / glide.ms), e = ease(f), a = glide.from, b = glide.to;
+      cs.x = a.x + (b.x - a.x) * e; cs.y = a.y + (b.y - a.y) * e; cs.yaw = a.yaw + (b.yaw - a.yaw) * e; cs.pitch = a.pitch + (b.pitch - a.pitch) * e;
+      if (f >= 1) { glide = null; updateSight(); updateLabelVisibility(); }
+      applyWalkCam(); dirty = true; updateCompassMarker();
+    }
+    if (keys.size) {
+      let fwd = 0, side = 0, turn = 0;
+      if (keys.has('w') || keys.has('arrowup')) fwd += 1;
+      if (keys.has('s') || keys.has('arrowdown')) fwd -= 1;
+      if (keys.has('a')) side -= 1; if (keys.has('d')) side += 1;
+      if (keys.has('arrowleft')) turn -= 1; if (keys.has('arrowright')) turn += 1;
+      cs.yaw += turn * 75 * dt;
+      const a = cs.yaw * Math.PI / 180, sp = 1.5 * dt;
+      const nx = cs.x + (Math.sin(a) * fwd + Math.cos(a) * side) * sp, ny = cs.y + (Math.cos(a) * fwd - Math.sin(a) * side) * sp;
+      if (walkable(nx, ny)) { cs.x = nx; cs.y = ny; } else if (walkable(nx, cs.y)) cs.x = nx; else if (walkable(cs.x, ny)) cs.y = ny;
+      glide = null; st.stop = null; applyWalkCam(); dirty = true; updateCompassMarker();
+      if ((sightTimer += dt) > .15) { sightTimer = 0; updateSight(); updateLabelVisibility(); refreshPanel(); }
+    }
+  }
+  if (dirty) { dirty = false; renderer.render(scene, cam); placeLabels(); hud(); }
+}
+
+// ---------------- start ----------------
+seaTable();
+rebuildTerrain();
+buildShell();
+buildFurniture();
+applyLayout();
+setMode('doll');
+cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update();
+goStop('doll');
+resize();
+$('loading').hidden = true;
+requestAnimationFrame(loop);
+window.__tour = { st, cs, goStop, setLayout, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT };
+})();
+</script>
