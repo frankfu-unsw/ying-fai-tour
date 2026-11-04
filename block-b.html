@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="What Ying Fai Court Block B flats 9 and 10 can see from every floor: sea and hills, in 3D.">
+<title>Ying Fai B9 &amp; B10 Views</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: survey-sheet tool. 3D scene fills the left, a control column on the right; stacks on phones. */
+:root {
+  --paper: #f2f3ee;
+  --panel: #fbfbf8;
+  --ink: #1d2a33;
+  --ink-2: #51606a;
+  --rule: #d6d9d0;
+  --sea: #1f7aa3;
+  --sea-soft: #9fcbe0;
+  --bay: #0b5a7d;
+  --ridge: #9a7b55;
+  --chip: #e7eae2;
+  --mark: #c2512b;
+  --fin: #d4831f;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --ridge: #c4a37a; --chip: #22303a; --mark: #ef8a63; --fin: #f0a54a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --ridge: #c4a37a; --chip: #22303a; --mark: #ef8a63; --fin: #f0a54a; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 360px; height: 100%; }
+.stage { position: relative; min-width: 0; min-height: 320px; background: #cfe0e8; overflow: hidden; }
+#gl { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#gl:active { cursor: grabbing; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.lbl { position: absolute; transform: translate(-50%, -100%); font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #13232c; background: rgba(255,255,255,.78); padding: 1px 6px; border-radius: 2px; white-space: nowrap; }
+.lbl.sea { color: #0b4a68; }
+.lbl.blk { background: #13232c; color: #fff; }
+.lbl.hid { opacity: .6; font-weight: 500; }
+.hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.hud span { font-family: var(--f-data); font-size: 12px; background: rgba(19,35,44,.82); color: #eef4f6; padding: 3px 8px; border-radius: 2px; }
+.hint { position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: #13232c; background: rgba(255,255,255,.72); padding: 2px 8px; border-radius: 2px; pointer-events: none; }
+.side { background: var(--panel); border-left: 1px solid var(--rule); overflow-y: auto; padding-block: 18px 28px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-family: var(--f-display); font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1.02; margin: 2px 0 0; text-wrap: balance; letter-spacing: .01em; }
+.sub { color: var(--ink-2); font-size: 14px; margin-top: 6px; }
+.ctl { display: flex; flex-direction: column; gap: 8px; }
+.ctl label.t { font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.seg button { font: 600 14px/1.2 var(--f-body); color: var(--ink); background: transparent; border: 0; padding: 8px 6px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg button:focus-visible, input:focus-visible, .floorrow:focus-visible, summary:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.floorline { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.floorval { font-family: var(--f-display); font-weight: 700; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.floorval small { font-size: 18px; color: var(--ink-2); font-weight: 600; margin-left: 4px; }
+.mpd { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); text-align: right; }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; accent-color: var(--ink); }
+.read { border-top: 1px solid var(--rule); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.verdict { font-family: var(--f-display); font-weight: 600; font-size: 22px; line-height: 1.15; }
+.verdict b { color: var(--sea); }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
+.facts dt { color: var(--ink-2); }
+.facts dd { margin: 0; font-family: var(--f-data); font-size: 13px; font-variant-numeric: tabular-nums; }
+.compass svg { width: 100%; height: auto; display: block; }
+.chart { display: flex; flex-direction: column; gap: 6px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 12px; height: 8px; margin-right: 5px; vertical-align: middle; }
+.rows { display: flex; flex-direction: column-reverse; gap: 1px; }
+.floorrow { display: grid; grid-template-columns: 30px 1fr 34px; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 11px; color: var(--ink-2); cursor: pointer; border-radius: 2px; padding: 0 2px; }
+.floorrow:hover { background: var(--chip); }
+.floorrow.on { background: var(--chip); color: var(--ink); font-weight: 500; }
+.floorrow .bar { position: relative; height: 9px; background: transparent; }
+.floorrow .bar span { position: absolute; left: 0; top: 0; bottom: 0; }
+.floorrow .bar .all { background: var(--sea-soft); }
+.floorrow .bar .nb { background: var(--bay); }
+.floorrow .bar .lost, .legend i.finsw { background: repeating-linear-gradient(135deg, var(--fin) 0 2px, transparent 2px 4px); }
+.note { margin: 0; font-size: 13px; color: var(--ink-2); }
+.note b { color: var(--fin); font-weight: 600; }
+.floorrow .n { text-align: right; font-variant-numeric: tabular-nums; }
+.floorrow .pm { position: absolute; right: 0; top: -1px; font-size: 10px; color: var(--mark); }
+details { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2); }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: var(--ink); }
+details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-data); font-size: 13px; color: #13232c; }
+@media (max-width: 820px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 62vh; min-height: 340px; }
+  .side { border-left: 0; border-top: 1px solid var(--rule); overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* links between the three pages */
+.site { display: flex; border-bottom: 1px solid var(--rule); margin: -6px 0 -4px; }
+.site a { flex: 1; text-align: center; text-decoration: none; color: var(--ink-2); font: 600 13.5px/1.15 var(--f-body); padding: 6px 4px 8px; border-bottom: 2px solid transparent; margin-bottom: -1px; text-wrap: balance; }
+.site a small { display: block; font-weight: 400; font-size: 11px; margin-top: 2px; }
+.site a:hover { color: var(--ink); }
+.site a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.site a:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="stage" id="stage">
+    <canvas id="gl" aria-label="3D model of the hills and sea east of Ying Fai Court Block B"></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="hud" id="hud"></div>
+    <div class="hint" id="hint">Drag to look around</div>
+    <div class="loading" id="loading">Building terrain…</div>
+  </div>
+
+  <aside class="side">
+    <nav class="site" aria-label="Ying Fai Court pages"><a href="index.html">Flat 2 tour<small>A2 on 36/F, inside</small></a><a href="block-a.html">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" aria-current="page">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
+
+    <div>
+      <div class="eyebrow">Ying Fai Court · Block B</div>
+      <h1>What flats 9 and 10 see</h1>
+      <p class="sub">Sight lines from the east-facing living-room windows, tested against the hills between Ying Yip Road and Silverstrand Bay.</p>
+    </div>
+
+    <div class="ctl">
+      <label class="t" id="flatLbl">Flat</label>
+      <div class="seg" role="group" aria-labelledby="flatLbl">
+        <button id="fA2" aria-pressed="true">Flat 9 · north side</button>
+        <button id="fA3" aria-pressed="false">Flat 10 · south side</button>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="floorline">
+        <label class="t" for="floor">Floor</label>
+        <div class="mpd" id="mpd"></div>
+      </div>
+      <div class="floorline"><div class="floorval" id="floorVal">24<small>/F</small></div></div>
+      <input type="range" id="floor" min="3" max="38" step="1" value="24">
+    </div>
+
+    <div class="ctl">
+      <label class="t" id="viewLbl">View</label>
+      <div class="seg" role="group" aria-labelledby="viewLbl">
+        <button id="vWin" aria-pressed="true">From the window</button>
+        <button id="vMap" aria-pressed="false">Overview</button>
+      </div>
+      <label class="check"><input type="checkbox" id="trees"> <span>Add 10 m of tree cover on the hills (the terrain data is roughly bare ground)</span></label>
+    </div>
+
+    <div class="ctl">
+      <label class="t" id="standLbl">Where you stand in the living room</label>
+      <div class="seg" role="group" aria-labelledby="standLbl">
+        <button id="d05" aria-pressed="false">At the glass</button>
+        <button id="d15" aria-pressed="true">1.5 m back</button>
+        <button id="d30" aria-pressed="false">Sofa, 3 m back</button>
+      </div>
+      <p class="note" id="finNote"></p>
+    </div>
+
+    <section class="read" aria-live="polite">
+      <div class="verdict" id="verdict"></div>
+      <dl class="facts" id="facts"></dl>
+      <div class="compass" id="compass"></div>
+    </section>
+
+    <section class="chart">
+      <div class="eyebrow">Degrees of sea through the living-room window, by floor</div>
+      <div class="legend">
+        <span><i style="background:var(--bay)"></i>Silverstrand Bay (under 1.5 km)</span>
+        <span><i style="background:var(--sea-soft)"></i>Further out</span>
+      </div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <details>
+      <summary>How this was built</summary>
+      <ul>
+        <li>Flats 9 and 10 sit at the tip of Block B's east wing. Their living-room windows face east, like flats 2 and 3 in Block A. The Block B floor plan is drawn with north pointing right, so the windows sit at the bottom of that drawing.</li>
+        <li>The Block B plan shows no acoustic fins beside flats 9 and 10, so only the window frame limits the view.</li>
+        <li>Floor heights assume Block B matches Block A floor for floor: 2/F at +57.55 mPD and 2.75 m per floor, eye level 1.5 m above the floor. Block B's own cross-section was not available. If its floors sit a little lower, read each result about one floor higher.</li>
+        <li>The terrain is public SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Sea beyond 7 km east is assumed open. Dark blue patches in the overview mark the sea the chosen window can see.</li>
+        <li>Block positions come from the brochure's key plan, accurate to roughly 5 to 10 m. The side and bay windows of each flat are not modelled.</li>
+        <li>Village houses on the Silverstrand slope, the film studio buildings and trees are not modelled unless you tick the tree option. They matter most on the lower floors. Earth curvature is included.</li>
+      </ul>
+      </ul>
+    </details>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+const NEAR_TXT = `!COadfcccddfhlledddgcWZbSXYVROWXabbdiWpW~De~Ce~1
+!CRZddcdcedeglnfdadhdZdbQVVWTSVTabZeiicTidfe~Ce~2
+!CYWabdedddfgjqiYacihfeZMTVWWSUSacXffdeebbeefe~4
+!CbVZbdddddeikojZadilebZPSVWVOTUcbXcgfdbdbeefe~4
+!CbXaacdceddikmiedeijdZYRTVXTKRYbcaaffcbfYidefe~3
+!CbYaabededdgkkiihfhhaYXQVVWULTXcddZZddcefdedefe~2
+!CbXbacededcgimikhggfZaYSVVTXRSXcbaZXddbecchfeeee~1
+!CZYcbbedddefhllmgegeaacWVXVWOWcaZVZWeecbYajfddeee~0
+!CZZbbbecedefglmkhffecaZYXYWWRbcZYTYYdedcXXXnddcee~Igffe~n
+!CZaaacddeeeegmkiihdfeZWZZYXaddaZWSWYcedaUXYjccced~Igffe~n
+!CWZadddeeddeglkjigcefaYYaacdjfZYXXVWcabYRVYbhbbdd~Ig~Ce~m
+!CUYcgedceccegkljigeecbcYabddigaZaYYXYZYXPSYdgbadc~Hg~De~m
+!CZVeliZYcbbeelmjehfececXcecdigddbYcZUVXVLRYcRqZcc~Hg~De~m
+!CiZejfWWabcccmnicggdggaXdfdeghffdbaYWWWUIUZZfXXbc~Hg~De~m
+!CucgeZTVZbcaclmicfgfifcacfedgigfhcXWZXTTMWZUDrZbc~Hg~Ce~n
+!C5egeYUQXZZadhkk~CggfggdeceihcehcaSZZPRRXXNYZZcc~Hg~Ce~n
+!DAffebUOWWWaeeinheggegjjeceegfcdeeaSYYORRUUNeZZcd~Hg~De~m
+!DEfdffUPWVUZbdhmjgggghkjedefbdecdccSVXQQORQUhZadd~Hg~De~m
+!C/gdhgXSWVVZYbhligggikjieegeadecbbcSTWPNOSTWgaade~Hg~De~m
+!C4gfghbWXWVXXciiffghkljhfghecfdaZaaRRVNMMWXUhabd~Ig~De~m
+!CxcehjeaaYSVZdhffehjnkijgggghfcbYSWOQTNRPXVTjbcd~Jgffe~n
+!CqbfgihccYSWbcfiffhlojiigegihedcVKVPPTOVTVWWfbce~Kge~o
+!ChbdfkifebUZaafihgkmnhggfegigecaQLWOPSRWWXYUecdd~1
+!CTWbhmkiggdbbYdghkqkieefgeeigcZVRRTIRTSYZZZYXjcee~0
+!CNRafomjhhhgbYdghkpkeeeggeghebVUUROIRVUaaZacaeeeeffe~x
+!B/OZhnlnlgjkhceedjph~CegggfaWWVSOONUWWbcbbcddddeefefe~v
+!B0MYimlpnkllkfdcciohghefefedXVYWTKURWWWbddcaeSmdeeeeee~v
+!BnObfkmrmmomjjfbdgjikhfedacbYYWXWPVUXWXbddccbXfddeedee~v
+!BZTZdjlullqllpjedefhkhgdaYZabcYZYRXXYZYbbccbcaUgcedded~v
+!BSSYdhnwokommokkfdefhihaYXcbcdbcaUVXZYXbZccbcfVModdddee~u
+!BLSaZdpzojmqnnnohedeehfbYdfdZbbfeYUTYXVbadcbdeXTQocddde~u
+!BJSZWZq0mjnqonpsifeddggdcgfcZbbecXWSYYWdccbYcdXVZcccddd~u
+!BFTWXcqtmkrnnopvlifbegieffddcgbYZWXTZYXcceaWdbVZEqdbddee~Ggffe~i
+!A+QYckmlilvoornvrpcadgihhgcehgYWXWZTYYVbdfbZeYQYTZbbdcee~Ggffe~i
+!A6NdimihgkupqsowtqebafjkkhchheVYYVYSVWWcegdZdYNTSbbbcdde~Gg~Ce~h
+!AzTgqhedimpoott!CVrifcdefimmggfdYWWUVTXUYfedbZdYKSRbbbccde~Gg~Ce~h
+!AyYkjdgcjkqpntt+wkldbccfkpi~CaUVQUWZWZdddZYdYLT!ABpiaccde~Gg~Ce~h
+!Axajigecfkpppxu6unogZZdbhokihgYWWQUWZYXcdbXYcXMUNZjaccde~Gg~Ce~h
+!Avafigecgkppqyx3ojpmcccYbjnnmkbWXWQTYXXaZWXZaWRVRZkabcde~Gg~Ce~h
+!Arbacfiijlooswu1pioojbaVaioopngaYURQVXVZWVXYZYSXQYnZccde~Gg~Ce~h
+!AlcXadjqklplovtyokvriaYTdkllpnjfdUVMSWVZTVXXXVWYRbmaccde~Fg~Ce~i
+!AidZZciqkkqklyutmm1reZYTdllkmmnhcYXLSYWXRVYVWWWZJwbaccde~Fg~Ce~i
++dabdgnjlpmnzoomp3qdYXUclnlmkmjdbXNUZWWRWYUWXVZWjaaccee~Eg~De~i
+6bafhffjmqoptlmnt3oYWYZeijmplmjhbZQXaWXUWVTXWTXXiaadcee~Eg~De~i
+5aZgieeintomolpqr3qRVZbffhlslojihbRYaXYVVUQWXTWWhaaddd~Gg~Ce~i
+6Zafgdfhoukkupqow2fQVWVeegmrnpjlofWZZZZWVROXXSXWbbadde~u
+5ZcfedfjlsmqznoqwucUUSRadhmrmonmoiadbZaVUQQYVTYUYbbcd~v
+2XggeeeilqqxwkptunfYRQNXbilnjrqmnmgedYZUSSSZWWY!ABqbbdd~v
+vbkgdeehkvuxrkqqppmZRQMPWjjihrqnokligZXQSVWZaaZSQYcdd~v
+sfkfbehhmwtrppsknwoaSTJLSfjihnopoilljbVORXZbcacVPUbde~Xg~Ie~M
+ubhgcejjmunoutqlr2lXURJNPbffjmlmrlkjkdTLTZYcgedZOScdd~Vg~Le~L
+2Ueheffinumoyqmmw5kWTRJOQaccklhhrplhkeTNWZYdhfbVQZbdd~Vg~Me~K
+/Qdfhecfowmmwpjkx/mYTPKPQYachjfhnooikeURYaaeebZBpccdde~Ug~Le~L
+9ahdgcYdnwmlrpnis!CDudPPMSOVXaehhkimpkjcZUYaZdbZYXgcbddee~Gg~Ce~h
+4klfYZZdmsnooosfp!CAyfQQMPRTTYefjjjmnkjdbXXXXcbYZcjbbddefeeffgfg~Ceffe~f
+6koiNZcbhrqnpoqgo!B5zhXRJPQPSbffhhllnjjgfbXVTabVZXnXnddeee~Dg~Defee~f
+3jslSTWYfumlrppkkzzscTJSMPUffggghmqlijjebXOWYTZcehifdeee~Dgffefeeeee~e
+wjwubQJXksjjrnqkjtwxeUNQOQWcffhgilrmikigdYPWZRYaeemgcfee~Geeedeee~e
+xdrumWKZnradlmqkjpw0hYPPOTUYgfghklslhjkleaTXaSYVcfgfddeggi~Cefdededde~Tge~I
+0flkedbgmkTahnqllns2laORQSTYggdgllulhmnneaVZZVZWadddcdefgVpffglOocdded~Qgfgfefe~G
+yjhcemmfiWUcikrmmqrwlcTTOSVWfedfjlwnkpqnfaWZYVcZabbcbcdhgfgdbeiXggdced~Nggfg~Cefee~F
+wgZelnqhcZWediqmkoqumhWROUUVe~CijtrpoooidXaaWZbbbYcccdijjfcbdbYedccdd~Fggffgfggfg~Dcfhedefe~C
+vbYjpjnkcdfcWeqklokoqnYRPVUVdghggjrppqnohdbccYYYcaZcddfkkifccccaXbabdee~Cgggggggfgggecefgjeddeeefefe
+wachnfqmebeaZahmqsgmspYSQVUWefgghkpqpnklfdegfdYXcccecdhlifebbddYVYUjceeffhghhhhghggfgPsfgggdbVkfeeeef
+zebfljojfZacbaelnuomokZTQWWYdegfhkptpjgifdgjifbYddfecdhkfeccZcbaXVdbdeefgghjhihhhggghcegfdebaYjgeeeee
+2ecenkgghaYbgdgiitolljbVRXYZcegggjrsmhefeeknkgcaffgfcdghdedbYaaaaVbcdeefhhhjijhaijjF!Aiaefcacbabcngeeee
+1ebcnfchmcXckkideonmjjdYUYZXbehfgionl~CehnolhfehhhhfedbcccdYZYbaVRoefaghiikdQf1lkklgaccVZccbdeaojdZi
+yebeifchlgYclrnbYlmkiibbWYYZcfjgdfkjlgfhhiomjiiihijjgddbaZddZaXYaWaffcdghhiRwjkkmlkifbbZTbdcdgfYWsSfp
+weefedffhdeenunVaijjhgdcYXbbdiklacejheejmkmkfinmjiohgedbZZcdbcWWWYaYZfiiilmkjmkklkhfdYaaaeeeefdadeccd
+ufefddfegdgglmkaZglnidbfZadbdjkjediegdagmlmifinpkkniheebZZcdccWUWaZWcfjipklplmmkjhfZdXacehfefccbffcaX
+ueegecffegfgmlkbVguxhZRacdcZdklhffgcddbekkmigknnlmpjhgcbaYcccdWUXaaYfhijrlkplomliecZcWbehiheebabdfbaX
+tefgfeefdhghpkmSUot2jUTYVeeWlfjieeheYXefiiliillnlstigeeZZYcdccXVXbccfjnklmnomnljhecbdXcghiifcaaZacdaY
+sffg~CeefhiqmbPfqk2lWZXVebZfdkjgegeYYehhhjigilqpusggffZZXdeedVUXadchkqkjlnrmmkhgedcebdefhigeZbaababW
+rffgggedgffgjkbcjjespfUTbhdfefkgcefeZahghihhfflssvohihfbaYceecWWYccchknllmosmnhgeeccfgecbgigdbdabcZZV
+sdegifefgfehhgdjncZiniSXilcfgfjgadddbeghhhiiefnrqspjkgfcbaadccabbdcbgilloonomogffdebeifbaegedcdbcdbXX
+rdfghgefgdgjibelmfYcliUbnjZekdhhbcaddefjigkheiopnopklhfcddZbbccgfccbfhjlqqokllggfedcfhecZeedcbeccebaZ
+qdefhhffeehjfcehkobckeZdlfagjdchceacegemkihedopokjmllhhdfgaabeehhdbaehhkqrrnhighdeegieYbbddbbacdddeda
+odeggghfefjgdeehhkfjgabghfefhecedgcbgfemkihdfppqlklhhihgfhcbefehicYaehgkqqrokifgddekhaXYcfbcbYbcdefdb
+obhhhdfghiiceefgfeikfdfeeefghgbagfcfhecikifehnouopnefgfigehghfegiZZcffhkqmlrnjhgefdgdXXacdcddZZYcffdc
+odhifcfgilhcedffeejhbfliddfigdZaiedihdcijebfikmurqrhefgfgeijjighgZabefilqkiqokgifgebbUXbbddfeaZXbefcb
+oehiceghilhfbeeheclgYcnphZfhfaXdhffiieiieaVehkkusqvkggfdfehknkjihYabcelmpjhnnmiifedbZRXcbcefebaZbcebb
+oggccikhfghfefkphYhfTTksjdjhdWZgjffijklhXWUdehlrsswpihgecdgjqnmkhaZadfjpnhhlnnkhdcbaXRYecacedcdbaaebc
+ogebgjjgeedgiirthThgPOhlkomjaRdkjafkmmfYYZZcdgkrrtvqlhgebcfjpnnnkaYagfinpkimkmigfcaYWTaeaZadcddaZaded
+miedhihegedhjissgXfWUZedoqhkaZhodVgmkiWPbfeecflrpqyrphfebadjpknpkbYciiilqpmpmhgefabZVWaaXZZabadZYadfc
+ogfeghfeghejkijpofUQdjfYllcnrcdiaYgniVSVdgihdejmmqyrqjfecbdhokkmkdaejjkmqpopphgfcbZbWVaYTaYZZYbZaaedY
+qffeggeeghgjmhdirmQTonieXXds2gYWcejjaNUdghmiffegkptrslhddddgmjhijhdfikonqomppmggdaadVTZWRbVXYXbbbbdbX
+qffehgeffefiigdchnYf0vexGJZnvrcVkhfWQSdiikojjjcbiikmuojgefcdjjhfhkgfjmqpqmlprnijfcdWTPYWOXVWYYdedddcZ
+offghgdedfiiheccggdou1nvQ!AgPooliilcSRVYgjjnrkmleaefchsqliffdchjhehkhgimrsukmqpnlkiebPRNXWNWVYZYeggfedY
+meghifcdelkhdccdfinkauwpYGVpfinldXNVbfhlmprllqhabgabilmkggeegihfgjggimvtxmlrmpmkkeWORMWTMXYabaekjdccY
+lefijfedepkdbbbggjnnhcZfcfghenlfYXVbcilomnollrkcbeeZbhkighgfgijihdfgimwvvmltmnlklcWQSLTSOZZedagjgeddX
+kehijefcfnlaaadnkcmuhTRdfghijliaUbdfflnqmlnkipmhccdbaffegiggjjnmiXcfgmxwvlltmlkkjcXRSMPSVacgdcgfehfcY
+`;
+const FAR_TXT = `!BnObbbabcYbRMUckifXdefgfpqeRbbffge~GgefflgzmFeYfgfefgfijcfhfgifhgbdjpZTce~DgflZgdffgf
+!BqJWdgdVYYXUUaXejhZde~CnxhGgbefge~Ggefijh0nKPe~EgfgjffghchjhgdbkmcTafeffgffjbfeffgf
+!BtIOZjoXXUSTdZVgcfde~DhvpQXbdfge~GgefiiyvXSQcd~EgiefhjhefmgcedjjeWXee~EjhZ~Che
+!BpKPRblnfUQVfWaaYe~CgefhlvYSaffge~GgefhmyuSQXcdee~CgffhgkjffhhffdgjmeXRce~Digb~Cgt
+!BkMNQWfjkhaaWUaVcdfge~CiiqgTbdfge~GgefhkzsTQZbgdd~DgffikjehjgfbfeimiZMfdfge~Fhey
+!BgLQQYZfjtnaMLXaee~GkshRcc~JgeffjnxWUfZheafge~CgjlieilgiafcheZbaddfgefgeffhigs
+!BbPPQUbhjppbLMYbe~DgfefjskTacd~Mhhjkabegbffge~DgmmhkjigbdcefWVffe~Dgeffgjvl
+!BcNOPPdgipmZMScde~GgjvnYUWd~OiirXZfbffgegeffgpmjiknhbUYfiaWad~Egeffjmqm
+!BUOSVQOiomjXFhed~HikwibdPae~JgeffhjqgWeXffgegeffikmkgqqoWTWacbWfeffg~Ceffidsn
+!BFSVbURVljrVNgee~GijqpZYeWbgfee~KgitvRSYffge~DgjiiqopoZbXUXXbfe~Ighdr
+!A0WcbXZTajpaS~Ce~CgfgiosdTZhdigacde~HgffhrwWRWffge~CgfidjsnkrkfRTYaVfgfee~Hgf
+!ApWeeWYZbejfZicfeffggggktmURfilohWUbe~HgefhmzeLXffge~CgfnaglhotviNRWabecffe~Hgf
+/UbibXcdegeeideeffghlgjsgPWjohneTVc~MirlRZe~FgfunaTfptwfYWVXcZlhTfheee~Eg
+2YZgeaceffhfheceffgikdfkfXeoqldTUdd~Mgikcafe~FgjsobWduvucQQeZXdncXbfgd~F
+tadfhaedfghciedeffghhdffeeisupZJSefge~LgfgfeeffgeffgjnrvdNez0iNShbRXlnUekQe~F
+nbfghddfee~CggdeffggfeefhmstuVNPYfge~Mghfed~EidzslonMUrzlSfgUQRfrjacSYe~E
+kefdgfee~Fhgeeee~DgfkqvvTSRVfge~Mhkbed~DgfyxtmijSSlnoimcSQLbhndURe~F
+kfedffe~Dgegjfjcbc~CgefimvsRMaefge~LgimWee~CgfryypjhcWTpmgtseQQOSXefSbe~F
+leedgeekedeifdkikcWddffgefiismGggcfge~Lgffgee~Chiu1wmkkYeWameotncVNPRQeYZe~F
+ocegddhlcdkliUkqgaTacggeefhjmoRZd~Sge~Dhe6tpsrsUcfZfdblqonOPLDcfSe~F
+uccfccikhcwlUSkqjYUUfigecffikjUfe~VgefggypvxvtUZabjlcXhppcUM!AVTjZZe~E
+3ecaYgeilcxlQankcUWajkcabffggffee~Zgixz2wpbaQcknodQchgeVGEZegfe~D
+!ArfYPbnYdlasmdemjbLTcjlfUb~fgegfyyx0nYYaahopkXRNbjhRGVefge~D
+!A2fVKcocffctolcmbTQSYihWhc~fgefguyzueZalZYoomeZGPgfeTQe~G
+!A8TVSiojbeZoupZeXUTTYfZffe~fgefhe5xrfSmjOenrqiYKNUcdXfe~G
+!A5OZgnlkeeWiykUafcVUUTZfe~ggeffgf20aYsZGksuopbeHLQde~I
+!A3XjegislZUcucZcomaRNEYe~lherrcptMIjuurlgoYMGRe~I
+!BCbhfcgqqZRYnmbalocML!ABgdffge~hggeka7wJIff2rphphVJEgdffge~D
+!BVZdjeekhWYUpphZScXQQLgdffge~hgeffmZ6LbbjczmlngkU!ABhcffge~D
+!BeYiohahdUWTkolZMLTWbSgd~pidffgdfgkatlkhcLcdffge~D
+!BlZnuiefUVTPbjhaSGPYgade~qhffd~ChfeihhfYfe~H
+!B2ZlvqjgVMJJVbfbTISfacdfe~mgfe~Dgfegffgigebhde~G
+!B6dlt1ucSMB!BQUZddXJfcVXYfe~ugffggmrmeOVfe~G
+!B4jou5zdJHBBTcZdabcVSRSgee~ogffefgfnnelvqjJSOfe~F
+!B7imv31pCFBGRXXbefYbUOLhdffe~mgfeffgfrvnjpqnHOPTeffgeff
+!B9ojnwwwVDAHOQaagjcYRLJjbffe~rgqovtpqoiHIKQeffgffg
+!CDohgmspvQBDIPWbfledOKQZcbe~she2wtuusbHIMLX~Cghd
+!B+wfackpwmL!B3HNXbemiaRMTVZYgd~rgfu0ytrqiMKHJV~Cgfr
+!B9pecNgmuuiABNZcclibWaZSVHjaffgfe~nid7yznrqTEKORYhcgfs
+!BzdfdTWlwtxLINcTZkgfadgYQKMfefgfe~oht01vnoZINdTRPgefm
+!BfaZglOiuywcQSdOSfjhidcZMIQZffgfe~Uge~OgefirtysjplOTkbU!AGdcfg
+!BRRYglYgvuurSOebRbhmjhaPGKUc~Zge~OgefgwrojhqxaSpmMFJaeg
+!A7SZgkcjr0rpbHYmealkfgUIHUVfe~Tggfee~TidsjlnrygbnqGCNadf
+!A3IaifekyxipcFUsqigjeYSLPZThde~ShjhZdffgfe~OheimsrsmhgfpQ!ATVWff
+!BCDPbgjh1klpcFSussjfbaaTRYZOgd~OgeffjorTVde~OgeffhnstpofiZXsaBPYff
+!BILIQdhkxamqhKVnuxucjfYRQaYDhbffge~KgeffgxrZSUgd~Cge~Igeffhf4usgWkcRke!AHdbef
+!BNNFPWgknaipjWffr41dfmYNRZVDeaffge~KgeffgtokaXQhcffge~Nku1oWcclOaYThdef
+!BOEHPcddhijgfjZls1zkXqlRLQRIjaffge~KgfefgqqlohMLjcd~Pip3PVgcuYPideeff
+!BBKKSdbeliqcadbitu1fYopbQQOQabffge~OgrmkpoZOLib~PgjbmYffoWfe~E
+!A2QUUZddijindUbguy0WOkspbPNJbd~SgfqmnpnfMGe~Qggdffhefe~F
+!A0VcSUYbiijfebdhvx0cEYmrkMXXRd~Fg~Ce~IgpqjmriKHc~f
+!A1ShVaQaqvQWiheasu2jFOgnmUWPhdefge~Qgn1cigIXe~f
+!A5RgWVPjcmpcSfpRmsvuJLfmqeQSbfhgede~PhefomdZXe~Rg~Ceffgfe~D
+!BBSWWTVkXetvIahjbhuwRKdmvnWTZaakYgd~Dhefe~Ihggciede~f
+!A/WUaXWeifWbhcendaqsZNdkwjgaadiaYTfgiiYmeZhdffe~s
+!A9ZVXdXdlrJPigehekhnbTehmhokjgaYVR~CwlaXbZ~De~r
+!BCcfXVXkmhLIdgfdgmdrWYigcgmpriYZTWgprocYgcaXZYgd~Dgfefgfe~g
+!BLifXSTjfgTGYffgfihlZcgfagjoxjaaWZlrsicedcZWZRaefgefg~Ee~g
+!BVidVWYdXfUHVfehgfigdffcdjisqjgbfbgtqgfZaZabZXNefge~o
+!BclXZSiZPUTPacfgjegeigbeifaqykfllZgpqjaTZbZadWIe~r
+!BiiWcSdcPWNVYZehglnWdmgciUekzrdiqdksrfXTTXXaZWRefge~o
+!BtgWdTZcQUMRVbffghfosOpdQhqihqifjirvtnTLNVeZTYZeefe~o
+!BzmPfYbXKOMVRchfibkkZhjYgrpocbhindsztmRHTdgZSWOfgd~Dg~Ce~g
+!B5bLcnoNDMOURfmbdfegfggpivnkbZfhrclvtlTMcijVPVaYPfefge~l
+!B2WNZosUBHONakigebdfgfrpjoshcXcimiosqjYPVlkSTbWQQfefge~l
+!B0QQVovWCFKThhhgiYdegiqtmwjeaaZhmlwsnfaMQbecbXPVYbe~Cggfefe~f
+!BxHNamgYQNHdgcegjaeelikvvuiaZaacksxuthZHJWeiVUbZMe~CgiiZffgfeffe~a
+!BkQKXbfXTQUgdefghdcgjkdsv0oPUgehmtwtrpTILWcdXcZFeaffg~DiclgYe~c
+!BaRKOPhbYdddddefhefehkhiy0oTUefhoyvpsrNQPSadaXMNhdegffzxhKXcaceffge~Y
+!BWPJGUdddmWibefehghfcghhx0oaVcfhtwrkxqVRMQebWNKagefhd2luYSfcSXeffgfe~X
+!BNQJFbclaceeffefjkjYceghptscceehmpvrxtZQINefOLUhdcfiomnviVejUDfgd~a
+!BFQHNccfdeegegehihececijmmskcdfdfoz2zpVNMKUeTXbeabfforlwqZgnXQJSe~a
+!A+NGZbbdeffheffghfegddjinlhpefechu1v5fNQNNRZhhaVXdffmvnwtiglfSF!ABfgdffge~U
+!AsNUcfZagfe~Cgggffedflknhimicdfjwyu3hFOSUSZmiYQYicfhsosuuknkOCSAfgd~X
+!ApbdOZZbfgdgefgggeffhehonhifibekkqwz4jLWSQLemcVSbjedgnhntxwsiONRU!ABfgd~W
+!A5kWWVXQYed~Dghegehhhonigfdbdmksww30dKMHPcmbSVcjfgmqfakvxylWTSRP!ABfe~W
+!BRdRVcRYUcTb~Cgffegjkilndffhcbglv0v34lKGMQUhiUSalkponfXesrsphQSSPSCfe~V
+!BpTRfZJVUgHZ~GgkjmigedjifZhqvtt59vMHQOKZjXSWmrvtkiUZtknmjVSSNPPTfe~U
+!BvRWhWMMPRUe~GhkjlgZhelkbbohuwz183bDKLKXdVTbouovvjRWoonmkTQUPUV!ACfdffge~Q
+!BpRVXeXJMTV~Hhkiiddgcgiaihf43zu31nIJMKYcUVeosqmxrXVpqslbFLRSRWHhcffge~Q
+!BhNTUiZL!AB~Jgjhfedefgfehent5xwwqsjQMIUdWWemntrnrfgmrpdPJLKJNSfgd~U
+!BbOKXfW!ABka~Jghfd~CgghefvwttqrtvugKKPYXXekpwrgnqgkjfVQILNRNXeffge~S
+!BKYQOVH~Ogefgfgfhehw4sonowqs0VCJSWTgrxpmicbhmngQPRZYRJKeffge~S
+!A+VWQEfge~Mhfdgffggdky1pkmrwouxbHGLTYipupkcZWhsvtUWWaYOD!ABeffge~S
+!A9QPaH~Pg~Cegfgfnwsjoomqt2mcILONaqpliggVamvwskRUXbT!AgCcffge~S
+!AxPPP~Rg~Cg~Ckqmnqnnmt5lYMNPMZvtabdjZhornneSLabeFReffge~S
+!AnPJ~Ugefhgehojoqqjov7nXKNLJZtpXdelhjjkkmcT!ABrcWfhc~W
+9Cjb~Tgefigfennjopju40gRMPOGUknceiqhlklgcYMLlceeee~W
+gka~Wgh~Cmpminqz3hTQRUTAficfksofulbaTEffe~b
+gge~VhfgegfhrtsppzhRRPTUMjaffgwqebwnaTAfe~d
+g~Xheffhfk2wswngRKOTTUhcffgftlabtqdTNa~e
+g~Wggeehgfnz2zmhcTINSWae~CgicffjbwfWYdfgegfe~Y
+g~VggeffgiftxrmfltiIMNUYd~Cgfgffgdffgeefg~Ce~Y
+g~VgfggchigyigjhwxrRQLNQhdffe~Igfe~d
+g~XhfdifgsZfnny2wcPHJVaZfe~q
+g~Wggfggffibhmpuy0jaGEHgeffe~p
+g~Whfgfihchfdhkhv3wcJ!AKdYeg~Ie~h
+g~Tgeiffgdhhgjdegeekv4iSBWafgfe~p
+g~TgqjTeicfhljfdcdhfi8rPKOe~Jggefe~e
+g~ThpoWXgdfinifgaffcn6pPMLe~Ighgede~e
+g~SiiprdPYeflmjhdeddjyrkWSOQfkdfeeeehefndZe~e
+`;
+const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+const IDX = {}; for (let i = 0; i < A.length; i++) IDX[A[i]] = i;
+function decode(txt, nx, qm) {
+  const rows = txt.split('\n').filter(r => r.length);
+  const out = new Float32Array(rows.length * nx);
+  rows.forEach((r, j) => {
+    let prev = 0, k = 0, i = 0;
+    while (i < r.length) {
+      const c = r[i];
+      if (c === '~') { const n = IDX[r[i + 1]] + 1; for (let t = 0; t < n; t++) out[j * nx + k++] = prev * qm; i += 2; }
+      else if (c === '!') { const v = IDX[r[i + 1]] * 64 + IDX[r[i + 2]]; out[j * nx + k++] = v * qm; prev = v; i += 3; }
+      else { const v = prev + IDX[c] - 31; out[j * nx + k++] = v * qm; prev = v; i += 1; }
+    }
+  });
+  return { nx, ny: rows.length, z: out };
+}
+// grids in local metres: x east, y north, origin = tip of Block A east wing
+const NEAR = Object.assign(decode(NEAR_TXT, 101, 1), { x0: -800, y1: 1500, s: 30 });
+const FAR = Object.assign(decode(FAR_TXT, 91, 2), { x0: -2000, y1: 5000, s: 100 });
+// The elevation data has 1-2 m of noise over the sea. In Port Shelter, low cells with no
+// ground above 4 m nearby are sea; Tseung Kwan O's flat reclaimed land is left alone.
+function reclass(g) {
+  const out = g.z.slice();
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const x = g.x0 + i * g.s, y = g.y1 - j * g.s, v = g.z[j * g.nx + i];
+    if (x <= 400 || y <= -1300 || v === 0 || v > 2) continue;
+    let ok = true;
+    for (let dj = -2; dj <= 2 && ok; dj++) for (let di = -2; di <= 2; di++) {
+      const jj = j + dj, ii = i + di;
+      if (jj >= 0 && jj < g.ny && ii >= 0 && ii < g.nx && g.z[jj * g.nx + ii] > 4) { ok = false; break; }
+    }
+    if (ok) out[j * g.nx + i] = 0;
+  }
+  g.z = out;
+}
+reclass(NEAR); reclass(FAR);
+
+function samp(g, x, y) {
+  const fx = (x - g.x0) / g.s, fy = (g.y1 - y) / g.s;
+  const i = Math.floor(fx), j = Math.floor(fy);
+  if (i < 0 || j < 0 || i >= g.nx - 1 || j >= g.ny - 1) return null;
+  const tx = fx - i, ty = fy - j, z = g.z, nx = g.nx;
+  const a = z[j * nx + i], b = z[j * nx + i + 1], c = z[(j + 1) * nx + i], d = z[(j + 1) * nx + i + 1];
+  const wn = z[(j + (ty > .5 ? 1 : 0)) * nx + i + (tx > .5 ? 1 : 0)] === 0;
+  return [a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty, wn];
+}
+function elev(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y); }
+
+// Block B east-wing tip, from the key plan and the Block B typical floor plan
+const FLATS = { B9: { x: -22.6, y: -75.9, name: 'Flat 9' }, B10: { x: -22.6, y: -83.2, name: 'Flat 10' } };
+const F0 = 3, F1 = 38;
+const eyeH = F => 57.55 + (F - 2) * 2.75 + 1.5;
+const R = 6371000;
+
+// One ray: returns first visible water distance, horizon point and visible-water samples
+function ray(ox, oy, H, canopy, az, collect) {
+  const a = az * Math.PI / 180, sa = Math.sin(a), ca = Math.cos(a);
+  let maxT = -1e9, first = 0, hz = 0, hzE = 0; const pts = collect ? [] : null;
+  for (let d = 30; d <= 9000; d += (d < 1500 ? 10 : 25)) {
+    const r = elev(ox + sa * d, oy + ca * d); if (!r) break;
+    const w = r[1];
+    const e = (w ? 0 : r[0] + (d > 60 ? canopy : 0)) - d * d / (2 * R) * 0.87;
+    const t = (e - H) / d;
+    if (w && t >= maxT) { if (!first) first = d; if (pts) pts.push(d); }
+    if (t > maxT) { maxT = t; if (!w) { hz = d; hzE = e; } }
+  }
+  return { first, hz, hzE, pts };
+}
+// ---------- living-room window and acoustic fins (typical floor plan) ----------
+const WIN_HALF = 2.2625;      // glass 4.525 m wide
+const FIN_L = 1.5;            // fin projects about 1.5 m past the glass
+const FIN_Y = 2.4;            // fin's inner face, from the window centre line
+const SILL = 0.6, HEAD = 2.3, EYE = 1.5;
+const floorZ = F => 57.55 + (F - 2) * 2.75;
+const toDeg = r => r * 180 / Math.PI;
+const finOn = (flat, F) => false;   // no acoustic fins beside flats 9 and 10
+// azimuths seen through the window from d metres back: lo..hi without the fin, flo..fhi with it
+function aperture(flat, F, d) {
+  const ap = toDeg(Math.atan2(d, WIN_HALF)), cut = toDeg(Math.atan2(d + FIN_L, FIN_Y));
+  const A = { lo: ap, hi: 180 - ap, flo: ap, fhi: 180 - ap, cut, fin: finOn(flat, F) };
+  return A;
+}
+function counts(firsts, A) {
+  let all = 0, nb = 0, lost = 0;
+  for (let az = 0; az <= 200; az++) {
+    const f = firsts[az]; if (!f || az < A.lo || az > A.hi) continue;
+    if (az < A.flo || az > A.fhi) { lost++; continue; }
+    all++; if (f < 1500) nb++;
+  }
+  return { all, nb, lost };
+}
+const firstCache = {};
+function firstTable(flat, canopy) {   // first visible sea distance, per floor and azimuth
+  const key = flat + canopy; if (firstCache[key]) return firstCache[key];
+  const ox = FLATS[flat].x, oy = FLATS[flat].y, t = {};
+  for (let F = F0; F <= F1; F++) {
+    const a = new Float32Array(201), H = eyeH(F);
+    for (let az = 0; az <= 200; az++) a[az] = ray(ox, oy, H, canopy, az, false).first;
+    t[F] = a;
+  }
+  return (firstCache[key] = t);
+}
+
+// ---------- state ----------
+const st = { flat: 'B9', floor: 24, view: 'win', trees: false, yaw: 95, pitch: -6, d: 1.5 };
+const PRICE_JUMP = [];
+
+// ---------- three.js scene ----------
+const canvas = document.getElementById('gl');
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+const scene = new THREE.Scene();
+const SKY = new THREE.Color('#cfe0e8');
+scene.background = SKY;
+scene.fog = new THREE.Fog(SKY, 4000, 26000);
+const cam = new THREE.PerspectiveCamera(70, 1, 1, 60000);
+scene.add(new THREE.HemisphereLight(0xeaf3f7, 0x55634a, 0.75));
+const sun = new THREE.DirectionalLight(0xfff4e0, 0.75); sun.position.set(-3000, 4000, 2500); scene.add(sun);
+
+const P = (x, y, h) => new THREE.Vector3(x, h, -y); // local x east, y north -> three
+
+// sea
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(80000, 80000), new THREE.MeshLambertMaterial({ color: 0x3f86ab }));
+sea.rotation.x = -Math.PI / 2; sea.position.y = 0; scene.add(sea);
+
+function colorFor(h, out) {
+  const stops = [[-1, [0.78, 0.74, 0.60]], [6, [0.78, 0.74, 0.60]], [14, [0.47, 0.58, 0.38]], [80, [0.34, 0.48, 0.28]], [200, [0.40, 0.46, 0.30]], [330, [0.55, 0.52, 0.42]]];
+  for (let i = 1; i < stops.length; i++) {
+    if (h <= stops[i][0] || i === stops.length - 1) {
+      const [h0, c0] = stops[i - 1], [h1, c1] = stops[i]; const t = Math.max(0, Math.min(1, (h - h0) / (h1 - h0)));
+      out[0] = c0[0] + (c1[0] - c0[0]) * t; out[1] = c0[1] + (c1[1] - c0[1]) * t; out[2] = c0[2] + (c1[2] - c0[2]) * t; return;
+    }
+  }
+}
+function inNearInterior(x, y) { return x > NEAR.x0 + NEAR.s && x < NEAR.x0 + (NEAR.nx - 2) * NEAR.s && y < NEAR.y1 - NEAR.s && y > NEAR.y1 - (NEAR.ny - 2) * NEAR.s; }
+function buildMesh(g, isFar, canopy) {
+  const n = g.nx * g.ny, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = [0, 0, 0];
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s;
+    let h = g.z[k];
+    if (isFar && inNearInterior(x, y)) { const r = samp(NEAR, x, y); if (r) h = r[0]; h -= 4; }
+    let hv = h === 0 ? -4 : h;
+    if (canopy && h > 0 && Math.hypot(x + 30, y + 30) > 110) hv += canopy;
+    pos[k * 3] = x; pos[k * 3 + 1] = hv; pos[k * 3 + 2] = -y;
+    colorFor(h === 0 ? -1 : h, c); col[k * 3] = c[0]; col[k * 3 + 1] = c[1]; col[k * 3 + 2] = c[2];
+  }
+  const idx = [];
+  for (let j = 0; j < g.ny - 1; j++) for (let i = 0; i < g.nx - 1; i++) {
+    const a = j * g.nx + i, b = a + 1, d = a + g.nx, e = d + 1; idx.push(a, d, b, b, d, e);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  return geo;
+}
+const terrMat = new THREE.MeshLambertMaterial({ vertexColors: true });
+const farMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat);
+const nearMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat);
+scene.add(farMesh, nearMesh);
+let builtCanopy = -1;
+function rebuildTerrain() {
+  const c = st.trees ? 10 : 0; if (c === builtCanopy) return; builtCanopy = c;
+  farMesh.geometry.dispose(); nearMesh.geometry.dispose();
+  farMesh.geometry = buildMesh(FAR, true, c); nearMesh.geometry = buildMesh(NEAR, false, c);
+}
+
+// Ying Fai Court blocks: arms as [east offset, north offset, east-west size, north-south size, rotation]
+function tower(cx, cy, base, top, mat, arms) {
+  const grp = new THREE.Group(), hgt = top - base;
+  for (const [dx, dy, sx, sy, rot] of arms) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, hgt, sy), mat);
+    m.position.copy(P(cx + dx, cy + dy, base + hgt / 2)); m.rotation.y = rot; grp.add(m);
+  }
+  return grp;
+}
+const towerMat = new THREE.MeshLambertMaterial({ color: 0xe9e4d6 });
+const ARMS_A = [[13, 0, 26, 14, 0], [-13, 0, 26, 14, 0], [0, 13, 14, 26, 0], [0, -13, 14, 26, 0], [-13, 13, 22, 12, Math.PI / 4], [13, -13, 22, 12, Math.PI / 4]];
+// Block B from its floor plan: east wing (flats 9, 10), north wing (1-6), south wing (11-18), west wing (21, 22), diagonals (7, 8 and 19, 20)
+const ARMS_B = [[9.5, -4.1, 19, 17, 0], [-10.5, 2, 21, 16, 0], [-2.2, 15, 16, 30, 0], [1.7, -20, 16, 40, 0], [5.7, 6.8, 18, 12, -Math.PI / 4], [-5.9, -7.3, 18, 12, -Math.PI / 4]];
+const blockA = tower(-25.7, 3.3, 45, 162, towerMat, ARMS_A);
+const blockB = tower(-41.6, -75.5, 45, 159, towerMat, ARMS_B);
+scene.add(blockA, blockB);
+const winMat = new THREE.MeshBasicMaterial({ color: 0xc2512b });
+const winMark = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 5.5), winMat);
+scene.add(winMark);
+
+// acoustic fins on the east facade (drawn orange so they stand out)
+const finMat = new THREE.MeshLambertMaterial({ color: 0xd4831f });
+function finMesh(y, z0, z1) { // Block A flats 2 and 3, for context
+  const m = new THREE.Mesh(new THREE.BoxGeometry(FIN_L, z1 - z0, 0.2), finMat);
+  m.position.copy(P(FIN_L / 2, y, (z0 + z1) / 2)); return m;
+}
+scene.add(finMesh(4.4 + FIN_Y + 0.1, floorZ(2), 162), finMesh(-4.4 - FIN_Y - 0.1, floorZ(2), floorZ(26)));
+
+// the living room you stand in (window view only)
+const room = new THREE.Group(); scene.add(room);
+const wallMat = new THREE.MeshLambertMaterial({ color: 0xe6e0d4 });
+const frameMat = new THREE.MeshLambertMaterial({ color: 0x8d9497 });
+function buildRoom() {
+  while (room.children.length) room.children.pop().geometry.dispose();
+  const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, fz = floorZ(st.floor), W = WIN_HALF, T = 0.25, D = 6.2;
+  const box = (x0, x1, y0, y1, z0, z1, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, z1 - z0, y1 - y0), m || wallMat); b.position.copy(P(ox + (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); room.add(b); };
+  box(-T, 0, oy + W, oy + W + 3, fz, fz + 2.75);          // facade north of the glass
+  box(-T, 0, oy - W - 3, oy - W, fz, fz + 2.75);          // facade south of the glass
+  box(-T, 0, oy - W, oy + W, fz, fz + SILL);              // sill
+  box(-T, 0, oy - W, oy + W, fz + HEAD, fz + 2.75);       // head
+  box(-T, 0.02, oy - 0.03, oy + 0.03, fz + SILL, fz + HEAD, frameMat);           // centre mullion
+  box(-T, 0.02, oy - W, oy + W, fz + 1.95, fz + 2.0, frameMat);                  // transom, above eye level
+  box(-D, -T, oy - W - 0.25, oy + W + 0.25, fz - 0.15, fz);                      // floor
+  box(-D, -T, oy - W - 0.25, oy + W + 0.25, fz + 2.6, fz + 2.75);                // ceiling
+  box(-D, -T, oy + W, oy + W + 0.25, fz, fz + 2.75);                             // side walls
+  box(-D, -T, oy - W - 0.25, oy - W, fz, fz + 2.75);
+  box(-D - 0.2, -D, oy - W - 0.25, oy + W + 0.25, fz, fz + 2.75);                // back wall
+}
+
+// sight-line overlays
+const rayGroup = new THREE.Group(); scene.add(rayGroup);
+const seenMat = new THREE.PointsMaterial({ color: 0x0b5a7d, size: 7, sizeAttenuation: false });
+const lineSea = new THREE.LineBasicMaterial({ color: 0x1f7aa3, transparent: true, opacity: 0.85 });
+const lineBlk = new THREE.LineBasicMaterial({ color: 0x8c6a45, transparent: true, opacity: 0.45 });
+const lineFin = new THREE.LineBasicMaterial({ color: 0xe0861a, transparent: true, opacity: 0.95 });
+
+function clearGroup(g) { while (g.children.length) { const c = g.children.pop(); c.geometry.dispose(); } }
+let lastRays = null;
+function computeRays() {
+  const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor), can = st.trees ? 10 : 0, res = [];
+  for (let az = 0; az <= 200; az++) res.push(ray(ox, oy, H, can, az, true));
+  lastRays = res; return res;
+}
+function drawRays(res) {
+  clearGroup(rayGroup);
+  const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor), A = aperture(st.flat, st.floor, st.d);
+  const seaSeg = [], blkSeg = [], finSeg = [], dots = [];
+  res.forEach((r, az) => {
+    if (az < A.lo || az > A.hi) return;
+    const finBlocked = az < A.flo || az > A.fhi;
+    const a = az * Math.PI / 180, sa = Math.sin(a), ca = Math.cos(a);
+    if (r.first) { if (az % 2 === 0) (finBlocked ? finSeg : seaSeg).push(P(ox + 0.5, oy, H), P(ox + sa * r.first, oy + ca * r.first, 1)); }
+    else if (!finBlocked && r.hz && az % 3 === 0) blkSeg.push(P(ox + 0.5, oy, H), P(ox + sa * r.hz, oy + ca * r.hz, r.hzE + 2));
+    if (r.pts && !finBlocked) for (const d of r.pts) dots.push(ox + sa * d, 2, -(oy + ca * d));
+  });
+  if (st.view === 'win') { seaSeg.length = 0; blkSeg.length = 0; finSeg.length = 0; dots.length = 0; }
+  if (seaSeg.length) rayGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seaSeg), lineSea));
+  if (blkSeg.length) rayGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(blkSeg), lineBlk));
+  if (finSeg.length) rayGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(finSeg), lineFin));
+  if (dots.length) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(dots, 3)); rayGroup.add(new THREE.Points(g, seenMat)); }
+}
+
+// place labels
+const LABELS = [
+  { t: 'Silverstrand Beach', x: 631, y: -195, h: 8 },
+  { t: 'Silverstrand Bay', x: 1900, y: -170, h: 2, sea: true },
+  { t: 'Port Shelter', x: 2900, y: 2700, h: 2, sea: true },
+  { t: 'Clear Water Bay hills', x: 1650, y: -1650, h: 240 },
+  { t: 'Ridge 110–140 m', x: 230, y: 170, h: 140 },
+  { t: 'Hang Hau MTR', x: -150, y: -1000, h: 16 },
+  { t: 'Film studio', x: 84, y: -199, h: 42 },
+  { t: 'Block A', x: -26, y: 3, h: 120, blk: true },
+  { t: 'Block B', x: -41.6, y: -75.5, h: 167, blk: true }
+];
+const labelHost = document.getElementById('labels');
+LABELS.forEach(L => { const el = document.createElement('div'); el.className = 'lbl' + (L.sea ? ' sea' : '') + (L.blk ? ' blk' : ''); el.textContent = L.t; labelHost.appendChild(el); L.el = el; L.v = P(L.x, L.y, L.h); });
+// in the window view, grey out labels for places the hills hide
+function labelOcclusion() {
+  const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor), can = st.trees ? 10 : 0, A = aperture(st.flat, st.floor, st.d);
+  for (const L of LABELS) {
+    let hid = false;
+    const laz = (toDeg(Math.atan2(L.x - ox, L.y - oy)) + 360) % 360;
+    L.out = st.view === 'win' && (laz < A.flo || laz > A.fhi);
+    if (st.view === 'win' && !L.blk) {
+      for (let k = 1; k < 80; k++) {
+        const f = k / 80, x = ox + 0.6 + (L.x - ox - 0.6) * f, y = oy + (L.y - oy) * f, d = Math.hypot(x - ox, y - oy);
+        const r = elev(x, y); if (!r || r[1]) continue;
+        if (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * 0.87 > H + (L.h - H) * f + 1) { hid = true; break; }
+      }
+    }
+    L.el.classList.toggle('hid', hid);
+    L.el.textContent = L.t + (hid ? ' · behind hill' : '');
+  }
+}
+function placeLabels() {
+  const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
+  for (const L of LABELS) {
+    v.copy(L.v).project(cam);
+    const show = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 && !(st.view === 'win' && L.blk) && !L.out;
+    L.el.hidden = !show;
+    if (show) { L.el.style.left = ((v.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
+  }
+}
+
+// cameras
+cam.position.set(-700, 900, 1180);
+const controls = new THREE.OrbitControls(cam, canvas);
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 80; controls.maxDistance = 9000;
+controls.target.set(500, 40, 80);
+let mapPose = { pos: new THREE.Vector3(-700, 900, 1180), tgt: new THREE.Vector3(600, 40, -80) };
+function applyCamera() {
+  const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor);
+  room.visible = st.view === 'win';
+  if (st.view === 'win') {
+    controls.enabled = false; cam.fov = 68; cam.near = 0.05;
+    cam.position.copy(P(ox - st.d, oy, H));
+    const a = st.yaw * Math.PI / 180, p = st.pitch * Math.PI / 180;
+    const dir = new THREE.Vector3(Math.sin(a) * Math.cos(p), Math.sin(p), -Math.cos(a) * Math.cos(p));
+    cam.lookAt(cam.position.clone().add(dir));
+    blockB.visible = false;
+  } else {
+    controls.enabled = true; cam.fov = 45; cam.near = 1; blockB.visible = true;
+  }
+  cam.updateProjectionMatrix();
+  winMark.position.copy(P(ox + 0.7, oy, H - 0.5)); winMark.visible = st.view !== 'win';
+}
+
+// render loop on demand
+let pending = false;
+function render() { if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; renderer.render(scene, cam); placeLabels(); hud(); }); }
+controls.addEventListener('change', render);
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix(); render();
+}
+new ResizeObserver(resize).observe(stage);
+
+// window-view look-around
+let drag = null;
+canvas.addEventListener('pointerdown', e => { if (st.view !== 'win') return; drag = { x: e.clientX, y: e.clientY, yaw: st.yaw, pitch: st.pitch }; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return; const k = 70 / canvas.clientWidth * 1.4;
+  st.yaw = Math.max(-10, Math.min(210, drag.yaw - (e.clientX - drag.x) * k));
+  st.pitch = Math.max(-35, Math.min(20, drag.pitch + (e.clientY - drag.y) * k));
+  applyCamera(); render();
+});
+canvas.addEventListener('pointerup', () => { drag = null; });
+canvas.addEventListener('pointercancel', () => { drag = null; });
+
+// ---------- panel ----------
+const $ = id => document.getElementById(id);
+const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW'];
+const dirName = az => DIRS[Math.round(az / 22.5) % 16] || 'S';
+function sectors(res) {
+  const segs = []; let s = -1;
+  res.forEach((r, az) => { if (r.first && s < 0) s = az; if (!r.first && s >= 0) { segs.push([s, az - 1]); s = -1; } });
+  if (s >= 0) segs.push([s, res.length - 1]);
+  return segs;
+}
+function hud() {
+  const hudEl = $('hud');
+  if (st.view === 'win') hudEl.innerHTML = `<span>${FLATS[st.flat].name} · ${st.floor}/F</span><span>Facing ${Math.round(((st.yaw % 360) + 360) % 360)}° ${dirName(((st.yaw % 360) + 360) % 360)}</span>`;
+  else hudEl.innerHTML = `<span>${FLATS[st.flat].name} · ${st.floor}/F</span><span>Blue lines reach sea · brown lines stop at a hill</span>`;
+}
+function compassSVG(res, A) {
+  const W = 320, H = 58, x = az => 10 + az / 200 * (W - 20);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Directions with sea visible through the window">`;
+  s += `<defs><pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="4" fill="var(--fin)"/></pattern></defs>`;
+  s += `<rect x="10" y="14" width="${W - 20}" height="16" fill="var(--chip)"/>`;
+  res.forEach((r, az) => {
+    if (!r.first || az < A.lo || az > A.hi) return;
+    const fin = az < A.flo || az > A.fhi;
+    s += `<rect x="${x(az) - 0.6}" y="14" width="${(W - 20) / 200 + 1.2}" height="16" fill="${fin ? 'url(#hatch)' : r.first < 1500 ? 'var(--bay)' : 'var(--sea-soft)'}"/>`;
+  });
+  s += `<path d="M${x(A.flo)} 9 V6 H${x(A.fhi)} V9" fill="none" stroke="var(--ink)" stroke-width="1.5"/>`;
+  [[0, 'N'], [45, 'NE'], [90, 'E'], [135, 'SE'], [180, 'S']].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="30" y2="36" stroke="var(--ink-2)"/><text x="${x(a)}" y="49" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
+  return s + '</svg>';
+}
+function updatePanel(res) {
+  const A = aperture(st.flat, st.floor, st.d);
+  const inView = res.map((r, az) => (az >= A.flo && az <= A.fhi) ? r : { first: 0 });
+  const segs = sectors(inView);
+  const firsts = res.map(r => r.first), c = counts(firsts, A);
+  const lostSegs = sectors(res.map((r, az) => (az >= A.lo && az <= A.hi && (az < A.flo || az > A.fhi)) ? r : { first: 0 }));
+  const nearest = inView.reduce((m, r) => r.first && (!m || r.first < m) ? r.first : m, 0);
+  $('floorVal').innerHTML = `${st.floor}<small>/F</small>`;
+  $('mpd').innerHTML = `eye level ≈ +${eyeH(st.floor).toFixed(1)} mPD`;
+  let v;
+  if (!c.all) v = 'No sea from this floor. The hills east of the estate fill the view.';
+  else if (c.nb === 0) v = `A narrow slot of distant sea, <b>${c.all}°</b> wide.`;
+  else if (c.all < 30) v = `A slice of Silverstrand Bay, <b>${c.all}°</b> of sea in view.`;
+  else v = `A wide sea view, <b>${c.all}°</b> across the bay and Port Shelter.`;
+  $('verdict').innerHTML = v;
+  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${a}° ${dirName(a)}` : `${a}–${b}° (${dirName(a)} to ${dirName(b)})`).join(', ') : 'none';
+  $('facts').innerHTML = `<dt>Sea directions</dt><dd>${fmt(segs)}</dd>`
+    + `<dt>Nearest sea seen</dt><dd>${nearest ? (nearest / 1000).toFixed(2) + ' km' : '–'}</dd>`
+    + `<dt>Window shows</dt><dd>${Math.round(A.flo)}–${Math.round(A.fhi)}° from here</dd>`;
+  $('compass').innerHTML = compassSVG(res, A);
+  const note = 'No acoustic fins beside flats 9 and 10. Standing further back narrows the view only because the window frame takes up more of it.';
+  $('finNote').innerHTML = note;
+}
+function drawRows() {
+  const tbl = firstTable(st.flat, st.trees ? 10 : 0), host = $('rows'); host.innerHTML = '';
+  for (let F = F0; F <= F1; F++) {
+    const r = counts(tbl[F], aperture(st.flat, F, st.d)), row = document.createElement('div');
+    row.className = 'floorrow' + (F === st.floor ? ' on' : ''); row.tabIndex = 0; row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `${F}/F: ${r.all} degrees of sea${r.lost ? ', ' + r.lost + ' more hidden by the fin' : ''}`);
+    row.innerHTML = `<span>${F}/F</span><span class="bar"><span class="all" style="width:${r.all / 80 * 100}%"></span><span class="nb" style="width:${r.nb / 80 * 100}%"></span><span class="lost" style="left:${r.all / 80 * 100}%;width:${r.lost / 80 * 100}%"></span>${PRICE_JUMP.includes(F) ? '<span class="pm">▲</span>' : ''}</span><span class="n">${r.all}°</span>`;
+    row.addEventListener('click', () => setFloor(F));
+    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFloor(F); } });
+    host.appendChild(row);
+  }
+}
+
+function refresh(full) {
+  rebuildTerrain(); buildRoom();
+  const res = computeRays();
+  drawRays(res); applyCamera(); updatePanel(res); labelOcclusion();
+  if (full) drawRows(); else document.querySelectorAll('.floorrow').forEach((el, i) => el.classList.toggle('on', i + F0 === st.floor));
+  $('hint').textContent = st.view === 'win' ? 'Drag to look around' : 'Drag to orbit · scroll or pinch to zoom';
+  render();
+}
+function setFloor(F) { st.floor = F; $('floor').value = F; refresh(false); }
+$('floor').addEventListener('input', e => setFloor(+e.target.value));
+function press(on, off) { $(on).setAttribute('aria-pressed', 'true'); $(off).setAttribute('aria-pressed', 'false'); }
+$('fA2').onclick = () => { st.flat = 'B9'; press('fA2', 'fA3'); refresh(true); };
+$('fA3').onclick = () => { st.flat = 'B10'; press('fA3', 'fA2'); refresh(true); };
+$('vWin').onclick = () => { if (st.view === 'map') { mapPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; } st.view = 'win'; press('vWin', 'vMap'); refresh(false); };
+$('vMap').onclick = () => { st.view = 'map'; press('vMap', 'vWin'); cam.position.copy(mapPose.pos); controls.target.copy(mapPose.tgt); controls.update(); refresh(false); };
+$('trees').addEventListener('change', e => { st.trees = e.target.checked; refresh(true); });
+const STAND = { d05: 0.5, d15: 1.5, d30: 3 };
+Object.keys(STAND).forEach(id => { $(id).onclick = () => { st.d = STAND[id]; Object.keys(STAND).forEach(k => $(k).setAttribute('aria-pressed', String(k === id))); refresh(true); }; });
+
+requestAnimationFrame(() => { refresh(true); resize(); $('loading').hidden = true; });
+})();
+</script>
+
+</body>
+</html>

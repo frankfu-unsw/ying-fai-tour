@@ -1,7 +1,9 @@
-# Ying Fai Court A2 36/F tour
+# Ying Fai Court flat views
 
-A 3D walk-through of Ying Fai Court (影輝苑) Block A flat 2 on 36/F, comparing three ways to split the flat into rooms, with the real view of the hills and sea from each window.
+3D pages for Ying Fai Court (影輝苑), Tseung Kwan O, HOS 2025:
 
-The whole site is `index.html`: open it in a browser, or publish it with GitHub Pages (Settings → Pages → Deploy from a branch → `main`, `/ (root)`).
+- `index.html`: walk-through of Block A flat 2 on 36/F, comparing three ways to split it into rooms, with the real view from each window.
+- `block-a.html`: what Block A flats 2 and 3 can see from every floor, including the acoustic fins.
+- `block-b.html`: what Block B flats 9 and 10 can see from every floor.
 
-Room layouts, window heights and partition positions are estimates from the Housing Authority sales brochure. Any partition needs HA approval before it is built.
+Each page is a single self-contained HTML file (three.js and fonts load from public CDNs). Room layouts, window heights and partition positions are estimates from the Housing Authority sales brochure; any partition needs HA approval before it is built.
