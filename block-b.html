@@ -111,6 +111,29 @@ details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction:
 .site a:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
 body { margin: 0; }
 [hidden] { display: none !important; }
+/* buttons over the 3D view */
+.tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
+.tools button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; font: 600 13.5px/1 var(--f-body); color: #eef4f6; background: rgba(19,35,44,.84); border: 0; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
+.tools button:hover { background: rgba(19,35,44,.96); }
+.tools button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tools svg { width: 18px; height: 18px; flex: none; }
+@media (max-width: 640px) {
+  .tools button { padding: 0 10px; }
+  .tools button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* nearby places */
+.lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
+.lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
+.lbl.poi.hid { opacity: .6; font-weight: 500; }
+.poibox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
+.poirow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; padding: 1px 0; }
+.poirow .d { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.poinote { font-size: 12.5px; color: var(--ink-2); margin: 0 0 3px; }
+.poifoot { font-size: 12.5px; color: var(--ink-2); margin: 0; }
+
+.hud { max-width: calc(100% - 150px); }
 </style>
 </head>
 <body>
@@ -120,30 +143,31 @@ body { margin: 0; }
     <canvas id="gl" aria-label="3D model of the hills and sea east of Ying Fai Court Block B"></canvas>
     <div class="labels" id="labels"></div>
     <div class="hud" id="hud"></div>
+    <div class="tools"><button type="button" id="langBtn" lang="zh-Hant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg><span>中文</span></button></div>
     <div class="hint" id="hint">Drag to look around</div>
-    <div class="loading" id="loading">Building terrain…</div>
+    <div class="loading" id="loading" data-zh="正在建立地形…">Building terrain…</div>
   </div>
 
   <aside class="side">
-    <nav class="site" aria-label="Ying Fai Court pages"><a href="index.html">Flat 2 tour<small>A2 on 36/F, inside</small></a><a href="block-a.html">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" aria-current="page">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
+    <nav class="site" aria-label="Ying Fai Court pages" data-zh-aria="影輝苑頁面"><a href="index.html" data-zh="2室導覽&lt;small&gt;A座36樓2室室內&lt;/small&gt;">Flat 2 tour<small>A2 on 36/F, inside</small></a><a href="block-a.html" data-zh="A座景觀&lt;small&gt;2、3室，所有樓層&lt;/small&gt;">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" aria-current="page" data-zh="B座景觀&lt;small&gt;9、10室，所有樓層&lt;/small&gt;">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
 
     <div>
-      <div class="eyebrow">Ying Fai Court · Block B</div>
-      <h1>What flats 9 and 10 see</h1>
-      <p class="sub">Sight lines from the east-facing living-room windows, tested against the hills between Ying Yip Road and Silverstrand Bay.</p>
+      <div class="eyebrow" data-zh="影輝苑 · B座">Ying Fai Court · Block B</div>
+      <h1 data-zh="9室和10室望到甚麼">What flats 9 and 10 see</h1>
+      <p class="sub" data-zh="從向東的客廳窗望出去的視線，計及影業路與銀線灣之間的山勢。">Sight lines from the east-facing living-room windows, tested against the hills between Ying Yip Road and Silverstrand Bay.</p>
     </div>
 
     <div class="ctl">
-      <label class="t" id="flatLbl">Flat</label>
+      <label class="t" id="flatLbl" data-zh="單位">Flat</label>
       <div class="seg" role="group" aria-labelledby="flatLbl">
-        <button id="fA2" aria-pressed="true">Flat 9 · north side</button>
-        <button id="fA3" aria-pressed="false">Flat 10 · south side</button>
+        <button id="fA2" aria-pressed="true" data-zh="9室 · 北側">Flat 9 · north side</button>
+        <button id="fA3" aria-pressed="false" data-zh="10室 · 南側">Flat 10 · south side</button>
       </div>
     </div>
 
     <div class="ctl">
       <div class="floorline">
-        <label class="t" for="floor">Floor</label>
+        <label class="t" for="floor" data-zh="樓層">Floor</label>
         <div class="mpd" id="mpd"></div>
       </div>
       <div class="floorline"><div class="floorval" id="floorVal">24<small>/F</small></div></div>
@@ -151,20 +175,20 @@ body { margin: 0; }
     </div>
 
     <div class="ctl">
-      <label class="t" id="viewLbl">View</label>
+      <label class="t" id="viewLbl" data-zh="視角">View</label>
       <div class="seg" role="group" aria-labelledby="viewLbl">
-        <button id="vWin" aria-pressed="true">From the window</button>
-        <button id="vMap" aria-pressed="false">Overview</button>
+        <button id="vWin" aria-pressed="true" data-zh="從窗口望出去">From the window</button>
+        <button id="vMap" aria-pressed="false" data-zh="鳥瞰">Overview</button>
       </div>
-      <label class="check"><input type="checkbox" id="trees"> <span>Add 10 m of tree cover on the hills (the terrain data is roughly bare ground)</span></label>
+      <label class="check"><input type="checkbox" id="trees"> <span data-zh="在山上加10米高樹木（地形數據大致是沒有樹的地面）">Add 10 m of tree cover on the hills (the terrain data is roughly bare ground)</span></label>
     </div>
 
     <div class="ctl">
-      <label class="t" id="standLbl">Where you stand in the living room</label>
+      <label class="t" id="standLbl" data-zh="你站在客廳哪裡">Where you stand in the living room</label>
       <div class="seg" role="group" aria-labelledby="standLbl">
-        <button id="d05" aria-pressed="false">At the glass</button>
-        <button id="d15" aria-pressed="true">1.5 m back</button>
-        <button id="d30" aria-pressed="false">Sofa, 3 m back</button>
+        <button id="d05" aria-pressed="false" data-zh="貼近玻璃">At the glass</button>
+        <button id="d15" aria-pressed="true" data-zh="後退1.5米">1.5 m back</button>
+        <button id="d30" aria-pressed="false" data-zh="梳化位，後退3米">Sofa, 3 m back</button>
       </div>
       <p class="note" id="finNote"></p>
     </div>
@@ -176,23 +200,30 @@ body { margin: 0; }
     </section>
 
     <section class="chart">
-      <div class="eyebrow">Degrees of sea through the living-room window, by floor</div>
+      <div class="eyebrow" data-zh="各樓層客廳窗可見的海景角度">Degrees of sea through the living-room window, by floor</div>
       <div class="legend">
-        <span><i style="background:var(--bay)"></i>Silverstrand Bay (under 1.5 km)</span>
-        <span><i style="background:var(--sea-soft)"></i>Further out</span>
+        <span data-zh="&lt;i style=&quot;background:var(--bay)&quot;&gt;&lt;/i&gt;銀線灣（1.5公里內）"><i style="background:var(--bay)"></i>Silverstrand Bay (under 1.5 km)</span>
+        <span data-zh="&lt;i style=&quot;background:var(--sea-soft)&quot;&gt;&lt;/i&gt;較遠海面"><i style="background:var(--sea-soft)"></i>Further out</span>
       </div>
       <div class="rows" id="rows"></div>
     </section>
 
+    <section class="poibox" aria-labelledby="poiHd">
+      <div class="eyebrow" id="poiHd" data-zh="附近地點">Nearby places</div>
+      <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示標記">Show markers on the 3D view</span></label>
+      <div id="poiList"></div>
+      <p class="poifoot" data-zh="距離為與屋苑的直線距離，地點位置取自 OpenStreetMap。">Straight-line distance from the estate. Locations from OpenStreetMap.</p>
+    </section>
+
     <details>
-      <summary>How this was built</summary>
+      <summary data-zh="製作方法">How this was built</summary>
       <ul>
-        <li>Flats 9 and 10 sit at the tip of Block B's east wing. Their living-room windows face east, like flats 2 and 3 in Block A. The Block B floor plan is drawn with north pointing right, so the windows sit at the bottom of that drawing.</li>
-        <li>The Block B plan shows no acoustic fins beside flats 9 and 10, so only the window frame limits the view.</li>
-        <li>Floor heights assume Block B matches Block A floor for floor: 2/F at +57.55 mPD and 2.75 m per floor, eye level 1.5 m above the floor. Block B's own cross-section was not available. If its floors sit a little lower, read each result about one floor higher.</li>
-        <li>The terrain is public SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Sea beyond 7 km east is assumed open. Dark blue patches in the overview mark the sea the chosen window can see.</li>
-        <li>Block positions come from the brochure's key plan, accurate to roughly 5 to 10 m. The side and bay windows of each flat are not modelled.</li>
-        <li>Village houses on the Silverstrand slope, the film studio buildings and trees are not modelled unless you tick the tree option. They matter most on the lower floors. Earth curvature is included.</li>
+        <li data-zh="9室和10室位於B座東翼末端，客廳窗和A座2室、3室一樣向東。B座平面圖的北方指向右邊，所以這些窗在圖的下方。">Flats 9 and 10 sit at the tip of Block B's east wing. Their living-room windows face east, like flats 2 and 3 in Block A. The Block B floor plan is drawn with north pointing right, so the windows sit at the bottom of that drawing.</li>
+        <li data-zh="B座平面圖顯示9室和10室旁邊沒有隔音鰭，視野只受窗框限制。">The Block B plan shows no acoustic fins beside flats 9 and 10, so only the window frame limits the view.</li>
+        <li data-zh="樓層高度假設B座與A座逐層相同：2樓在主水平基準上57.55米，每層2.75米，視線高度在地台以上1.5米。未能取得B座本身的剖面圖；如果B座樓層略低，請把每個結果當作高一層來看。">Floor heights assume Block B matches Block A floor for floor: 2/F at +57.55 mPD and 2.75 m per floor, eye level 1.5 m above the floor. Block B's own cross-section was not available. If its floors sit a little lower, read each result about one floor higher.</li>
+        <li data-zh="地形採用公開的SRTM高程數據，屋苑附近的解像度約30米，較遠處約100米。東面7公里以外假設是開闊海面。鳥瞰圖中的深藍色點，就是所選窗口看得到的海面。">The terrain is public SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Sea beyond 7 km east is assumed open. Dark blue patches in the overview mark the sea the chosen window can see.</li>
+        <li data-zh="各座位置取自說明書的位置圖，誤差約5至10米。各單位的側窗和窗台沒有建模。">Block positions come from the brochure's key plan, accurate to roughly 5 to 10 m. The side and bay windows of each flat are not modelled.</li>
+        <li data-zh="除非勾選樹木選項，否則銀線灣山坡上的村屋、片廠建築和樹木都沒有建模，這些對低層影響最大。已計及地球曲率。">Village houses on the Silverstrand slope, the film studio buildings and trees are not modelled unless you tick the tree option. They matter most on the lower floors. Earth curvature is included.</li>
       </ul>
       </ul>
     </details>
@@ -201,6 +232,82 @@ body { margin: 0; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// Shared by the three Ying Fai pages: language (English / 繁體中文) and nearby places.
+window.YF = (() => {
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  let lang = store.get('yf-lang');
+  if (lang !== 'en' && lang !== 'zh') lang = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  let poiOn = store.get('yf-poi') !== '0';
+  const langFns = [], poiFns = [];
+  const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
+  const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
+  const dir16 = az => (lang === 'zh' ? DIR_ZH : DIR_EN)[Math.round((((az % 360) + 360) % 360) / 22.5) % 16];
+  const POIS = [{"id": "hh", "cat": "mtr", "en": "Hang Hau station", "zh": "港鐵坑口站", "x": -133, "y": -1106, "noteEn": "About 15–20 min on foot, uphill on the way home (HK01)", "noteZh": "步行約15至20分鐘，回程上斜（香港01）"}, {"id": "pl", "cat": "mtr", "en": "Po Lam station", "zh": "港鐵寶琳站", "x": -825, "y": -246}, {"id": "tko", "cat": "mtr", "en": "Tseung Kwan O station", "zh": "港鐵將軍澳站", "x": -636, "y": -1910}, {"id": "epc", "cat": "shop", "en": "East Point City", "zh": "東港城", "x": -51, "y": -907}, {"id": "mcp", "cat": "shop", "en": "Metro City Plaza", "zh": "新都城中心", "x": -897, "y": -373}, {"id": "fng", "cat": "shop", "en": "Fu Ning Garden Market", "zh": "富寧花園街市", "x": 232, "y": -677}, {"id": "ssm", "cat": "shop", "en": "Silverstrand Mart", "zh": "銀線灣廣場", "x": 599, "y": -421}, {"id": "tkoh", "cat": "health", "en": "Tseung Kwan O Hospital", "zh": "將軍澳醫院", "x": 383, "y": -697}, {"id": "hoh", "cat": "health", "en": "Haven of Hope Hospital", "zh": "靈實醫院", "x": -963, "y": -1106}, {"id": "ust", "cat": "edu", "en": "HKUST", "zh": "香港科技大學", "x": -24, "y": 1273}, {"id": "ssb", "cat": "leisure", "en": "Silverstrand Beach", "zh": "銀線灣泳灘", "x": 631, "y": -190}, {"id": "hhsc", "cat": "leisure", "en": "Hang Hau Sports Centre", "zh": "坑口體育館", "x": 250, "y": -808}, {"id": "tkop", "cat": "leisure", "en": "Tseung Kwan O Swimming Pool", "zh": "將軍澳游泳池", "x": -566, "y": -744}, {"id": "tkosg", "cat": "leisure", "en": "Tseung Kwan O Sports Ground", "zh": "將軍澳運動場", "x": -257, "y": -1477}, {"id": "duck", "cat": "hill", "en": "Duckling Hill (153 m)", "zh": "鴨仔山（153米）", "x": -238, "y": -115}, {"id": "razor", "cat": "hill", "en": "Razor Hill (432 m)", "zh": "鷓鴣山（432米）", "x": -1440, "y": 1591}, {"id": "syshan", "cat": "hill", "en": "Sheung Yeung Shan (260 m)", "zh": "上洋山（260米）", "x": 1595, "y": -1696}, {"id": "hhv", "cat": "local", "en": "Hang Hau Village", "zh": "坑口村", "x": 91, "y": -376, "noteEn": "Nearest minibus stops, about 8 min on foot (HK01)", "noteZh": "最近的小巴站，步行約8分鐘（香港01）"}, {"id": "cwbfs", "cat": "local", "en": "Clear Water Bay Film Studio", "zh": "清水灣電影製片廠", "x": 85, "y": -199, "noteEn": "Opposite the estate; due for redevelopment (HK01)", "noteZh": "屋苑對面，將會重建（香港01）"}];
+  const CATS = {"mtr": {"en": "MTR stations", "zh": "港鐵站", "color": "#c0392b"}, "shop": {"en": "Shops and markets", "zh": "商場及街市", "color": "#7b4fb0"}, "health": {"en": "Hospitals", "zh": "醫院", "color": "#2e8b57"}, "edu": {"en": "University", "zh": "大學", "color": "#2f6db3"}, "leisure": {"en": "Beaches and sport", "zh": "泳灘及運動", "color": "#1d8aa8"}, "hill": {"en": "Hills", "zh": "山峰", "color": "#8a6a3c"}, "local": {"en": "Next to the estate", "zh": "屋苑附近", "color": "#5d6670"}};
+  const poiName = p => (lang === 'zh' ? p.zh : p.en);
+  const dist = d => d < 1000 ? t(`${Math.round(d / 10) * 10} m`, `${Math.round(d / 10) * 10}米`) : t(`${(d / 1000).toFixed(1)} km`, `${(d / 1000).toFixed(1)}公里`);
+  function where(p) {
+    const d = Math.hypot(p.x, p.y), az = (Math.atan2(p.x, p.y) * 180 / Math.PI + 360) % 360;
+    return lang === 'zh' ? `${dir16(az)} ${dist(d)}` : `${dist(d)} ${dir16(az)}`;
+  }
+  function poiList() {
+    const host = document.getElementById('poiList'); if (!host) return;
+    let s = '';
+    for (const k of Object.keys(CATS)) {
+      const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
+      s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
+      for (const p of ps) {
+        s += `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
+        if (p.noteEn) s += `<p class="poinote">${t(p.noteEn, p.noteZh)}</p>`;
+      }
+      s += '</div>';
+    }
+    host.innerHTML = s;
+  }
+  function applyStatic() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hant-HK' : 'en';
+    document.querySelectorAll('[data-zh]').forEach(el => {
+      if (el.dataset.en == null) el.dataset.en = el.innerHTML;
+      el.innerHTML = lang === 'zh' ? el.dataset.zh : el.dataset.en;
+    });
+    for (const [attr, key] of [['title', 'Title'], ['aria-label', 'Aria']]) {
+      document.querySelectorAll(`[data-zh-${attr === 'title' ? 'title' : 'aria'}]`).forEach(el => {
+        if (el.dataset['en' + key] == null) el.dataset['en' + key] = el.getAttribute(attr) || '';
+        el.setAttribute(attr, lang === 'zh' ? el.dataset['zh' + key] : el.dataset['en' + key]);
+      });
+    }
+    const b = document.getElementById('langBtn');
+    if (b) {
+      b.querySelector('span').textContent = lang === 'zh' ? 'English' : '中文';
+      b.lang = lang === 'zh' ? 'en' : 'zh-Hant';
+      b.title = lang === 'zh' ? 'Switch to English' : '切換至中文';
+      b.setAttribute('aria-label', b.title);
+    }
+    poiList();
+  }
+  function setLang(l) { lang = l; store.set('yf-lang', l); applyStatic(); langFns.forEach(f => f()); }
+  function setPoi(on) {
+    poiOn = on; store.set('yf-poi', on ? '1' : '0');
+    const c = document.getElementById('poiChk'); if (c) c.checked = on;
+    poiFns.forEach(f => f());
+  }
+  const lb = document.getElementById('langBtn');
+  if (lb) lb.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));
+  const pc = document.getElementById('poiChk');
+  if (pc) { pc.checked = poiOn; pc.addEventListener('change', e => setPoi(e.target.checked)); }
+  applyStatic();
+  return {
+    get lang() { return lang; }, get poiOn() { return poiOn; },
+    t, dir16, POIS, CATS, poiName,
+    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f)
+  };
+})();
+</script>
 <script>
 (() => {
 const NEAR_TXT = `!COadfcccddfhlledddgcWZbSXYVROWXabbdiWpW~De~Ce~1
@@ -446,8 +553,10 @@ function samp(g, x, y) {
 function elev(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y); }
 
 // Block B east-wing tip, from the key plan and the Block B typical floor plan
-const FLATS = { B9: { x: -22.6, y: -75.9, name: 'Flat 9' }, B10: { x: -22.6, y: -83.2, name: 'Flat 10' } };
+const FLATS = { B9: { x: -22.6, y: -75.9, name: 'Flat 9', zh: '9室' }, B10: { x: -22.6, y: -83.2, name: 'Flat 10', zh: '10室' } };
 const F0 = 3, F1 = 38;
+const T = YF.t;
+const flatName = f => T(FLATS[f].name, FLATS[f].zh);
 const eyeH = F => 57.55 + (F - 2) * 2.75 + 1.5;
 const R = 6371000;
 
@@ -649,18 +758,28 @@ function drawRays(res) {
 
 // place labels
 const LABELS = [
-  { t: 'Silverstrand Beach', x: 631, y: -195, h: 8 },
-  { t: 'Silverstrand Bay', x: 1900, y: -170, h: 2, sea: true },
-  { t: 'Port Shelter', x: 2900, y: 2700, h: 2, sea: true },
-  { t: 'Clear Water Bay hills', x: 1650, y: -1650, h: 240 },
-  { t: 'Ridge 110–140 m', x: 230, y: 170, h: 140 },
-  { t: 'Hang Hau MTR', x: -150, y: -1000, h: 16 },
-  { t: 'Film studio', x: 84, y: -199, h: 42 },
-  { t: 'Block A', x: -26, y: 3, h: 120, blk: true },
-  { t: 'Block B', x: -41.6, y: -75.5, h: 167, blk: true }
+  { t: 'Silverstrand Bay', zh: '銀線灣', x: 1900, y: -170, h: 2, sea: true },
+  { t: 'Port Shelter', zh: '牛尾海', x: 2900, y: 2700, h: 2, sea: true },
+  { t: 'Clear Water Bay hills', zh: '清水灣山嶺', x: 1650, y: -1650, h: 240 },
+  { t: 'Ridge 110–140 m', zh: '山脊 110–140米', x: 230, y: 170, h: 140 },
+  { t: 'Block A', zh: 'A座', x: -26, y: 3, h: 120, blk: true },
+  { t: 'Block B', zh: 'B座', x: -41.6, y: -75.5, h: 167, blk: true }
 ];
 const labelHost = document.getElementById('labels');
 LABELS.forEach(L => { const el = document.createElement('div'); el.className = 'lbl' + (L.sea ? ' sea' : '') + (L.blk ? ' blk' : ''); el.textContent = L.t; labelHost.appendChild(el); L.el = el; L.v = P(L.x, L.y, L.h); });
+// nearby places (shared list): labels on pins 40 m above the ground
+const pinGroup = new THREE.Group(); scene.add(pinGroup);
+{
+  const byCat = {};
+  YF.POIS.forEach(p => {
+    const g = elev(p.x, p.y), ground = g && !g[1] ? g[0] : 2, h = ground + 40;
+    const el = document.createElement('div'); el.className = 'lbl poi'; el.style.setProperty('--c', YF.CATS[p.cat].color); labelHost.appendChild(el);
+    LABELS.push({ p, x: p.x, y: p.y, h, el, v: P(p.x, p.y, h) });
+    (byCat[p.cat] = byCat[p.cat] || []).push(P(p.x, p.y, ground), P(p.x, p.y, h));
+  });
+  for (const k in byCat) pinGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
+}
+const labelName = L => (L.p ? YF.poiName(L.p) : T(L.t, L.zh));
 // in the window view, grey out labels for places the hills hide
 function labelOcclusion() {
   const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor), can = st.trees ? 10 : 0, A = aperture(st.flat, st.floor, st.d);
@@ -676,14 +795,14 @@ function labelOcclusion() {
       }
     }
     L.el.classList.toggle('hid', hid);
-    L.el.textContent = L.t + (hid ? ' · behind hill' : '');
+    L.el.textContent = labelName(L) + (hid ? T(' · behind hill', ' · 被山遮擋') : '');
   }
 }
 function placeLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
   for (const L of LABELS) {
     v.copy(L.v).project(cam);
-    const show = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 && !(st.view === 'win' && L.blk) && !L.out;
+    const show = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 && !(st.view === 'win' && L.blk) && !L.out && (!L.p || YF.poiOn);
     L.el.hidden = !show;
     if (show) { L.el.style.left = ((v.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
   }
@@ -735,8 +854,7 @@ canvas.addEventListener('pointercancel', () => { drag = null; });
 
 // ---------- panel ----------
 const $ = id => document.getElementById(id);
-const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW'];
-const dirName = az => DIRS[Math.round(az / 22.5) % 16] || 'S';
+const dirName = az => YF.dir16(az);
 function sectors(res) {
   const segs = []; let s = -1;
   res.forEach((r, az) => { if (r.first && s < 0) s = az; if (!r.first && s >= 0) { segs.push([s, az - 1]); s = -1; } });
@@ -745,12 +863,13 @@ function sectors(res) {
 }
 function hud() {
   const hudEl = $('hud');
-  if (st.view === 'win') hudEl.innerHTML = `<span>${FLATS[st.flat].name} · ${st.floor}/F</span><span>Facing ${Math.round(((st.yaw % 360) + 360) % 360)}° ${dirName(((st.yaw % 360) + 360) % 360)}</span>`;
-  else hudEl.innerHTML = `<span>${FLATS[st.flat].name} · ${st.floor}/F</span><span>Blue lines reach sea · brown lines stop at a hill</span>`;
+  const fl = T(`${flatName(st.flat)} · ${st.floor}/F`, `${flatName(st.flat)} · ${st.floor}樓`);
+  if (st.view === 'win') hudEl.innerHTML = `<span>${fl}</span><span>${T('Facing', '面向')} ${Math.round(((st.yaw % 360) + 360) % 360)}° ${dirName(((st.yaw % 360) + 360) % 360)}</span>`;
+  else hudEl.innerHTML = `<span>${fl}</span><span>${T('Blue lines reach sea · brown lines stop at a hill', '藍線到達海面 · 啡線被山擋住')}</span>`;
 }
 function compassSVG(res, A) {
   const W = 320, H = 58, x = az => 10 + az / 200 * (W - 20);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Directions with sea visible through the window">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${T('Directions with sea visible through the window', '經窗口看得到海的方向')}">`;
   s += `<defs><pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="4" fill="var(--fin)"/></pattern></defs>`;
   s += `<rect x="10" y="14" width="${W - 20}" height="16" fill="var(--chip)"/>`;
   res.forEach((r, az) => {
@@ -759,7 +878,7 @@ function compassSVG(res, A) {
     s += `<rect x="${x(az) - 0.6}" y="14" width="${(W - 20) / 200 + 1.2}" height="16" fill="${fin ? 'url(#hatch)' : r.first < 1500 ? 'var(--bay)' : 'var(--sea-soft)'}"/>`;
   });
   s += `<path d="M${x(A.flo)} 9 V6 H${x(A.fhi)} V9" fill="none" stroke="var(--ink)" stroke-width="1.5"/>`;
-  [[0, 'N'], [45, 'NE'], [90, 'E'], [135, 'SE'], [180, 'S']].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="30" y2="36" stroke="var(--ink-2)"/><text x="${x(a)}" y="49" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
+  [[0, T('N', '北')], [45, T('NE', '東北')], [90, T('E', '東')], [135, T('SE', '東南')], [180, T('S', '南')]].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="30" y2="36" stroke="var(--ink-2)"/><text x="${x(a)}" y="49" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
   return s + '</svg>';
 }
 function updatePanel(res) {
@@ -769,20 +888,20 @@ function updatePanel(res) {
   const firsts = res.map(r => r.first), c = counts(firsts, A);
   const lostSegs = sectors(res.map((r, az) => (az >= A.lo && az <= A.hi && (az < A.flo || az > A.fhi)) ? r : { first: 0 }));
   const nearest = inView.reduce((m, r) => r.first && (!m || r.first < m) ? r.first : m, 0);
-  $('floorVal').innerHTML = `${st.floor}<small>/F</small>`;
-  $('mpd').innerHTML = `eye level ≈ +${eyeH(st.floor).toFixed(1)} mPD`;
+  $('floorVal').innerHTML = `${st.floor}<small>${T('/F', '樓')}</small>`;
+  $('mpd').innerHTML = T(`eye level ≈ +${eyeH(st.floor).toFixed(1)} mPD`, `視線高度 ≈ +${eyeH(st.floor).toFixed(1)} mPD`);
   let v;
-  if (!c.all) v = 'No sea from this floor. The hills east of the estate fill the view.';
-  else if (c.nb === 0) v = `A narrow slot of distant sea, <b>${c.all}°</b> wide.`;
-  else if (c.all < 30) v = `A slice of Silverstrand Bay, <b>${c.all}°</b> of sea in view.`;
-  else v = `A wide sea view, <b>${c.all}°</b> across the bay and Port Shelter.`;
+  if (!c.all) v = T('No sea from this floor. The hills east of the estate fill the view.', '這層看不到海，屋苑東面的山擋住視線。');
+  else if (c.nb === 0) v = T(`A narrow slot of distant sea, <b>${c.all}°</b> wide.`, `只見遠處一道窄窄的海，闊 <b>${c.all}°</b>。`);
+  else if (c.all < 30) v = T(`A slice of Silverstrand Bay, <b>${c.all}°</b> of sea in view.`, `看到一角銀線灣，海景 <b>${c.all}°</b>。`);
+  else v = T(`A wide sea view, <b>${c.all}°</b> across the bay and Port Shelter.`, `開揚海景，橫跨銀線灣和牛尾海，共 <b>${c.all}°</b>。`);
   $('verdict').innerHTML = v;
-  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${a}° ${dirName(a)}` : `${a}–${b}° (${dirName(a)} to ${dirName(b)})`).join(', ') : 'none';
-  $('facts').innerHTML = `<dt>Sea directions</dt><dd>${fmt(segs)}</dd>`
-    + `<dt>Nearest sea seen</dt><dd>${nearest ? (nearest / 1000).toFixed(2) + ' km' : '–'}</dd>`
-    + `<dt>Window shows</dt><dd>${Math.round(A.flo)}–${Math.round(A.fhi)}° from here</dd>`;
+  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${a}° ${dirName(a)}` : T(`${a}–${b}° (${dirName(a)} to ${dirName(b)})`, `${a}–${b}°（${dirName(a)}至${dirName(b)}）`)).join(T(', ', '、')) : T('none', '沒有');
+  $('facts').innerHTML = `<dt>${T('Sea directions', '海景方向')}</dt><dd>${fmt(segs)}</dd>`
+    + `<dt>${T('Nearest sea seen', '最近看到的海')}</dt><dd>${nearest ? (nearest / 1000).toFixed(2) + T(' km', ' 公里') : '–'}</dd>`
+    + `<dt>${T('Window shows', '窗口範圍')}</dt><dd>${T(`${Math.round(A.flo)}–${Math.round(A.fhi)}° from here`, `由此處看 ${Math.round(A.flo)}–${Math.round(A.fhi)}°`)}</dd>`;
   $('compass').innerHTML = compassSVG(res, A);
-  const note = 'No acoustic fins beside flats 9 and 10. Standing further back narrows the view only because the window frame takes up more of it.';
+  const note = T('No acoustic fins beside flats 9 and 10. Standing further back narrows the view only because the window frame takes up more of it.', '9室和10室旁邊沒有隔音鰭。站得越後，視野收窄只是因為窗框佔得越多。');
   $('finNote').innerHTML = note;
 }
 function drawRows() {
@@ -790,8 +909,8 @@ function drawRows() {
   for (let F = F0; F <= F1; F++) {
     const r = counts(tbl[F], aperture(st.flat, F, st.d)), row = document.createElement('div');
     row.className = 'floorrow' + (F === st.floor ? ' on' : ''); row.tabIndex = 0; row.setAttribute('role', 'button');
-    row.setAttribute('aria-label', `${F}/F: ${r.all} degrees of sea${r.lost ? ', ' + r.lost + ' more hidden by the fin' : ''}`);
-    row.innerHTML = `<span>${F}/F</span><span class="bar"><span class="all" style="width:${r.all / 80 * 100}%"></span><span class="nb" style="width:${r.nb / 80 * 100}%"></span><span class="lost" style="left:${r.all / 80 * 100}%;width:${r.lost / 80 * 100}%"></span>${PRICE_JUMP.includes(F) ? '<span class="pm">▲</span>' : ''}</span><span class="n">${r.all}°</span>`;
+    row.setAttribute('aria-label', T(`${F}/F: ${r.all} degrees of sea${r.lost ? ', ' + r.lost + ' more hidden by the fin' : ''}`, `${F}樓：海景 ${r.all} 度${r.lost ? '，另有 ' + r.lost + ' 度被隔音鰭擋住' : ''}`));
+    row.innerHTML = `<span>${F}${T('/F', '樓')}</span><span class="bar"><span class="all" style="width:${r.all / 80 * 100}%"></span><span class="nb" style="width:${r.nb / 80 * 100}%"></span><span class="lost" style="left:${r.all / 80 * 100}%;width:${r.lost / 80 * 100}%"></span>${PRICE_JUMP.includes(F) ? '<span class="pm">▲</span>' : ''}</span><span class="n">${r.all}°</span>`;
     row.addEventListener('click', () => setFloor(F));
     row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFloor(F); } });
     host.appendChild(row);
@@ -803,7 +922,8 @@ function refresh(full) {
   const res = computeRays();
   drawRays(res); applyCamera(); updatePanel(res); labelOcclusion();
   if (full) drawRows(); else document.querySelectorAll('.floorrow').forEach((el, i) => el.classList.toggle('on', i + F0 === st.floor));
-  $('hint').textContent = st.view === 'win' ? 'Drag to look around' : 'Drag to orbit · scroll or pinch to zoom';
+  $('hint').textContent = st.view === 'win' ? T('Drag to look around', '拖動環顧') : T('Drag to orbit · scroll or pinch to zoom', '拖動旋轉 · 滾輪或雙指縮放');
+  pinGroup.visible = YF.poiOn;
   render();
 }
 function setFloor(F) { st.floor = F; $('floor').value = F; refresh(false); }
@@ -817,6 +937,8 @@ $('trees').addEventListener('change', e => { st.trees = e.target.checked; refres
 const STAND = { d05: 0.5, d15: 1.5, d30: 3 };
 Object.keys(STAND).forEach(id => { $(id).onclick = () => { st.d = STAND[id]; Object.keys(STAND).forEach(k => $(k).setAttribute('aria-pressed', String(k === id))); refresh(true); }; });
 
+YF.onLang(() => refresh(true));
+YF.onPoi(() => { pinGroup.visible = YF.poiOn; render(); });
 requestAnimationFrame(() => { refresh(true); resize(); $('loading').hidden = true; });
 })();
 </script>

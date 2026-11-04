@@ -143,48 +143,70 @@ details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction:
 .site a:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
 body { margin: 0; }
 [hidden] { display: none !important; }
+/* buttons over the 3D view */
+.tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
+.tools button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; font: 600 13.5px/1 var(--f-body); color: #eef4f6; background: rgba(19,35,44,.84); border: 0; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
+.tools button:hover { background: rgba(19,35,44,.96); }
+.tools button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tools svg { width: 18px; height: 18px; flex: none; }
+@media (max-width: 640px) {
+  .tools button { padding: 0 10px; }
+  .tools button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* nearby places */
+.lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
+.lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
+.lbl.poi.hid { opacity: .6; font-weight: 500; }
+.poibox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
+.poirow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; padding: 1px 0; }
+.poirow .d { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.poinote { font-size: 12.5px; color: var(--ink-2); margin: 0 0 3px; }
+.poifoot { font-size: 12.5px; color: var(--ink-2); margin: 0; }
 </style>
 </head>
 <body>
 
 <div class="app" id="app">
-  <div class="stage" id="stage" tabindex="0" aria-label="3D walk-through of Block A flat 2 on 36/F">
+  <div class="stage" id="stage" tabindex="0" aria-label="3D walk-through of Block A flat 2 on 36/F" data-zh-aria="影輝苑A座36樓2室立體導覽">
     <canvas id="gl"></canvas>
     <div class="labels" id="labels"></div>
     <div class="hud" id="hud"></div>
     <div class="tools">
-      <button type="button" id="resetBtn" title="Back to the starting dollhouse view" aria-label="Reset view">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span>Reset view</span>
+      <button type="button" id="langBtn" lang="zh-Hant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg><span>中文</span></button>
+      <button type="button" id="resetBtn" title="Back to the starting dollhouse view" aria-label="Reset view" data-zh-title="返回起始鳥瞰視角" data-zh-aria="重設視角">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span data-zh="重設視角">Reset view</span>
       </button>
       <button type="button" id="panelBtn" aria-controls="side" aria-expanded="true" title="Hide the side panel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg><span>Hide panel</span>
       </button>
     </div>
     <div class="hint"><span id="hint"></span></div>
-    <div class="loading" id="loading">Building the flat…</div>
+    <div class="loading" id="loading" data-zh="正在建立單位模型…">Building the flat…</div>
   </div>
 
   <aside class="side" id="side">
-    <nav class="site" aria-label="Ying Fai Court pages"><a href="index.html" aria-current="page">Flat 2 tour<small>A2 on 36/F, inside</small></a><a href="block-a.html">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
+    <nav class="site" aria-label="Ying Fai Court pages" data-zh-aria="影輝苑頁面"><a href="index.html" aria-current="page" data-zh="2室導覽&lt;small&gt;A座36樓2室室內&lt;/small&gt;">Flat 2 tour<small>A2 on 36/F, inside</small></a><a href="block-a.html" data-zh="A座景觀&lt;small&gt;2、3室，所有樓層&lt;/small&gt;">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" data-zh="B座景觀&lt;small&gt;9、10室，所有樓層&lt;/small&gt;">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
 
     <div>
-      <div class="eyebrow">Ying Fai Court · Block A · 36/F</div>
-      <h1>Flat 2 walk-through</h1>
-      <p class="sub">560 sq ft, laid out from the HA floor plan. Compare three ways to split it into rooms, walk through each one, and look out of every window at the real hills and sea from 36/F.</p>
+      <div class="eyebrow" data-zh="影輝苑 · A座 · 36樓">Ying Fai Court · Block A · 36/F</div>
+      <h1 data-zh="2室室內導覽">Flat 2 walk-through</h1>
+      <p class="sub" data-zh="面積約560平方呎，按房委會平面圖繪畫。比較三種間隔方案，逐一走進每個房間，再從36樓每扇窗望出去，看看真實的山景和海景。">560 sq ft, laid out from the HA floor plan. Compare three ways to split it into rooms, walk through each one, and look out of every window at the real hills and sea from 36/F.</p>
     </div>
 
     <div class="ctl">
-      <span class="t" id="layLbl">Layout</span>
+      <span class="t" id="layLbl" data-zh="間隔方案">Layout</span>
       <div class="seg four" id="lays" role="group" aria-labelledby="layLbl"></div>
       <p class="ldesc" id="ldesc"></p>
       <div class="checks">
-        <label class="check"><input type="checkbox" id="furn" checked> Furniture</label>
-        <label class="check"><input type="checkbox" id="trees"> 10 m of trees on the hills</label>
+        <label class="check"><input type="checkbox" id="furn" checked> <span data-zh="家具">Furniture</span></label>
+        <label class="check"><input type="checkbox" id="trees"> <span data-zh="山上加10米高樹木">10 m of trees on the hills</span></label>
       </div>
     </div>
 
     <div class="ctl">
-      <span class="t">Tour</span>
+      <span class="t" data-zh="導覽">Tour</span>
       <div class="stops" id="stops"></div>
     </div>
 
@@ -194,25 +216,25 @@ body { margin: 0; }
     </section>
 
     <section class="card">
-      <div class="eyebrow">From where you stand</div>
+      <div class="eyebrow" data-zh="你所在位置的景觀">From where you stand</div>
       <div class="verdict" id="verdict"></div>
       <dl class="facts" id="facts"></dl>
       <div class="compass" id="compass"></div>
       <div class="legend">
-        <span><i style="background:var(--bay)"></i>Silverstrand Bay</span>
-        <span><i style="background:var(--sea-soft)"></i>Sea further out</span>
-        <span><i style="background:var(--land)"></i>Hills and sky</span>
-        <span><i style="background:var(--chip)"></i>Walls</span>
+        <span data-zh="&lt;i style=&quot;background:var(--bay)&quot;&gt;&lt;/i&gt;銀線灣"><i style="background:var(--bay)"></i>Silverstrand Bay</span>
+        <span data-zh="&lt;i style=&quot;background:var(--sea-soft)&quot;&gt;&lt;/i&gt;較遠海面"><i style="background:var(--sea-soft)"></i>Sea further out</span>
+        <span data-zh="&lt;i style=&quot;background:var(--land)&quot;&gt;&lt;/i&gt;山和天空"><i style="background:var(--land)"></i>Hills and sky</span>
+        <span data-zh="&lt;i style=&quot;background:var(--chip)&quot;&gt;&lt;/i&gt;牆"><i style="background:var(--chip)"></i>Walls</span>
       </div>
     </section>
 
     <section class="card">
-      <div class="eyebrow">Floor plan · tap to stand there</div>
+      <div class="eyebrow" data-zh="平面圖 · 點一下就可以站到那裡">Floor plan · tap to stand there</div>
       <div class="planbox"><svg id="plan" role="img" aria-label="Floor plan of flat 2 with your position"></svg></div>
     </section>
 
     <section class="card">
-      <div class="eyebrow">Compare the plans</div>
+      <div class="eyebrow" data-zh="方案比較">Compare the plans</div>
       <table class="rt cmp" id="cmp"></table>
     </section>
 
@@ -226,16 +248,23 @@ body { margin: 0; }
       <table class="rt" id="rooms"></table>
     </section>
 
+    <section class="poibox" aria-labelledby="poiHd">
+      <div class="eyebrow" id="poiHd" data-zh="附近地點">Nearby places</div>
+      <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示標記">Show markers on the 3D view</span></label>
+      <div id="poiList"></div>
+      <p class="poifoot" data-zh="距離為與屋苑的直線距離，地點位置取自 OpenStreetMap。">Straight-line distance from the estate. Locations from OpenStreetMap.</p>
+    </section>
+
     <details>
-      <summary>How this was built</summary>
+      <summary data-zh="製作方法">How this was built</summary>
       <ul>
-        <li>Walls, rooms and windows follow the Block A typical floor plan (3/F to 39/F) in the HA sales brochure. Sizes come from its dimension strings; window sill and head heights are estimates.</li>
-        <li>36/F is at about +151.05 mPD (2/F at +57.55 and 2.75 m per floor). Eye level is 1.55 m above the floor.</li>
-        <li>Plans A, B and C add light 75 mm partitions. In plan B the master bedroom's new wall meets the east window part-way along its north half, so it has to land on a window frame post; where the real posts are may move it by a few hundred millimetres. Any partition needs HA approval under the flat's decoration guidelines before you build it.</li>
-        <li>A room with no window, like the helper's room in plan B, needs mechanical ventilation such as an extractor fan or air-con.</li>
-        <li>The acoustic fin sits in line with the north wall and sticks out 1.5 m past the east facade.</li>
-        <li>Outside, the terrain is SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Village houses, trees (unless ticked) and islands more than 7 km away are not modelled.</li>
-        <li>"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
+        <li data-zh="牆、房間和窗按房委會售樓說明書內A座標準樓層平面圖（3樓至39樓）繪畫。尺寸取自圖上的標示，窗台和窗頂高度是估算。">Walls, rooms and windows follow the Block A typical floor plan (3/F to 39/F) in the HA sales brochure. Sizes come from its dimension strings; window sill and head heights are estimates.</li>
+        <li data-zh="36樓約在主水平基準上151.05米（2樓為57.55米，每層2.75米）。視線高度設在地台以上1.55米。">36/F is at about +151.05 mPD (2/F at +57.55 and 2.75 m per floor). Eye level is 1.55 m above the floor.</li>
+        <li data-zh="方案A、B、C都加建75毫米的輕質間牆。方案B主人房的新間牆在東窗北半中段與窗相接，所以要對正窗框直料；實際直料的位置可能令間牆移動幾百毫米。任何間隔工程都要先按單位的裝修指引取得房委會批准。">Plans A, B and C add light 75 mm partitions. In plan B the master bedroom's new wall meets the east window part-way along its north half, so it has to land on a window frame post; where the real posts are may move it by a few hundred millimetres. Any partition needs HA approval under the flat's decoration guidelines before you build it.</li>
+        <li data-zh="沒有窗的房間（例如方案B的工人房）需要機械通風，例如抽氣扇或冷氣。">A room with no window, like the helper's room in plan B, needs mechanical ventilation such as an extractor fan or air-con.</li>
+        <li data-zh="隔音鰭與北牆對齊，伸出東面外牆1.5米。">The acoustic fin sits in line with the north wall and sticks out 1.5 m past the east facade.</li>
+        <li data-zh="室外地形採用以SRTM為基礎的高程數據，屋苑附近的解像度約30米，較遠處約100米。村屋、樹木（除非勾選）和7公里以外的島嶼都沒有建模。">Outside, the terrain is SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Village houses, trees (unless ticked) and islands more than 7 km away are not modelled.</li>
+        <li data-zh="「海景角度」是指從你所站的位置經窗口看得到海的方位度數，已計及牆、隔音鰭、鄰座單位和山勢。各窗的數字大致在離玻璃1.5米處量度（視乎房間大小）。睡房和浴室門當作關上：在這些房間內只計該房的窗，在其他位置也不能穿過這些門看出去。">"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
       </ul>
     </details>
   </aside>
@@ -243,6 +272,82 @@ body { margin: 0; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// Shared by the three Ying Fai pages: language (English / 繁體中文) and nearby places.
+window.YF = (() => {
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  let lang = store.get('yf-lang');
+  if (lang !== 'en' && lang !== 'zh') lang = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  let poiOn = store.get('yf-poi') !== '0';
+  const langFns = [], poiFns = [];
+  const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
+  const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
+  const dir16 = az => (lang === 'zh' ? DIR_ZH : DIR_EN)[Math.round((((az % 360) + 360) % 360) / 22.5) % 16];
+  const POIS = [{"id": "hh", "cat": "mtr", "en": "Hang Hau station", "zh": "港鐵坑口站", "x": -133, "y": -1106, "noteEn": "About 15–20 min on foot, uphill on the way home (HK01)", "noteZh": "步行約15至20分鐘，回程上斜（香港01）"}, {"id": "pl", "cat": "mtr", "en": "Po Lam station", "zh": "港鐵寶琳站", "x": -825, "y": -246}, {"id": "tko", "cat": "mtr", "en": "Tseung Kwan O station", "zh": "港鐵將軍澳站", "x": -636, "y": -1910}, {"id": "epc", "cat": "shop", "en": "East Point City", "zh": "東港城", "x": -51, "y": -907}, {"id": "mcp", "cat": "shop", "en": "Metro City Plaza", "zh": "新都城中心", "x": -897, "y": -373}, {"id": "fng", "cat": "shop", "en": "Fu Ning Garden Market", "zh": "富寧花園街市", "x": 232, "y": -677}, {"id": "ssm", "cat": "shop", "en": "Silverstrand Mart", "zh": "銀線灣廣場", "x": 599, "y": -421}, {"id": "tkoh", "cat": "health", "en": "Tseung Kwan O Hospital", "zh": "將軍澳醫院", "x": 383, "y": -697}, {"id": "hoh", "cat": "health", "en": "Haven of Hope Hospital", "zh": "靈實醫院", "x": -963, "y": -1106}, {"id": "ust", "cat": "edu", "en": "HKUST", "zh": "香港科技大學", "x": -24, "y": 1273}, {"id": "ssb", "cat": "leisure", "en": "Silverstrand Beach", "zh": "銀線灣泳灘", "x": 631, "y": -190}, {"id": "hhsc", "cat": "leisure", "en": "Hang Hau Sports Centre", "zh": "坑口體育館", "x": 250, "y": -808}, {"id": "tkop", "cat": "leisure", "en": "Tseung Kwan O Swimming Pool", "zh": "將軍澳游泳池", "x": -566, "y": -744}, {"id": "tkosg", "cat": "leisure", "en": "Tseung Kwan O Sports Ground", "zh": "將軍澳運動場", "x": -257, "y": -1477}, {"id": "duck", "cat": "hill", "en": "Duckling Hill (153 m)", "zh": "鴨仔山（153米）", "x": -238, "y": -115}, {"id": "razor", "cat": "hill", "en": "Razor Hill (432 m)", "zh": "鷓鴣山（432米）", "x": -1440, "y": 1591}, {"id": "syshan", "cat": "hill", "en": "Sheung Yeung Shan (260 m)", "zh": "上洋山（260米）", "x": 1595, "y": -1696}, {"id": "hhv", "cat": "local", "en": "Hang Hau Village", "zh": "坑口村", "x": 91, "y": -376, "noteEn": "Nearest minibus stops, about 8 min on foot (HK01)", "noteZh": "最近的小巴站，步行約8分鐘（香港01）"}, {"id": "cwbfs", "cat": "local", "en": "Clear Water Bay Film Studio", "zh": "清水灣電影製片廠", "x": 85, "y": -199, "noteEn": "Opposite the estate; due for redevelopment (HK01)", "noteZh": "屋苑對面，將會重建（香港01）"}];
+  const CATS = {"mtr": {"en": "MTR stations", "zh": "港鐵站", "color": "#c0392b"}, "shop": {"en": "Shops and markets", "zh": "商場及街市", "color": "#7b4fb0"}, "health": {"en": "Hospitals", "zh": "醫院", "color": "#2e8b57"}, "edu": {"en": "University", "zh": "大學", "color": "#2f6db3"}, "leisure": {"en": "Beaches and sport", "zh": "泳灘及運動", "color": "#1d8aa8"}, "hill": {"en": "Hills", "zh": "山峰", "color": "#8a6a3c"}, "local": {"en": "Next to the estate", "zh": "屋苑附近", "color": "#5d6670"}};
+  const poiName = p => (lang === 'zh' ? p.zh : p.en);
+  const dist = d => d < 1000 ? t(`${Math.round(d / 10) * 10} m`, `${Math.round(d / 10) * 10}米`) : t(`${(d / 1000).toFixed(1)} km`, `${(d / 1000).toFixed(1)}公里`);
+  function where(p) {
+    const d = Math.hypot(p.x, p.y), az = (Math.atan2(p.x, p.y) * 180 / Math.PI + 360) % 360;
+    return lang === 'zh' ? `${dir16(az)} ${dist(d)}` : `${dist(d)} ${dir16(az)}`;
+  }
+  function poiList() {
+    const host = document.getElementById('poiList'); if (!host) return;
+    let s = '';
+    for (const k of Object.keys(CATS)) {
+      const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
+      s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
+      for (const p of ps) {
+        s += `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
+        if (p.noteEn) s += `<p class="poinote">${t(p.noteEn, p.noteZh)}</p>`;
+      }
+      s += '</div>';
+    }
+    host.innerHTML = s;
+  }
+  function applyStatic() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hant-HK' : 'en';
+    document.querySelectorAll('[data-zh]').forEach(el => {
+      if (el.dataset.en == null) el.dataset.en = el.innerHTML;
+      el.innerHTML = lang === 'zh' ? el.dataset.zh : el.dataset.en;
+    });
+    for (const [attr, key] of [['title', 'Title'], ['aria-label', 'Aria']]) {
+      document.querySelectorAll(`[data-zh-${attr === 'title' ? 'title' : 'aria'}]`).forEach(el => {
+        if (el.dataset['en' + key] == null) el.dataset['en' + key] = el.getAttribute(attr) || '';
+        el.setAttribute(attr, lang === 'zh' ? el.dataset['zh' + key] : el.dataset['en' + key]);
+      });
+    }
+    const b = document.getElementById('langBtn');
+    if (b) {
+      b.querySelector('span').textContent = lang === 'zh' ? 'English' : '中文';
+      b.lang = lang === 'zh' ? 'en' : 'zh-Hant';
+      b.title = lang === 'zh' ? 'Switch to English' : '切換至中文';
+      b.setAttribute('aria-label', b.title);
+    }
+    poiList();
+  }
+  function setLang(l) { lang = l; store.set('yf-lang', l); applyStatic(); langFns.forEach(f => f()); }
+  function setPoi(on) {
+    poiOn = on; store.set('yf-poi', on ? '1' : '0');
+    const c = document.getElementById('poiChk'); if (c) c.checked = on;
+    poiFns.forEach(f => f());
+  }
+  const lb = document.getElementById('langBtn');
+  if (lb) lb.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));
+  const pc = document.getElementById('poiChk');
+  if (pc) { pc.checked = poiOn; pc.addEventListener('change', e => setPoi(e.target.checked)); }
+  applyStatic();
+  return {
+    get lang() { return lang; }, get poiOn() { return poiOn; },
+    t, dir16, POIS, CATS, poiName,
+    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f)
+  };
+})();
+</script>
 <script>
 (() => {
 const NEAR_TXT = `!COadfcccddfhlledddgcWZbSXYVROWXabbdiWpW~De~Ce~1
@@ -849,6 +954,12 @@ const STOPDEF = {
   doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
     text: 'The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
 };
+// ---------------- language ----------------
+const ZH = {"Plan A": "方案A", "Master on the hill side": "主人房向山", "The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "最初的方案：主人房設在寧靜的向山角落，兒童房取海景角落，工人房佔用整個凸位，有自己的窗。", "Rug by the sofa": "梳化旁的地氈", "Master bedroom": "主人房", "North, hillside": "北窗，山景", "Kids & office": "兒童房兼書房", "East, sea": "東窗，海景", "Helper's room": "工人房", "East (bay), sea slice": "東窗（凸位），少量海景", "Living & dining": "客飯廳", "Kitchen": "廚房", "East, into the gap": "東窗，望向單位之間的空隙", "Bathroom": "浴室", "South, into the gap": "南窗，望向單位之間的空隙", "Foyer": "玄關", "Living room": "客廳", "east, north half": "東窗北半", "east, south half": "東窗南半", "bay, faces east": "凸位窗，向東", "north": "北窗", "east, down the gap": "東窗，望向空隙", "Plan B": "方案B", "Sea-view master": "海景主人房", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "主人房搬到海景一邊，再從客廳多取0.9米，面積更大。兒童房改為向山的房間。工人房縮小成凸位後方一間無窗小房，騰出凸位窗做兒童窗邊座位，而沿海景窗的一列空間就成為遊戲區。", "Sea-window strip (about 3.6 m² clear) + window seat": "海景窗前空間（約3.6平方米）＋窗邊座位", "Kids’ room": "兒童房", "None": "沒有", "Living & play": "客廳及遊戲區", "East + bay seat": "東窗＋凸位座位", "east, south half + 0.9 m": "東窗南半＋0.9米", "east, north part": "東窗北段", "Window seat": "窗邊座位", "none": "沒有", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.": "四人餐桌放在兒童房門旁，近廚房。主人房門就在你身後，右方是設有窗邊座位的凸位。", "Sofa facing the sea": "梳化面向海景", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.": "站在梳化後面。梳化面向海景，不是電視。沿窗約2.9 × 1.6米的空間是兒童遊戲區，鋪了地墊，放了矮玩具櫃。右邊是主人房的牆。", "Play zone": "遊戲區", "At the sea window": "海景窗前", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.": "在海景窗前的遊戲區。銀線灣在山脊後面，隔音鰭擋住東北面的景觀，右邊是主人房與窗相接的牆。", "2.45 × 2.5 m": "2.45 × 2.5米", "Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.": "碌架床靠西牆，北窗下放書桌，門邊有衣櫃，中間鋪地氈給小朋友玩。窗外是樹木茂密的山坡：看不到海，但最寧靜。", "2.9 × 2.8 m": "2.9 × 2.8米", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.": "5呎雙人床床頭靠浴室牆，新間牆前放1.7米衣櫃，窗前放書桌。房間取得海景窗的南半，再加北半的0.9米。新間牆要對正窗框直料。", "1.3 × 2.0 m, no window": "1.3 × 2.0米，無窗", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.": "凸位後方的一間小房：單人床上有高層架，配窄衣櫃，右邊的趟門通往窗邊座位。房間沒有窗，需要抽氣扇或冷氣。", "Plan C": "方案C", "Master suite": "主人套房", "The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "主人房佔用整扇東窗，再繞過去延伸成衣帽間。兒童房改為向山的房間，工人房是一間有細南窗的小房，整個凸位變成開放式遊戲室。代價是客廳沒有自己的窗。", "Bay playroom (4.6 m²) + mat by the sofa": "凸位遊戲室（4.6平方米）＋梳化前地墊", "East, whole window": "整扇東窗", "Small south window": "細南窗", "None of its own": "沒有自己的窗", "Playroom": "遊戲室", "Bay, sea": "凸位窗，海景", "whole east window": "整扇東窗", "through the playroom": "經遊戲室", "small south window": "細南窗", "The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.": "餐桌放在兒童房門旁。右邊是遊戲室，主人套房和工人房的門在你身後。", "Sofa and play mat": "梳化及遊戲地墊", "The sofa backs onto the master suite wall, with a play mat in front that runs into the bay playroom. The living room has no window of its own in this plan: its daylight and its sea view come through the playroom.": "梳化背靠主人套房的牆，前面的遊戲地墊一直伸延到凸位遊戲室。這個方案的客廳沒有自己的窗：日光和海景都要經遊戲室進來。", "2.1 × 2.5 m + dressing": "2.1 × 2.5米＋衣帽間", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "主人房佔用整扇4.5米闊的東窗。4呎6雙人床靠北牆，兩邊各有床頭櫃，房間再繞過工人房延伸成衣帽間。", "1.6 × 1.9 m": "1.6 × 1.9米", "A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.": "客廳旁的一間小房，單人床放在細南窗下。這扇窗望向單位之間的空隙和遠處的山：有光有風，但看不到海。", "Bare": "吉屋", "As handed over": "交樓原貌", "The flat as the HA hands it over: one open L-shaped space, with only the kitchen and bathroom enclosed.": "房委會交樓時的模樣：一個開放的L形空間，只有廚房和浴室是獨立間隔。", "Open-plan living": "開放式空間", "Main room": "主廳", "east window": "東窗", "The bay": "凸位", "faces east": "向東", "North-west corner": "西北角", "Inside the front door. As handed over, the flat is one open L-shaped space; only the kitchen and bathroom are enclosed.": "剛進大門。交樓時全屋是一個開放的L形空間，只有廚房和浴室是獨立間隔。", "The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.": "玄關盡頭。廚房門在你右邊，浴室在正前方，左邊是開放式主廳。", "The HA hands over the sink and the gas and washing-machine connections. The window looks east down the gap between flats 2 and 3.": "交樓時已有洗滌盆，並預留煤氣和洗衣機接駁位。窗口向東，望向2室與3室之間的空隙。", "Middle of the room": "房間中央", "Open plan": "開放式", "The middle of the open plan. The bay is straight ahead and the east window to the right.": "開放空間的中央。凸位在正前方，東窗在右邊。", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.": "未加任何間隔的整扇4.5米東窗。隔音鰭在窗的左（北）邊外面。", "South-east corner": "東南角", "2.9 × 2.0 m": "2.9 × 2.0米", "The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "東窗的南半。方案A把這裡做兒童房，方案B和C就撥給主人房。", "The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "北窗所在的角落。方案A把這裡做主人房，方案B和C改做兒童房。", "2.15 × 2.0 m": "2.15 × 2.0米", "A 2.15 × 2.0 m bay off the main room, with its own east window.": "主廳旁一個2.15 × 2.0米的凸位，有自己的東窗。", "The whole flat as handed over, with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "交樓原貌的全屋，牆身在胸口高度剖開。拖動可以旋轉，點一下房間就可以走進去。", "Front door": "大門", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.": "剛進大門。前面是1.6米闊的玄關，左邊是鞋櫃，右邊是廚房牆。走到盡頭右轉就是一段短走廊。", "Hall": "走廊", "Kitchen, bath, living": "廚房、浴室、客廳", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.": "玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊通往客飯廳，西北角睡房的門就在轉角。", "1.6 × 2.0 m": "1.6 × 2.0米", "Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "東牆窗下是工作枱和洗滌盆，南面工作枱有煮食爐和洗衣機，雪櫃在門邊。廚房窗向東，望向2室與3室之間的空隙。", "1.5 × 2.0 m": "1.5 × 2.0米", "Shower on the right, toilet under a small south window, basin and mirror by the door.": "右邊是企缸，座廁在細南窗下，洗手盆和鏡在門邊。", "Dining": "飯廳", "Table for four": "四人餐桌", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.": "餐桌放在通道盡頭。工人房門在正前方，右邊是客廳和客廳窗。", "Sofa and TV": "梳化及電視", "About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.": "連飯廳約5.4 × 2.5米。客廳取得大東窗的北半，隔音鰭就在窗的左邊外面。", "Living-room window": "客廳窗", "Best view": "最佳景觀", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.": "貼近玻璃。銀線灣在前方山脊後面，牛尾海在它左邊展開。隔音鰭擋住東北面的景觀。", "2.9 × 1.9 m": "2.9 × 1.9米", "Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.": "碌架床靠南牆，東窗南半前放書桌，門邊有衣櫃。這裡看到的海景與客廳一樣多，而且這一邊沒有隔音鰭。", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.": "4呎6雙人床，床頭上方有儲物櫃，配1.5米衣櫃和北窗。窗外是屋苑後面樹木茂密的山坡，看不到海，但最寧靜。", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.": "凸位變成一間46平方呎的房：單人床上有層架，配窄衣櫃，還有自己的東窗，可以看到東北面少量海景。", "Front of the bay": "凸位前段", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.": "凸位前段做成兒童窗邊座位，下面可以儲物，保留凸位窗的少量海景。工人房在你左邊的牆後，從這裡的趟門出入。", "The whole bay": "整個凸位", "With the helper moved out, the whole bay becomes an open playroom off the living room: play mat, toy shelves and a kids’ table, plus the bay window’s slice of sea.": "工人房搬走後，整個凸位變成客廳旁的開放式遊戲室：遊戲地墊、玩具櫃和兒童枱，加上凸位窗的少量海景。", "Dressing area": "衣帽間", "South half of the window": "東窗南半", "The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "東窗南半照亮衣帽間，沿工人房的牆有1.8米衣櫃。方案A裡這個角落是兒童房。", "Dollhouse": "鳥瞰全屋", "Whole flat from above": "從上面看全屋", "The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "牆身在胸口高度剖開的全屋。拖動可以旋轉，點一下房間就可以走進去。", "north window": "北窗", "bay window": "凸位窗", "east window (north half)": "東窗（北半）", "east window (south half)": "東窗（南半）", "bathroom window": "浴室窗", "kitchen window": "廚房窗", "Silverstrand Bay": "銀線灣", "Port Shelter": "牛尾海", "Kau Sai Chau": "滘西洲", "Clear Water Bay hills": "清水灣山嶺", "Hillside behind the estate": "屋苑後山", "Acoustic fin": "隔音鰭", "Helper": "工人房", "Living": "客廳", "Master": "主人房", "Kids": "兒童房"};
+const T = YF.t;
+const tr = s => (YF.lang === 'zh' && s != null && ZH[s] != null ? ZH[s] : s);
+const sqm = a => T(`${a.toFixed(1)} m² · ${Math.round(a * 10.764)} sq ft`, `${a.toFixed(1)}平方米 · ${Math.round(a * 10.764)}平方呎`);
+
 function stopFor(id, layout) {
   const L = LAYOUTS[layout || st.layout];
   if (!L.stops.includes(id)) return null;
@@ -923,7 +1034,7 @@ function sightFrom(x, y) {
   return { bins, via, dist };
 }
 const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-const dirName = az => DIRS[Math.round(((az % 360) + 360) % 360 / 22.5) % 16];
+const dirName = az => YF.dir16(az);
 function seaSegments(bins) {
   const segs = []; let s = -1;
   for (let az = 0; az <= 360; az++) {
@@ -1140,7 +1251,6 @@ function buildFurniture() {
 // labels
 const XLABELS = [
   { t: 'Silverstrand Bay', x: 1900, y: -170, h: 2, sea: true },
-  { t: 'Silverstrand Beach', x: 631, y: -195, h: 8 },
   { t: 'Port Shelter', x: 2900, y: 2700, h: 2, sea: true },
   { t: 'Kau Sai Chau', x: 4530, y: 5040, h: 60 },
   { t: 'Clear Water Bay hills', x: 1650, y: -1650, h: 240 },
@@ -1150,12 +1260,25 @@ const XLABELS = [
 const labelHost = $('labels');
 function mkLabel(cls, html) { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = html; labelHost.appendChild(el); return el; }
 XLABELS.forEach(L => { L.el = mkLabel(L.sea ? 'sea' : '', L.t); L.v = P(L.x, L.y, L.h); });
+// nearby places (shared list): a label on a pin 30 m above the ground
+const POI_L = YF.POIS.map(p => {
+  const g = elev(p.x, p.y), ground = g && !g[1] ? g[0] : 2, h = ground + 30;
+  const el = mkLabel('poi', ''); el.style.setProperty('--c', YF.CATS[p.cat].color);
+  return { p, x: p.x, y: p.y, h, ground, el, v: P(p.x, p.y, h) };
+});
+const poiPins = new THREE.Group(); scene.add(poiPins);
+{
+  const byCat = {};
+  for (const L of POI_L) (byCat[L.p.cat] = byCat[L.p.cat] || []).push(P(L.x, L.y, L.ground), P(L.x, L.y, L.h));
+  for (const k in byCat) poiPins.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
+}
+const labelName = L => (L.p ? YF.poiName(L.p) : tr(L.t));
 let roomLabels = [];
 function buildRoomLabels() {
   roomLabels.forEach(r => r.el.remove());
   roomLabels = LAYOUTS[st.layout].rooms.map(r => {
     const area = r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
-    const el = mkLabel('room', `${r.name}<small>${area.toFixed(1)} m² · ${Math.round(area * 10.764)} sq ft</small>`);
+    const el = mkLabel('room', `${tr(r.name)}<small>${sqm(area)}</small>`);
     return { el, v: P(wx(r.at[0]), wy(r.at[1]), FL + 1.45) };
   });
 }
@@ -1171,9 +1294,9 @@ function terrainHides(L) {
   return false;
 }
 function updateLabelVisibility() {
-  for (const L of XLABELS) {
+  for (const L of XLABELS.concat(POI_L)) {
     L.hidden = true; L.behind = false;
-    if (st.mode !== 'walk') continue;
+    if (st.mode !== 'walk' || (L.p && !YF.poiOn)) continue;
     const D = Math.hypot(L.x - cs.x, L.y - cs.y), dx = (L.x - cs.x) / D, dy = (L.y - cs.y) / D;
     let near = Infinity;
     for (const b of SIGHT) { const t = hitT(b, cs.x, cs.y, dx, dy); if (t < near) near = t; }
@@ -1181,8 +1304,9 @@ function updateLabelVisibility() {
     L.hidden = false;
     if (!L.fin) L.behind = terrainHides(L);
     L.el.classList.toggle('hid', L.behind);
-    L.el.textContent = L.t + (L.behind ? ' · behind the hill' : '');
+    L.el.textContent = labelName(L) + (L.behind ? T(' · behind the hill', ' · 被山遮擋') : '');
   }
+  poiPins.visible = YF.poiOn && st.mode === 'walk';
 }
 function placeLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
@@ -1193,7 +1317,7 @@ function placeLabels() {
     el.hidden = !ok;
     if (ok) { el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
   };
-  for (const L of XLABELS) put(L.el, L.v, !L.hidden);
+  for (const L of XLABELS.concat(POI_L)) put(L.el, L.v, !L.hidden);
   for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll');
 }
 
@@ -1211,6 +1335,11 @@ function applyWalkCam() {
   const a = cs.yaw * Math.PI / 180, p = cs.pitch * Math.PI / 180;
   cam.lookAt(cam.position.clone().add(new THREE.Vector3(Math.sin(a) * Math.cos(p), Math.sin(p), -Math.cos(a) * Math.cos(p))));
 }
+function setHint() {
+  $('hint').textContent = st.mode === 'doll'
+    ? T('Drag to turn · scroll or pinch to zoom · tap a room to step inside', '拖動旋轉 · 滾輪或雙指縮放 · 點房間走進去')
+    : T('Drag to look around · tap the floor to walk · arrow keys or WASD to move', '拖動環顧 · 點地面行過去 · 方向鍵或 WASD 移動');
+}
 function setMode(m) {
   st.mode = m;
   const doll = m === 'doll';
@@ -1218,7 +1347,7 @@ function setMode(m) {
   CLIP.constant = doll ? FL + CUT : 1e7;
   setVis();
   cam.fov = doll ? 45 : 70; cam.near = doll ? .5 : .05; cam.updateProjectionMatrix();
-  $('hint').textContent = doll ? 'Drag to turn · scroll or pinch to zoom · tap a room to step inside' : 'Drag to look around · tap the floor to walk · arrow keys or WASD to move';
+  setHint();
   updateSight(); updateLabelVisibility(); updateCompassMarker();
   dirty = true;
 }
@@ -1295,20 +1424,20 @@ stage.addEventListener('blur', () => keys.clear());
 
 // ---------------- panel ----------------
 function drawStops() {
-  $('stops').innerHTML = LAYOUTS[st.layout].stops.map(id => stopFor(id)).map(s => `<button data-id="${s.id}" class="${s.doll ? 'wide' : ''}" aria-pressed="${st.stop === s.id}">${s.name}<small>${s.sub}</small></button>`).join('');
+  $('stops').innerHTML = LAYOUTS[st.layout].stops.map(id => stopFor(id)).map(s => `<button data-id="${s.id}" class="${s.doll ? 'wide' : ''}" aria-pressed="${st.stop === s.id}">${tr(s.name)}<small>${tr(s.sub)}</small></button>`).join('');
   $('stops').querySelectorAll('button').forEach(b => b.onclick = () => goStop(b.dataset.id));
 }
 function refreshPanel() {
   const s = st.stop ? stopFor(st.stop) : null;
   $('stops').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === st.stop)));
-  $('stopTitle').textContent = s ? s.name : 'Your own spot';
-  $('stopDesc').textContent = s ? s.text : 'Drag to look around. The panel below updates for wherever you stand.';
+  $('stopTitle').textContent = s ? tr(s.name) : T('Your own spot', '你自選的位置');
+  $('stopDesc').textContent = s ? tr(s.text) : T('Drag to look around. The panel below updates for wherever you stand.', '拖動四處看看。下面的資料會按你所站的位置更新。');
 }
 let lastSightKey = '', lastSight = null;
 function updateSight() {
   if (st.mode === 'doll') {
-    $('verdict').textContent = 'Step inside to check the view';
-    $('facts').innerHTML = '<dt>Tip</dt><dd>Pick a tour stop or tap a room</dd>';
+    $('verdict').textContent = T('Step inside to check the view', '走進室內查看景觀');
+    $('facts').innerHTML = T('<dt>Tip</dt><dd>Pick a tour stop or tap a room</dd>', '<dt>提示</dt><dd>揀一個導覽點，或點一下房間</dd>');
     $('compass').innerHTML = compassSVG(null);
     return;
   }
@@ -1320,14 +1449,14 @@ function updateSight() {
     lastSight.room = room;
   }
   const S = lastSight;
-  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${(a + 360) % 360}° ${dirName(a)}` : `${(a + 360) % 360}–${b}° (${dirName(a)} to ${dirName(b)})`).join(', ') : 'none';
-  if (!S.out) $('verdict').textContent = 'No view out from here, only walls or the next flat.';
-  else if (!S.deg) $('verdict').textContent = 'No sea from here, only hills and sky.';
-  else $('verdict').innerHTML = `<b>${S.deg}°</b> of sea in view from here`;
-  $('facts').innerHTML = `<dt>Sea directions</dt><dd>${fmt(S.segs)}</dd>`
-    + `<dt>Nearest sea</dt><dd>${S.near ? (S.near / 1000).toFixed(2) + ' km' : '–'}</dd>`
-    + `<dt>Through</dt><dd>${S.wins.length ? S.wins.map(w => WIN_NAMES[w]).join(', ') : '–'}</dd>`
-    + (S.room ? `<dt>Counting</dt><dd>This room's own window, door shut</dd>` : LAYOUTS[st.layout].parts.some(p => p[0] === 'pdoor') ? `<dt>Counting</dt><dd>Bedroom doors shut</dd>` : '');
+  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${(a + 360) % 360}° ${dirName(a)}` : T(`${(a + 360) % 360}–${b}° (${dirName(a)} to ${dirName(b)})`, `${(a + 360) % 360}–${b}°（${dirName(a)}至${dirName(b)}）`)).join(T(', ', '、')) : T('none', '沒有');
+  if (!S.out) $('verdict').textContent = T('No view out from here, only walls or the next flat.', '這裡望出去只有牆或鄰座單位。');
+  else if (!S.deg) $('verdict').textContent = T('No sea from here, only hills and sky.', '這裡看不到海，只見山和天空。');
+  else $('verdict').innerHTML = T(`<b>${S.deg}°</b> of sea in view from here`, `這裡可見 <b>${S.deg}°</b> 海景`);
+  $('facts').innerHTML = `<dt>${T('Sea directions', '海景方向')}</dt><dd>${fmt(S.segs)}</dd>`
+    + `<dt>${T('Nearest sea', '最近海面')}</dt><dd>${S.near ? (S.near / 1000).toFixed(2) + T(' km', ' 公里') : '–'}</dd>`
+    + `<dt>${T('Through', '經由')}</dt><dd>${S.wins.length ? S.wins.map(w => tr(WIN_NAMES[w])).join(T(', ', '、')) : '–'}</dd>`
+    + (S.room ? `<dt>${T('Counting', '計算方法')}</dt><dd>${T("This room's own window, door shut", '只計這房間的窗（房門關上）')}</dd>` : LAYOUTS[st.layout].parts.some(p => p[0] === 'pdoor') ? `<dt>${T('Counting', '計算方法')}</dt><dd>${T('Bedroom doors shut', '睡房門關上')}</dd>` : '');
   $('compass').innerHTML = compassSVG(S);
 }
 // bedrooms and bathroom: inside one, only its own window counts (door shut); elsewhere the bathroom door is shut
@@ -1337,14 +1466,14 @@ function roomAt(x, y) {
 }
 function compassSVG(sight) {
   const W = 360, H = 46, x = az => 10 + az / 360 * (W - 20);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="What you can see in each compass direction">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${T('What you can see in each compass direction', '各方向看到的景物')}">`;
   s += `<rect x="10" y="10" width="${W - 20}" height="14" fill="var(--chip)"/>`;
   if (sight) for (let az = 0; az < 360; az++) {
     const b = sight.bins[az]; if (!b) continue;
     const c = b === 1 ? 'var(--land)' : sight.dist[az] < 1500 ? 'var(--bay)' : 'var(--sea-soft)';
     s += `<rect x="${x(az) - .3}" y="10" width="${(W - 20) / 360 + .6}" height="14" fill="${c}"/>`;
   }
-  [[0, 'N'], [90, 'E'], [180, 'S'], [270, 'W'], [360, 'N']].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="24" y2="29" stroke="var(--ink-2)"/><text x="${x(a)}" y="41" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
+  [[0, T('N', '北')], [90, T('E', '東')], [180, T('S', '南')], [270, T('W', '西')], [360, T('N', '北')]].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="24" y2="29" stroke="var(--ink-2)"/><text x="${x(a)}" y="41" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
   s += `<path id="cmark" d="" fill="var(--mark)"/>`;
   return s + '</svg>';
 }
@@ -1373,8 +1502,8 @@ function drawPlan() {
     if (cls) s += `<rect class="${cls}" x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}"/>`;
   }
   s += `<rect class="fn" x="${FIN[0]}" y="${FIN[2]}" width="${FIN[1] - FIN[0]}" height="${FIN[3] - FIN[2]}"/>`;
-  for (const r of L.rooms) if (r.id !== 'foyer') s += `<text class="rl" x="${r.at[0]}" y="${r.at[1] + 120}">${SHORT[r.name] || r.name}</text>`;
-  s += `<text class="na" x="9300" y="-1900">N</text><path d="M9300 -2600 L9120 -2250 L9480 -2250 Z" fill="var(--ink-2)"/>`;
+  for (const r of L.rooms) if (r.id !== 'foyer') s += `<text class="rl" x="${r.at[0]}" y="${r.at[1] + 120}">${tr(SHORT[r.name] || r.name)}</text>`;
+  s += `<text class="na" x="9300" y="-1900">${T('N', '北')}</text><path d="M9300 -2600 L9120 -2250 L9480 -2250 Z" fill="var(--ink-2)"/>`;
   s += `<path id="cone" class="cone" d=""/><circle id="dot" class="dot" r="170" cx="-9999" cy="-9999"/>`;
   const svg = $('plan'); svg.setAttribute('viewBox', '-600 -2900 10600 9300'); svg.innerHTML = s;
   updateCompassMarker();
@@ -1399,20 +1528,20 @@ function winRows(layout) {
   return (winCache[key] = rows);
 }
 function windowTable() {
-  const rows = winRows(st.layout).map(r => `<tr><td>${r.n}</td><td>${r.w}</td><td class="s">${r.deg == null ? '–' : r.deg ? r.deg + '°' : 'none'}</td></tr>`);
-  $('winsT').textContent = `Sea from each window · ${LAYOUTS[st.layout].name}`;
-  $('wins').innerHTML = `<tr><th>Room</th><th>Window</th><th style="text-align:right">Sea</th></tr>` + rows.join('');
+  const rows = winRows(st.layout).map(r => `<tr><td>${tr(r.n)}</td><td>${tr(r.w)}</td><td class="s">${r.deg == null ? '–' : r.deg ? r.deg + '°' : T('none', '沒有')}</td></tr>`);
+  $('winsT').textContent = `${T('Sea from each window', '各窗海景')} · ${tr(LAYOUTS[st.layout].name)}`;
+  $('wins').innerHTML = `<tr><th>${T('Room', '房間')}</th><th>${T('Window', '窗')}</th><th style="text-align:right">${T('Sea', '海景')}</th></tr>` + rows.join('');
 }
 const rectArea = r => r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
 function roomTable() {
   const L = LAYOUTS[st.layout];
   const rows = L.rooms.filter(r => r.win || r.role).map(r => {
     const area = rectArea(r), [X0, X1, Y0, Y1] = r.rects[0];
-    const dims = r.rects.length === 1 ? `${((X1 - X0) / 1000).toFixed(2)} × ${((Y1 - Y0) / 1000).toFixed(2)} m<br>` : '';
-    return `<tr><td>${r.name}</td><td class="n">${dims}${area.toFixed(1)} m² · ${Math.round(area * 10.764)} sq ft</td><td>${r.win || '–'}</td></tr>`;
+    const dims = r.rects.length === 1 ? `${((X1 - X0) / 1000).toFixed(2)} × ${((Y1 - Y0) / 1000).toFixed(2)}${T(' m', '米')}<br>` : '';
+    return `<tr><td>${tr(r.name)}</td><td class="n">${dims}${sqm(area)}</td><td>${tr(r.win) || '–'}</td></tr>`;
   });
-  $('roomsT').textContent = `Rooms · ${L.name}`;
-  $('rooms').innerHTML = `<tr><th>Room</th><th>Size</th><th>Window</th></tr>` + rows.join('');
+  $('roomsT').textContent = `${T('Rooms', '房間')} · ${tr(L.name)}`;
+  $('rooms').innerHTML = `<tr><th>${T('Room', '房間')}</th><th>${T('Size', '面積')}</th><th>${T('Window', '窗')}</th></tr>` + rows.join('');
 }
 function compareTable() {
   const keys = ['A', 'B', 'C'];
@@ -1422,17 +1551,17 @@ function compareTable() {
     let view;
     if (roles.includes('living')) {
       const liv = rows.find(r => r.role === 'living'), play = rows.find(r => r.role === 'play');
-      view = [liv ? (liv.deg ? `${liv.deg}° sea` : 'no window') : '', play ? `${play.n.toLowerCase()} ${play.deg}°` : ''].filter(Boolean).join(' · ');
+      view = [liv ? (liv.deg ? T(`${liv.deg}° sea`, `海景 ${liv.deg}°`) : T('no window', '沒有窗')) : '', play ? T(`${play.n.toLowerCase()} ${play.deg}°`, `${tr(play.n)} ${play.deg}°`) : ''].filter(Boolean).join(' · ');
     } else {
       const r = rows[0];
-      view = !r || r.deg == null ? 'no window' : r.deg ? `${r.deg}° sea` : r.north ? 'hillside' : 'window, no sea';
+      view = !r || r.deg == null ? T('no window', '沒有窗') : r.deg ? T(`${r.deg}° sea`, `海景 ${r.deg}°`) : r.north ? T('hillside', '山景') : T('window, no sea', '有窗，沒有海景');
     }
-    return `<td class="${k === st.layout ? 'on' : ''}"><b>${area.toFixed(1)} m²</b><br>${view}</td>`;
+    return `<td class="${k === st.layout ? 'on' : ''}"><b>${area.toFixed(1)}${T(' m²', '平方米')}</b><br>${view}</td>`;
   };
-  const head = `<tr><th></th>${keys.map(k => `<th class="${k === st.layout ? 'on' : ''}">${LAYOUTS[k].name}</th>`).join('')}</tr>`;
+  const head = `<tr><th></th>${keys.map(k => `<th class="${k === st.layout ? 'on' : ''}">${tr(LAYOUTS[k].name)}</th>`).join('')}</tr>`;
   const rows = [['Master', ['master']], ['Kids', ['kids']], ['Helper', ['helper']], ['Living & play', ['living', 'play']]]
-    .map(([n, roles]) => `<tr><td>${n}</td>${keys.map(k => cell(k, roles)).join('')}</tr>`);
-  rows.push(`<tr><td>Play space</td>${keys.map(k => `<td class="${k === st.layout ? 'on' : ''}">${LAYOUTS[k].play}</td>`).join('')}</tr>`);
+    .map(([n, roles]) => `<tr><td>${tr(n)}</td>${keys.map(k => cell(k, roles)).join('')}</tr>`);
+  rows.push(`<tr><td>${T('Play space', '遊戲空間')}</td>${keys.map(k => `<td class="${k === st.layout ? 'on' : ''}">${tr(LAYOUTS[k].play)}</td>`).join('')}</tr>`);
   $('cmp').innerHTML = head + rows.join('');
 }
 
@@ -1448,9 +1577,9 @@ function setVis() {
   for (const f of mainFloors) f.material = furn ? M.wood : M.screed;
 }
 function drawLayoutButtons() {
-  $('lays').innerHTML = LAYOUT_KEYS.map(k => `<button data-l="${k}" aria-pressed="${k === st.layout}">${LAYOUTS[k].name}<small>${LAYOUTS[k].sub}</small></button>`).join('');
+  $('lays').innerHTML = LAYOUT_KEYS.map(k => `<button data-l="${k}" aria-pressed="${k === st.layout}">${tr(LAYOUTS[k].name)}<small>${tr(LAYOUTS[k].sub)}</small></button>`).join('');
   $('lays').querySelectorAll('button').forEach(b => b.onclick = () => setLayout(b.dataset.l));
-  $('ldesc').textContent = LAYOUTS[st.layout].desc;
+  $('ldesc').textContent = tr(LAYOUTS[st.layout].desc);
 }
 function applyLayout() {
   setVis();
@@ -1481,8 +1610,8 @@ function setPanel(open) {
   $('app').classList.toggle('collapsed', !open);
   const b = $('panelBtn');
   b.setAttribute('aria-expanded', String(open));
-  b.title = open ? 'Hide the side panel' : 'Show the side panel';
-  b.querySelector('span').textContent = open ? 'Hide panel' : 'Show panel';
+  b.title = open ? T('Hide the side panel', '隱藏側面板') : T('Show the side panel', '顯示側面板');
+  b.querySelector('span').textContent = open ? T('Hide panel', '隱藏面板') : T('Show panel', '顯示面板');
   try { localStorage.setItem('yf-tour-panel', open ? '1' : '0'); } catch (e) {}
 }
 $('panelBtn').addEventListener('click', () => setPanel($('app').classList.contains('collapsed')));
@@ -1492,8 +1621,8 @@ $('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuil
 function hud() {
   if (st.mode === 'walk') {
     const az = ((cs.yaw % 360) + 360) % 360;
-    $('hud').innerHTML = `<span>${LAYOUTS[st.layout].name}</span><span>36/F · eye +${EYE_H.toFixed(1)} mPD</span><span>Facing ${Math.round(az)}° ${dirName(az)}</span>`;
-  } else $('hud').innerHTML = `<span>Flat 2 · 36/F · ${LAYOUTS[st.layout].name}</span><span>Walls cut at 1.3 m</span>`;
+    $('hud').innerHTML = `<span>${tr(LAYOUTS[st.layout].name)}</span><span>${T(`36/F · eye +${EYE_H.toFixed(1)} mPD`, `36樓 · 視線 +${EYE_H.toFixed(1)} mPD`)}</span><span>${T('Facing', '面向')} ${Math.round(az)}° ${dirName(az)}</span>`;
+  } else $('hud').innerHTML = `<span>${T('Flat 2 · 36/F', '2室 · 36樓')} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>`;
 }
 
 // ---------------- main loop ----------------
@@ -1526,6 +1655,9 @@ function loop(t) {
   }
   if (dirty) { dirty = false; renderer.render(scene, cam); placeLabels(); hud(); }
 }
+
+YF.onLang(() => { applyLayout(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dirty = true; });
+YF.onPoi(() => { updateLabelVisibility(); dirty = true; });
 
 // ---------------- start ----------------
 seaTable();
