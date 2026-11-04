@@ -149,9 +149,10 @@ body { margin: 0; }
 .tools button:hover { background: rgba(19,35,44,.96); }
 .tools button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .tools svg { width: 18px; height: 18px; flex: none; }
-@media (max-width: 640px) {
+.stage { container-type: inline-size; }
+@container (max-width: 760px) {
   .tools button { padding: 0 10px; }
-  .tools button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .tools button:not(#langBtn) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 /* nearby places */
 .lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
@@ -161,9 +162,15 @@ body { margin: 0; }
 .poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
 .poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
 .poirow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; padding: 1px 0; }
+.poirow.pick { cursor: pointer; border-radius: 2px; }
+.poirow.pick:hover { background: var(--chip); }
+.poirow.pick:focus-visible { outline: 2px solid var(--mark); outline-offset: 1px; }
 .poirow .d { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
 .poinote { font-size: 12.5px; color: var(--ink-2); margin: 0 0 3px; }
 .poifoot { font-size: 12.5px; color: var(--ink-2); margin: 0; }
+
+.hud { max-width: calc(100% - 390px); }
+@container (max-width: 760px) { .hud { max-width: calc(100% - 230px); } }
 </style>
 </head>
 <body>
@@ -283,6 +290,7 @@ window.YF = (() => {
   if (lang !== 'en' && lang !== 'zh') lang = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
   let poiOn = store.get('yf-poi') !== '0';
   const langFns = [], poiFns = [];
+  let pickFn = null;
   const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
   const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
@@ -302,12 +310,19 @@ window.YF = (() => {
       const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
       s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
       for (const p of ps) {
-        s += `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
+        s += pickFn
+          ? `<div class="poirow pick" role="button" tabindex="0" data-id="${p.id}"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`
+          : `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
         if (p.noteEn) s += `<p class="poinote">${t(p.noteEn, p.noteZh)}</p>`;
       }
       s += '</div>';
     }
     host.innerHTML = s;
+    if (pickFn) host.querySelectorAll('.poirow.pick').forEach(r => {
+      const go = () => { if (!poiOn) setPoi(true); pickFn(POIS.find(p => p.id === r.dataset.id)); };
+      r.addEventListener('click', go);
+      r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
   }
   function applyStatic() {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hant-HK' : 'en';
@@ -344,7 +359,8 @@ window.YF = (() => {
   return {
     get lang() { return lang; }, get poiOn() { return poiOn; },
     t, dir16, POIS, CATS, poiName,
-    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f)
+    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
+    onPick: f => { pickFn = f; poiList(); }
   };
 })();
 </script>

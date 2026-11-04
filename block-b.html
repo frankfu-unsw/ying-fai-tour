@@ -117,9 +117,10 @@ body { margin: 0; }
 .tools button:hover { background: rgba(19,35,44,.96); }
 .tools button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .tools svg { width: 18px; height: 18px; flex: none; }
-@media (max-width: 640px) {
+.stage { container-type: inline-size; }
+@container (max-width: 760px) {
   .tools button { padding: 0 10px; }
-  .tools button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .tools button:not(#langBtn) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 /* nearby places */
 .lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
@@ -129,6 +130,9 @@ body { margin: 0; }
 .poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
 .poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
 .poirow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; padding: 1px 0; }
+.poirow.pick { cursor: pointer; border-radius: 2px; }
+.poirow.pick:hover { background: var(--chip); }
+.poirow.pick:focus-visible { outline: 2px solid var(--mark); outline-offset: 1px; }
 .poirow .d { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
 .poinote { font-size: 12.5px; color: var(--ink-2); margin: 0 0 3px; }
 .poifoot { font-size: 12.5px; color: var(--ink-2); margin: 0; }
@@ -212,6 +216,7 @@ body { margin: 0; }
       <div class="eyebrow" id="poiHd" data-zh="附近地點">Nearby places</div>
       <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示標記">Show markers on the 3D view</span></label>
       <div id="poiList"></div>
+      <p class="poifoot" data-zh="點一下地點，鳥瞰圖就會飛到那裡。">Tap a place to fly the overview to it.</p>
       <p class="poifoot" data-zh="距離為與屋苑的直線距離，地點位置取自 OpenStreetMap。">Straight-line distance from the estate. Locations from OpenStreetMap.</p>
     </section>
 
@@ -243,6 +248,7 @@ window.YF = (() => {
   if (lang !== 'en' && lang !== 'zh') lang = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
   let poiOn = store.get('yf-poi') !== '0';
   const langFns = [], poiFns = [];
+  let pickFn = null;
   const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
   const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
@@ -262,12 +268,19 @@ window.YF = (() => {
       const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
       s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
       for (const p of ps) {
-        s += `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
+        s += pickFn
+          ? `<div class="poirow pick" role="button" tabindex="0" data-id="${p.id}"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`
+          : `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
         if (p.noteEn) s += `<p class="poinote">${t(p.noteEn, p.noteZh)}</p>`;
       }
       s += '</div>';
     }
     host.innerHTML = s;
+    if (pickFn) host.querySelectorAll('.poirow.pick').forEach(r => {
+      const go = () => { if (!poiOn) setPoi(true); pickFn(POIS.find(p => p.id === r.dataset.id)); };
+      r.addEventListener('click', go);
+      r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
   }
   function applyStatic() {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hant-HK' : 'en';
@@ -304,7 +317,8 @@ window.YF = (() => {
   return {
     get lang() { return lang; }, get poiOn() { return poiOn; },
     t, dir16, POIS, CATS, poiName,
-    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f)
+    onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
+    onPick: f => { pickFn = f; poiList(); }
   };
 })();
 </script>
@@ -938,6 +952,16 @@ const STAND = { d05: 0.5, d15: 1.5, d30: 3 };
 Object.keys(STAND).forEach(id => { $(id).onclick = () => { st.d = STAND[id]; Object.keys(STAND).forEach(k => $(k).setAttribute('aria-pressed', String(k === id))); refresh(true); }; });
 
 YF.onLang(() => refresh(true));
+// tapping a place in the list flies the overview to it
+YF.onPick(p => {
+  if (st.view !== 'map') $('vMap').click();
+  const L = LABELS.find(l => l.p === p), tgt = new THREE.Vector3(p.x, L ? L.h - 40 : 20, -p.y);
+  const off = cam.position.clone().sub(controls.target).setLength(1400);
+  controls.target.copy(tgt); cam.position.copy(tgt.clone().add(off)); controls.update();
+  mapPose = { pos: cam.position.clone(), tgt: controls.target.clone() };
+  const r = stage.getBoundingClientRect(); if (r.bottom < 80 || r.top > innerHeight - 80) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  render();
+});
 YF.onPoi(() => { pinGroup.visible = YF.poiOn; render(); });
 requestAnimationFrame(() => { refresh(true); resize(); $('loading').hidden = true; });
 })();
