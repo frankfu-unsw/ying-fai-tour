@@ -1541,25 +1541,30 @@ function flyDoll(to, ms) {
   dollGlide = { t0: performance.now(), ms: ms || 1100, a: controls.target.clone(), b: to.tgt.clone(), d0: o0.clone().normalize(), d1: o1.clone().normalize(), l0: Math.log(o0.length()), l1: Math.log(o1.length()) };
 }
 controls.addEventListener('start', () => { dollGlide = null; });
-// zooming the dollhouse out also tilts it toward the horizon (from about 44 to 21 degrees down), so the hills, the sea and
-// the nearby places come into the picture after a few steps; zooming back in steepens it again and, if you had moved
-// away (the area view or a place you picked, within 400 m), brings the view back to the flat.
-const ZB0 = Math.log(15), ZB1 = Math.log(120), HOME_R = 400;
-const PHI_DOLL = new THREE.Spherical().setFromVector3(DOLL_START.pos.clone().sub(DOLL_START.tgt)).phi, PHI_AREA = 1.2;
-const zblend = d => { const u = Math.min(1, Math.max(0, (Math.log(d) - ZB0) / (ZB1 - ZB0))); return 1 - (1 - u) * (1 - u); };
-let zoomRef = null;
-function zoomBlend() {
+// two zoom levels in the dollhouse: zooming out a few steps from the flat glides out to the area view (turned to face the
+// way you were facing), and zooming back in on the estate from the area view glides back to the flat. Zooming is paused
+// while the camera is flying so a long scroll or pinch doesn't cut the flight short.
+const SNAP_OUT = 24, SNAP_IN = 260, ESTATE_R = 350, AREA_D = AREA_START.pos.distanceTo(AREA_START.tgt);
+let zoomRef = null, pickedPlace = false;
+function areaFacing(theta) {
+  const Y = new THREE.Vector3(0, 1, 0), off = areaPose.pos.clone().sub(areaPose.tgt), turn = theta - Math.atan2(off.x, off.z);
+  const rel = areaPose.tgt.clone().sub(FLAT_C); rel.y = 0; rel.applyAxisAngle(Y, turn);
+  const tgt = new THREE.Vector3(FLAT_C.x + rel.x, areaPose.tgt.y, FLAT_C.z + rel.z);
+  return { tgt, pos: tgt.clone().add(off.applyAxisAngle(Y, turn)) };
+}
+function zoomSnap() {
   if (st.mode !== 'doll' || dollGlide) { zoomRef = null; return; }
-  const d = camDist();
-  if (zoomRef == null || Math.abs(d - zoomRef) < 1e-4) { zoomRef = d; return; }
-  const b0 = zblend(zoomRef), b1 = zblend(d); zoomRef = d;
-  const tg = controls.target;
-  if (b0 === b1 || Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z) > HOME_R) return;
-  const off = cam.position.clone().sub(tg), sp = new THREE.Spherical().setFromVector3(off);
-  if (b1 > b0) { const k = (b1 - b0) / (1 - b0); sp.phi += (PHI_AREA - sp.phi) * k; }
-  else { const k = 1 - b1 / b0; tg.x += (FLAT_C.x - tg.x) * k; tg.y += (FLAT_C.y - tg.y) * k; tg.z += (FLAT_C.z - tg.z) * k; sp.phi += (PHI_DOLL - sp.phi) * k; }
-  sp.phi = Math.min(controls.maxPolarAngle, Math.max(.05, sp.phi)); sp.makeSafe();
-  cam.position.copy(tg).add(off.setFromSpherical(sp)); controls.update(); zoomRef = camDist();
+  const d = camDist(), prev = zoomRef; zoomRef = d;
+  if (prev == null || Math.abs(d - prev) < 1e-4) return;
+  const tg = controls.target, off = cam.position.clone().sub(tg), fromFlat = Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z);
+  if (d > prev && prev <= SNAP_OUT && d > SNAP_OUT && fromFlat < 40 && Math.abs(tg.y - FLAT_C.y) < 40) {
+    closePose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(prev)) };
+    pickedPlace = false;
+    flyDoll(areaFacing(Math.atan2(off.x, off.z)));
+  } else if (d < prev && d < SNAP_IN && prev >= SNAP_IN && fromFlat < ESTATE_R && !pickedPlace) {
+    areaPose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(Math.max(prev, AREA_D))) };
+    flyDoll(closePose);
+  }
 }
 let dirty = true;
 controls.addEventListener('change', () => { dirty = true; });
@@ -1834,7 +1839,7 @@ $('furn').addEventListener('change', e => { st.furn = e.target.checked; applyLay
 
 // reset to the starting dollhouse view (keeps the chosen plan)
 function resetView() {
-  glide = null; dollGlide = null; zoomRef = null; keys.clear();
+  glide = null; dollGlide = null; zoomRef = null; pickedPlace = false; keys.clear();
   closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }; areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
   dollPose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() };
   if (st.mode !== 'doll') setMode('doll');
@@ -1891,6 +1896,7 @@ function loop(t) {
       if ((sightTimer += dt) > .15) { sightTimer = 0; updateSight(); updateLabelVisibility(); refreshPanel(); }
     }
   }
+  controls.enableZoom = !dollGlide;
   if (dollGlide && st.mode === 'doll') {
     const g = dollGlide, f = Math.min(1, (t - g.t0) / g.ms), e = ease(f);
     const dir = g.d0.clone().lerp(g.d1, e); if (dir.lengthSq() < 1e-6) dir.copy(g.d1);
@@ -1903,7 +1909,7 @@ function loop(t) {
   }
   if (dirty) {
     dirty = false;
-    zoomBlend();
+    zoomSnap();
     const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
@@ -1927,6 +1933,7 @@ function syncDock() {
   $('dModeGrp').setAttribute('aria-label', T('View', '視角'));
 }
 function showDoll(area) {
+  pickedPlace = false;
   if (st.mode !== 'doll') goStop('doll');
   else { const now = { pos: cam.position.clone(), tgt: controls.target.clone() }; if (inArea()) areaPose = now; else closePose = now; }
   st.stop = 'doll'; refreshPanel();
@@ -1940,7 +1947,7 @@ YF.onPick(p => {
   if (st.mode !== 'doll') goStop('doll');
   const e = elev(p.x, p.y), tgt = new THREE.Vector3(p.x, e && !e[1] ? e[0] : 10, -p.y);
   const dir = (inArea() ? cam.position.clone().sub(controls.target) : AREA_START.pos.clone().sub(AREA_START.tgt)).normalize();
-  st.stop = 'doll'; refreshPanel();
+  st.stop = 'doll'; refreshPanel(); pickedPlace = !p.site;
   flyDoll({ tgt, pos: tgt.clone().addScaledVector(dir, p.site ? 420 : 1400) });
   const r = stage.getBoundingClientRect(); if (r.bottom < 80 || r.top > innerHeight - 80) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
