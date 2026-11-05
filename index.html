@@ -1541,6 +1541,25 @@ function flyDoll(to, ms) {
   dollGlide = { t0: performance.now(), ms: ms || 1100, a: controls.target.clone(), b: to.tgt.clone(), d0: o0.clone().normalize(), d1: o1.clone().normalize(), l0: Math.log(o0.length()), l1: Math.log(o1.length()) };
 }
 controls.addEventListener('start', () => { dollGlide = null; });
+// zooming the dollhouse out also lowers the view toward the ground and tilts it toward the horizon, so the estate and the
+// nearby places come into the picture after a few steps; zooming back in returns to the flat. Only near the estate.
+const GROUND_Y = TOWER_BASE, ZB0 = Math.log(20), ZB1 = Math.log(600), HOME_R = 400;
+const PHI_DOLL = new THREE.Spherical().setFromVector3(DOLL_START.pos.clone().sub(DOLL_START.tgt)).phi, PHI_AREA = 1.1;
+const zblend = d => { const u = Math.min(1, Math.max(0, (Math.log(d) - ZB0) / (ZB1 - ZB0))); return u * u * (3 - 2 * u); };
+let zoomRef = null;
+function zoomBlend() {
+  if (st.mode !== 'doll' || dollGlide) { zoomRef = null; return; }
+  const d = camDist();
+  if (zoomRef == null || Math.abs(d - zoomRef) < 1e-4) { zoomRef = d; return; }
+  const b0 = zblend(zoomRef), b1 = zblend(d); zoomRef = d;
+  const tg = controls.target;
+  if (b0 === b1 || Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z) > HOME_R) return;
+  const off = cam.position.clone().sub(tg), sp = new THREE.Spherical().setFromVector3(off);
+  if (b1 > b0) { const k = (b1 - b0) / (1 - b0); tg.y += (GROUND_Y - tg.y) * k; sp.phi += (PHI_AREA - sp.phi) * k; }
+  else { const k = 1 - b1 / b0; tg.x += (FLAT_C.x - tg.x) * k; tg.y += (FLAT_C.y - tg.y) * k; tg.z += (FLAT_C.z - tg.z) * k; sp.phi += (PHI_DOLL - sp.phi) * k; }
+  sp.phi = Math.min(controls.maxPolarAngle, Math.max(.05, sp.phi)); sp.makeSafe();
+  cam.position.copy(tg).add(off.setFromSpherical(sp)); controls.update(); zoomRef = camDist();
+}
 let dirty = true;
 controls.addEventListener('change', () => { dirty = true; });
 function applyWalkCam() {
@@ -1580,7 +1599,7 @@ function goStop(id) {
   if (!s.doll) lastWalk = id;
   else if (st.mode === 'doll' && inArea()) { areaPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; flyDoll(closePose); }
   if (s.doll) {
-    if (st.mode !== 'doll') { setMode('doll'); cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update(); }
+    if (st.mode !== 'doll') { setMode('doll'); zoomRef = null; cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update(); }
   } else {
     if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }
     else glideTo(wx(s.X), wy(s.Y), s.yaw, s.pitch);
@@ -1814,7 +1833,7 @@ $('furn').addEventListener('change', e => { st.furn = e.target.checked; applyLay
 
 // reset to the starting dollhouse view (keeps the chosen plan)
 function resetView() {
-  glide = null; dollGlide = null; keys.clear();
+  glide = null; dollGlide = null; zoomRef = null; keys.clear();
   closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }; areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
   dollPose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() };
   if (st.mode !== 'doll') setMode('doll');
@@ -1883,6 +1902,7 @@ function loop(t) {
   }
   if (dirty) {
     dirty = false;
+    zoomBlend();
     const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
