@@ -1525,11 +1525,12 @@ let lastWalk = null;
 let dollPose = { pos: P(wx(4000) - 6.8, wy(1900) - 8, FL + 10.1), tgt: FLAT_C.clone() };
 const DOLL_START = { pos: dollPose.pos.clone(), tgt: dollPose.tgt.clone() };
 // the dollhouse zoomed out to show the estate, Block B, the roads and nearby places (same angle as the Block pages' overview)
-const AREA_START = { pos: new THREE.Vector3(-650, 820, 1000), tgt: new THREE.Vector3(450, 40, -100) };
+const AREA_START = { pos: new THREE.Vector3(-800, 820, 1100), tgt: new THREE.Vector3(300, 40, 0) };
 const AREA_DIST = 150;   // further than this from the flat counts as the area view
 function inArea() { return st.mode === 'doll' && cam.position.distanceTo(controls.target) > AREA_DIST; }
 let closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }, areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
-// fly the dollhouse camera: target moves straight, distance changes smoothly on a log scale
+// fly the dollhouse camera: distance changes on a log scale; when zooming out the camera pulls back before it pans,
+// when zooming in it pans before it closes in, and it never dips below 25 m above the ground
 let dollGlide = null;
 function flyDoll(to, ms) {
   const o0 = cam.position.clone().sub(controls.target), o1 = to.pos.clone().sub(to.tgt);
@@ -1869,8 +1870,9 @@ function loop(t) {
   if (dollGlide && st.mode === 'doll') {
     const g = dollGlide, f = Math.min(1, (t - g.t0) / g.ms), e = ease(f);
     const dir = g.d0.clone().lerp(g.d1, e); if (dir.lengthSq() < 1e-6) dir.copy(g.d1);
-    controls.target.copy(g.a).lerp(g.b, e);
+    controls.target.copy(g.a).lerp(g.b, g.l1 > g.l0 ? e * e : 1 - (1 - e) * (1 - e));
     cam.position.copy(controls.target).addScaledVector(dir.normalize(), Math.exp(g.l0 + (g.l1 - g.l0) * e));
+    if (f < 1) { const gr = elev(cam.position.x, -cam.position.z), floor = (gr && !gr[1] ? gr[0] : 0) + 25; if (cam.position.y < floor) cam.position.y = floor; }
     controls.update();
     if (f >= 1) dollGlide = null;
     dirty = true;
