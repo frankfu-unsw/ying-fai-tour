@@ -158,6 +158,12 @@ body { margin: 0; }
 .lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
 .lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
 .lbl.poi.hid { opacity: .6; font-weight: 500; }
+.lbl.poi.est { font-size: 11.5px; padding: 0 6px 0 5px; background: rgba(255,252,246,.9); }
+.lbl.poi.est::before { width: 7px; height: 7px; border-radius: 1px; }
+details.poigrp > summary { list-style: none; cursor: pointer; }
+details.poigrp > summary::-webkit-details-marker { display: none; }
+details.poigrp > summary h3::after { content: "+"; margin-left: auto; font-size: 14px; letter-spacing: 0; }
+details.poigrp[open] > summary h3::after { content: "−"; }
 .lbl.site { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #fff; background: #d6336c; padding: 1px 7px; }
 .poibox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
 .poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
@@ -286,6 +292,7 @@ body { margin: 0; }
       <label class="check"><input type="checkbox" id="siteChk" checked> <span data-zh="在立體模型上顯示屋苑範圍">Show the estate boundary on the 3D view</span></label>
       <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示附近地點">Show nearby places on the 3D view</span></label>
       <label class="check"><input type="checkbox" id="roadChk" checked> <span data-zh="在立體模型上顯示主要道路">Show main roads on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="estChk" checked> <span data-zh="在立體模型上標示主要屋苑及別墅">Mark major housing estates and villas on the 3D view</span></label>
       <label class="check"><input type="checkbox" id="bldgChk" checked> <span data-zh="在立體模型上顯示附近建築（簡化）">Show nearby buildings on the 3D view (simplified)</span></label>
       <div id="poiList"></div>
       <p class="poifoot" data-zh="點一下屋苑或地點，就會拉遠到周邊景觀並飛到那裡。">Tap the estate or a place to zoom out to the area view and fly to it.</p>
@@ -326,14 +333,19 @@ window.YF = (() => {
   const siteFns = [];
   let roadsOn = store.get('yf-roads') !== '0';
   const roadFns = [];
+  let estOn = store.get('yf-est') !== '0';
+  const estFns = [];
+  const EST_CATS = ['estate', 'villa'];
+  const isEst = p => EST_CATS.includes(p.cat);
+  const poiShown = p => (isEst(p) ? estOn : poiOn);
   let bldgOn = store.get('yf-bldg') !== '0';
   const bldgFns = [];
   const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
   const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
   const dir16 = az => (lang === 'zh' ? DIR_ZH : DIR_EN)[Math.round((((az % 360) + 360) % 360) / 22.5) % 16];
-  const POIS = [{"id": "hh", "cat": "mtr", "en": "Hang Hau station", "zh": "港鐵坑口站", "x": -133, "y": -1106, "noteEn": "About 15–20 min on foot, uphill on the way home (HK01)", "noteZh": "步行約15至20分鐘，回程上斜（香港01）"}, {"id": "pl", "cat": "mtr", "en": "Po Lam station", "zh": "港鐵寶琳站", "x": -825, "y": -246}, {"id": "tko", "cat": "mtr", "en": "Tseung Kwan O station", "zh": "港鐵將軍澳站", "x": -636, "y": -1910}, {"id": "epc", "cat": "shop", "en": "East Point City", "zh": "東港城", "x": -51, "y": -907}, {"id": "mcp", "cat": "shop", "en": "Metro City Plaza", "zh": "新都城中心", "x": -897, "y": -373}, {"id": "fng", "cat": "shop", "en": "Fu Ning Garden Market", "zh": "富寧花園街市", "x": 232, "y": -677}, {"id": "ssm", "cat": "shop", "en": "Silverstrand Mart", "zh": "銀線灣廣場", "x": 599, "y": -421}, {"id": "tkoh", "cat": "health", "en": "Tseung Kwan O Hospital", "zh": "將軍澳醫院", "x": 383, "y": -697}, {"id": "hoh", "cat": "health", "en": "Haven of Hope Hospital", "zh": "靈實醫院", "x": -963, "y": -1106}, {"id": "ust", "cat": "edu", "en": "HKUST", "zh": "香港科技大學", "x": -24, "y": 1273}, {"id": "ssb", "cat": "leisure", "en": "Silverstrand Beach", "zh": "銀線灣泳灘", "x": 631, "y": -190}, {"id": "hhsc", "cat": "leisure", "en": "Hang Hau Sports Centre", "zh": "坑口體育館", "x": 250, "y": -808}, {"id": "tkop", "cat": "leisure", "en": "Tseung Kwan O Swimming Pool", "zh": "將軍澳游泳池", "x": -566, "y": -744}, {"id": "tkosg", "cat": "leisure", "en": "Tseung Kwan O Sports Ground", "zh": "將軍澳運動場", "x": -257, "y": -1477}, {"id": "duck", "cat": "hill", "en": "Duckling Hill (153 m)", "zh": "鴨仔山（153米）", "x": -238, "y": -115}, {"id": "razor", "cat": "hill", "en": "Razor Hill (432 m)", "zh": "鷓鴣山（432米）", "x": -1440, "y": 1591}, {"id": "syshan", "cat": "hill", "en": "Sheung Yeung Shan (260 m)", "zh": "上洋山（260米）", "x": 1595, "y": -1696}, {"id": "hhv", "cat": "local", "en": "Hang Hau Village", "zh": "坑口村", "x": 91, "y": -376, "noteEn": "Nearest minibus stops, about 8 min on foot (HK01)", "noteZh": "最近的小巴站，步行約8分鐘（香港01）"}, {"id": "cwbfs", "cat": "local", "en": "Clear Water Bay Film Studio", "zh": "清水灣電影製片廠", "x": 85, "y": -199, "noteEn": "Opposite the estate; due for redevelopment (HK01)", "noteZh": "屋苑對面，將會重建（香港01）"}];
-  const CATS = {"mtr": {"en": "MTR stations", "zh": "港鐵站", "color": "#c0392b"}, "shop": {"en": "Shops and markets", "zh": "商場及街市", "color": "#7b4fb0"}, "health": {"en": "Hospitals", "zh": "醫院", "color": "#2e8b57"}, "edu": {"en": "University", "zh": "大學", "color": "#2f6db3"}, "leisure": {"en": "Beaches and sport", "zh": "泳灘及運動", "color": "#1d8aa8"}, "hill": {"en": "Hills", "zh": "山峰", "color": "#8a6a3c"}, "local": {"en": "Next to the estate", "zh": "屋苑附近", "color": "#5d6670"}};
+  const POIS = [{"id": "hh", "cat": "mtr", "en": "Hang Hau station", "zh": "港鐵坑口站", "x": -133, "y": -1106, "noteEn": "About 15–20 min on foot, uphill on the way home (HK01)", "noteZh": "步行約15至20分鐘，回程上斜（香港01）"}, {"id": "pl", "cat": "mtr", "en": "Po Lam station", "zh": "港鐵寶琳站", "x": -825, "y": -246}, {"id": "tko", "cat": "mtr", "en": "Tseung Kwan O station", "zh": "港鐵將軍澳站", "x": -636, "y": -1910}, {"id": "epc", "cat": "shop", "en": "East Point City", "zh": "東港城", "x": -51, "y": -907}, {"id": "mcp", "cat": "shop", "en": "Metro City Plaza", "zh": "新都城中心", "x": -897, "y": -373}, {"id": "fng", "cat": "shop", "en": "Fu Ning Garden Market", "zh": "富寧花園街市", "x": 232, "y": -677}, {"id": "ssm", "cat": "shop", "en": "Silverstrand Mart", "zh": "銀線灣廣場", "x": 599, "y": -421}, {"id": "tkoh", "cat": "health", "en": "Tseung Kwan O Hospital", "zh": "將軍澳醫院", "x": 383, "y": -697}, {"id": "hoh", "cat": "health", "en": "Haven of Hope Hospital", "zh": "靈實醫院", "x": -963, "y": -1106}, {"id": "ust", "cat": "edu", "en": "HKUST", "zh": "香港科技大學", "x": -24, "y": 1273}, {"id": "ssb", "cat": "leisure", "en": "Silverstrand Beach", "zh": "銀線灣泳灘", "x": 631, "y": -190}, {"id": "hhsc", "cat": "leisure", "en": "Hang Hau Sports Centre", "zh": "坑口體育館", "x": 250, "y": -808}, {"id": "tkop", "cat": "leisure", "en": "Tseung Kwan O Swimming Pool", "zh": "將軍澳游泳池", "x": -566, "y": -744}, {"id": "tkosg", "cat": "leisure", "en": "Tseung Kwan O Sports Ground", "zh": "將軍澳運動場", "x": -257, "y": -1477}, {"id": "duck", "cat": "hill", "en": "Duckling Hill (153 m)", "zh": "鴨仔山（153米）", "x": -238, "y": -115}, {"id": "razor", "cat": "hill", "en": "Razor Hill (432 m)", "zh": "鷓鴣山（432米）", "x": -1440, "y": 1591}, {"id": "syshan", "cat": "hill", "en": "Sheung Yeung Shan (260 m)", "zh": "上洋山（260米）", "x": 1595, "y": -1696}, {"id": "hhv", "cat": "local", "en": "Hang Hau Village", "zh": "坑口村", "x": 91, "y": -376, "noteEn": "Nearest minibus stops, about 8 min on foot (HK01)", "noteZh": "最近的小巴站，步行約8分鐘（香港01）"}, {"id": "cwbfs", "cat": "local", "en": "Clear Water Bay Film Studio", "zh": "清水灣電影製片廠", "x": 85, "y": -199, "noteEn": "Opposite the estate; due for redevelopment (HK01)", "noteZh": "屋苑對面，將會重建（香港01）"}, {"id": "e0", "cat": "estate", "en": "Fu Ning Garden", "zh": "富寧花園", "x": 192, "y": -584, "lift": 125}, {"id": "e1", "cat": "estate", "en": "Yu Ming Court", "zh": "裕明苑", "x": 56, "y": -679, "lift": 134}, {"id": "e2", "cat": "estate", "en": "King Lam Estate", "zh": "景林邨", "x": -515, "y": -455, "lift": 122}, {"id": "e3", "cat": "estate", "en": "Yan Ming Court", "zh": "欣明苑", "x": -736, "y": -33, "lift": 125}, {"id": "e4", "cat": "estate", "en": "Hau Tak Estate", "zh": "厚德邨", "x": -69, "y": -754, "lift": 146}, {"id": "e5", "cat": "estate", "en": "Chung Ming Court", "zh": "頌明苑", "x": -293, "y": -744, "lift": 125}, {"id": "e6", "cat": "estate", "en": "Metro City Phase 2", "zh": "新都城二期", "x": -794, "y": -154, "lift": 146}, {"id": "e7", "cat": "estate", "en": "Ying Ming Court", "zh": "英明苑", "x": -901, "y": 137, "lift": 125}, {"id": "e8", "cat": "estate", "en": "The Pinnacle", "zh": "叠翠軒", "x": -788, "y": -456, "lift": 161}, {"id": "e9", "cat": "estate", "en": "Ming Tak Estate", "zh": "明德邨", "x": 301, "y": -903, "lift": 134}, {"id": "e10", "cat": "estate", "en": "The Metropolis", "zh": "都會豪庭", "x": -934, "y": -235, "lift": 158}, {"id": "e11", "cat": "estate", "en": "On Ning Garden", "zh": "安寧花園", "x": -321, "y": -937, "lift": 137}, {"id": "e12", "cat": "estate", "en": "Residence Oasis", "zh": "蔚藍灣畔", "x": -136, "y": -993, "lift": 176}, {"id": "e13", "cat": "estate", "en": "Wo Ming Court", "zh": "和明苑", "x": 125, "y": -1001, "lift": 140}, {"id": "e14", "cat": "estate", "en": "Verbena Heights", "zh": "茵怡花園", "x": -1041, "y": -269, "lift": 170}, {"id": "e15", "cat": "estate", "en": "Yuk Ming Court", "zh": "煜明苑", "x": 153, "y": -1090, "lift": 124}, {"id": "e16", "cat": "estate", "en": "Po Lam Estate", "zh": "寶林邨", "x": -1124, "y": 135, "lift": 122}, {"id": "e17", "cat": "estate", "en": "La Cite Noble", "zh": "新寶城", "x": 31, "y": -1185, "lift": 154}, {"id": "e18", "cat": "estate", "en": "Serenity Place", "zh": "怡心園", "x": -1279, "y": -240, "lift": 149}, {"id": "e19", "cat": "estate", "en": "Hong Sing Garden", "zh": "康盛花園", "x": -1329, "y": -555, "lift": 113}, {"id": "e20", "cat": "estate", "en": "Kwong Ming Court", "zh": "廣明苑", "x": -650, "y": -1326, "lift": 134}, {"id": "e21", "cat": "estate", "en": "Beverly Garden", "zh": "富康花園", "x": -419, "y": -1558, "lift": 140}, {"id": "e22", "cat": "estate", "en": "Sheung Tak Estate", "zh": "尚德邨", "x": -772, "y": -1482, "lift": 146}, {"id": "e23", "cat": "estate", "en": "Oscar by the Sea", "zh": "清水灣半島", "x": 85, "y": -1902, "lift": 179}, {"id": "v0", "cat": "villa", "en": "Dragon Lake Villa", "zh": "龍湖別墅", "x": 262, "y": 225, "lift": 24}, {"id": "v1", "cat": "villa", "en": "Fullway Garden", "zh": "華富花園", "x": 342, "y": 210, "lift": 24}, {"id": "v2", "cat": "villa", "en": "Rainbow Villas", "zh": "彩濤別墅", "x": 264, "y": 355, "lift": 24}, {"id": "v3", "cat": "villa", "en": "The Villa Horizon", "zh": "海天灣", "x": 525, "y": 226, "lift": 24}, {"id": "v4", "cat": "villa", "en": "Casa Bella", "zh": "銀海山莊", "x": 516, "y": 36, "lift": 26}, {"id": "v5", "cat": "villa", "en": "Bella Vista", "zh": "碧濤花園", "x": 433, "y": 650, "lift": 24}, {"id": "v6", "cat": "villa", "en": "Silver Strand Lodge", "zh": "銀輝別墅", "x": 634, "y": -366, "lift": 24}, {"id": "v7", "cat": "villa", "en": "Hawaii Garden", "zh": "夏威夷花園", "x": 715, "y": -394, "lift": 29}, {"id": "v8", "cat": "villa", "en": "Golden Cove Lookout", "zh": "金碧苑", "x": 658, "y": -470, "lift": 29}, {"id": "v9", "cat": "villa", "en": "Bayside Villa", "zh": "碧沙別墅", "x": 754, "y": -540, "lift": 24}, {"id": "v10", "cat": "villa", "en": "Solemar Villas", "zh": "海濱別墅", "x": 839, "y": -339, "lift": 24}, {"id": "v11", "cat": "villa", "en": "The Riviera", "zh": "滿湖花園", "x": 989, "y": -493, "lift": 24}, {"id": "v12", "cat": "villa", "en": "Twin Bay Villas", "zh": "勝景別墅", "x": 753, "y": -698, "lift": 24}, {"id": "v13", "cat": "villa", "en": "Mount Pavilia", "zh": "傲瀧", "x": -524, "y": 1312, "lift": 38}];
+  const CATS = {"mtr": {"en": "MTR stations", "zh": "港鐵站", "color": "#c0392b"}, "shop": {"en": "Shops and markets", "zh": "商場及街市", "color": "#7b4fb0"}, "health": {"en": "Hospitals", "zh": "醫院", "color": "#2e8b57"}, "edu": {"en": "University", "zh": "大學", "color": "#2f6db3"}, "leisure": {"en": "Beaches and sport", "zh": "泳灘及運動", "color": "#1d8aa8"}, "hill": {"en": "Hills", "zh": "山峰", "color": "#8a6a3c"}, "local": {"en": "Next to the estate", "zh": "屋苑附近", "color": "#5d6670"}, "estate": {"en": "Housing estates", "zh": "屋苑", "color": "#b5523b"}, "villa": {"en": "Villas and low-rise", "zh": "別墅及低密度住宅", "color": "#b8892a"}};
   const SITE = {"pts": [[-79.9, -51.7], [-73, -83.6], [-61.6, -110.1], [-32.9, -140.4], [-27.9, -122.9], [-24.7, -102.5], [-15.8, -86], [-22.4, -81.5], [-12, -66.2], [-4, -71.6], [3.2, -62.9], [19.4, -54.9], [22.1, -53.7], [23.9, -51.3], [24.5, -48.4], [23.6, -45.5], [34, -41.4], [42.8, -37.8], [90.2, -39.3], [97.8, -40.3], [96.8, -32.4], [91.9, -28.9], [75.1, -20.6], [22.2, 5.7], [21.9, 23.9], [5.6, 34.4], [-45.1, 44.6], [-54.9, 37.5], [-60, 23.9], [-72.7, -3.1]], "cx": -19.1, "cy": -32.0, "label": [-61.6, -110.1], "color": "#d6336c", "ha": 1.4, "en": "About 1.4 hectares: 185 m from north to south and about 105 m from east to west, or 180 m counting the strip that runs east towards Ying Yip Road.", "zh": "約1.4公頃：南北長185米，東西闊約105米；連向東伸往影業路的一段，約闊180米。"};
   // main roads from OpenStreetMap: { names: [[en, zh]], ways: [[name, width, class, x0, y0, x1, y1, ...]], labels: [[name, x, y]] }
   const ROADS = {"names":[["Tseung Kwan O Tunnel Road","將軍澳隧道公路"],["Chung Wa Road","重華路"],["Wan Po Road","環保大道"],["",""],["Po Shun Road","寶順路"],["Po Lam Road North","寶琳北路"],["Po Yap Road","寶邑路"],["Po Hong Road","寶康路"],["Ling Hong Road","靈康路"],["Tsui Lam Road","翠琳路"],["Po Ning Road","寶寧路"],["Sheung Ning Road","常寧路"],["Ngan O Road","銀澳路"],["Pui Shing Road","培成路"],["Chiu Shun Road","昭信路"],["Ying Yip Road","影業路"],["Lin Tak Road","連德道"],["Chui Ling Road","翠嶺路"],["King Ling Road","景嶺路"],["Tong Ming Street","唐明街"],["Po Lam Road","寶琳路"],["Tong Chun Street","唐俊街"],["Po Fung Road","寶豐路"],["Hiram's Highway","西貢公路"],["Clear Water Bay Road","清水灣道"],["Silverstrand Beach Road","銀綫灣道"],["Hang Hau Road","坑口道"],["Pik Wan Road","碧雲道"],["Tseung Lam Highway","將藍公路"],["Tong Yin Street","唐賢街"],["On Yu Road","安愉道"]],"ways":[[1,5,"t",-96,-806,-83,-801,-65,-802,-29,-830,45,-900],[2,9,"t",-498,-1028,-276,-1189,-188,-1262,-71,-1380,-36,-1421,-2,-1481,42,-1588,76,-1646],[4,8,"p",-1086,-1650,-1017,-1462,-961,-1351,-892,-1251,-849,-1200,-569,-904,-487,-809,-383,-657,-359,-607,-353,-575],[4,8,"p",-328,-589,-420,-745,-566,-917,-909,-1295,-935,-1333,-977,-1410,-997,-1465,-1031,-1574,-1035,-1605,-1032,-1641],[7,8,"p",-254,-1769,-257,-1720,-301,-1604,-337,-1535,-405,-1439,-663,-1153,-854,-935,-883,-896,-930,-814,-957,-749,-1054,-405,-1085,-340,-1126,-282,-1178,-231,-1245,-185,-1361,-128,-1417,-85,-1450,-46,-1471,-7,-1510,117,-1523,180],[6,6,"s",-60,-1447,-105,-1479,-135,-1530,-144,-1569,-142,-1658,-146,-1694,-160,-1730,-192,-1785,-196,-1805,-211,-1818,-231,-1822,-255,-1805,-259,-1786,-254,-1769,-240,-1758,-193,-1754,-183,-1747,-162,-1710,-152,-1671,-155,-1580,-149,-1540,-129,-1495,-92,-1453,-81,-1424],[10,6,"s",-318,-552,-273,-571,-20,-598,87,-621,139,-640,190,-672,412,-859,441,-872],[12,5,"t",-11,-1007,-12,-1028,-1,-1047,158,-1190],[12,5,"t",151,-1195,-11,-1052,-33,-1044,-57,-1054],[15,10,"s",-36,-566,-12,-350,-29,-258,-32,-207,-26,-155,-9,-100,22,-64,54,-50,89,-47,160,-65,196,-84,219,-104,241,-138,257,-175],[6,6,"s",-1049,-2087,-304,-1820,-270,-1799,-259,-1786],[19,6,"s",-395,-1435,-973,-1647,-992,-1656,-1016,-1679],[4,8,"p",-1021,-1691,-1043,-1769,-1051,-1982,-1049,-2087],[14,6,"s",-39,-1376,-13,-1364,63,-1273,158,-1190,252,-1097,424,-901],[21,5,"t",-604,-1502,-491,-1813,-468,-1890,-454,-1980,-457,-2189],[19,6,"s",-1027,-1645,-1009,-1647,-986,-1641,-401,-1428],[12,6,"s",161,-1203,151,-1195],[12,6,"s",158,-1190,164,-1200],[11,5,"t",-235,-999,-237,-966,-188,-905,-96,-806,-67,-763,-46,-610],[22,5,"t",-751,135,-810,91,-879,23,-992,-71,-1101,-156,-1173,-236],[5,6,"s",-354,-564,-358,-501,-371,-443,-398,-384,-568,-179,-636,-81,-760,128,-825,196,-901,241,-935,253,-1003,271,-1086,276,-1145,269,-1233,250,-1512,172],[5,6,"s",-1515,183,-1235,264,-1124,288,-1036,289,-967,278,-914,261,-866,238,-824,210,-751,135,-623,-82,-559,-171,-395,-366,-367,-418,-341,-520,-324,-549],[24,8,"p",-1823,1844,-1845,1804,-1935,1716],[24,6,"s",-905,1872,-811,1795,-762,1744,-728,1691,-686,1662,-683,1650,-688,1638,-699,1631,-710,1631,-726,1646,-726,1658,-718,1670,-707,1673],[23,6,"s",-831,1898,-841,1870,-863,1852,-892,1847,-918,1856,-940,1872],[23,6,"s",-922,1892,-913,1889,-896,1899],[8,5,"t",-863,-924,-875,-920,-893,-927,-883,-908,-883,-896],[2,6,"s",656,-2494,651,-2447,633,-2403,508,-2274,419,-2120,284,-1993,237,-1928,191,-1803,178,-1780,101,-1701,70,-1662],[21,5,"t",-468,-2189,-466,-2022,-483,-1882,-510,-1789,-614,-1505],[26,6,"s",317,-215,306,-241,299,-212],[24,10,"s",345,-218,385,-266,451,-313,475,-371,486,-383,672,-520,692,-539,848,-757,1041,-1008,1059,-1026,1085,-1039,1113,-1043,1142,-1036,1348,-928,1428,-915,1501,-868,1548,-858,1589,-866,1617,-885,1744,-1031,1758,-1055,1763,-1078,1746,-1243,1756,-1306,1764,-1326,1855,-1469,1950,-1704,1968,-1773,1998,-2119,1997,-2147,1989,-2173,1966,-2221],[25,5,"t",333,-173,351,-163,341,-185],[15,6,"s",295,-207,271,-193,257,-175,274,-186,296,-186],[26,6,"s",449,-872,473,-857,465,-886],[14,6,"s",447,-915,436,-919,401,-948,260,-1105,161,-1203,71,-1282,1,-1373,-11,-1402],[3,8,"p",-1049,-2087,-1049,-2100],[6,6,"s",-210,-1758,-198,-1770,-192,-1785],[5,8,"p",-1512,172,-1554,161,-1572,161,-1515,183],[7,8,"p",-1515,183,-1469,19,-1445,-31,-1420,-65,-1387,-97,-1358,-116,-1245,-171,-1165,-225,-1118,-274,-1073,-337,-1041,-407,-945,-746,-906,-835,-856,-913,-790,-987,-787,-996,-395,-1435,-316,-1554,-239,-1731,-222,-1755],[22,5,"t",-1178,-231,-1143,-186,-1095,-141,-884,29,-820,91,-757,141],[24,6,"s",340,-193,329,-209,317,-215,299,-212,295,-207,296,-186,317,-172,320,-151,341,-185,345,-218,329,-209],[24,6,"s",317,-172,330,-172],[4,8,"p",-1061,-2091,-1070,-1724,-1077,-1700],[8,5,"t",-879,-1237,-882,-1205,-862,-1218],[18,5,"t",-1302,-2227,-1351,-2146,-1434,-2027,-1449,-1990,-1449,-1944,-1432,-1897,-1417,-1874,-1359,-1827,-1129,-1695,-1090,-1661],[17,6,"s",-1308,-2217,-1220,-2153,-1174,-2130,-1049,-2087],[9,8,"t",-1641,-242,-1673,-227,-1701,-195,-1750,-113,-1790,-92,-1812,-90,-1839,-95,-1879,-123],[3,8,"p",-1060,-2104,-1061,-2091],[24,10,"s",-642,1199,-708,1411,-729,1492,-738,1569],[24,10,"s",1997,-2271,2045,-2293,2062,-2332,2048,-2434,2050,-2459,2060,-2487],[0,9,"t",-503,-1035,-863,-775,-940,-697,-1130,-470,-1196,-417,-1233,-398,-1295,-377,-1349,-367,-1401,-367,-1485,-376,-1640,-407],[0,9,"t",-1645,-381,-1404,-357,-1344,-357,-1248,-380,-1201,-401,-1154,-433,-1116,-466,-904,-717,-842,-772,-721,-866,-498,-1028],[5,13,"p",-1572,161,-1600,152,-1636,131,-1673,85,-1682,58,-1684,28,-1678,-1,-1666,-22,-1619,-76,-1603,-105,-1598,-148,-1609,-185,-1647,-259,-1646,-289,-1569,-517,-1551,-544,-1526,-560,-1494,-567,-1469,-565,-1445,-555,-1382,-485,-1354,-464,-1328,-456,-1301,-455,-1255,-469,-1236,-484,-1211,-525,-1200,-564,-1192,-655,-1194,-690,-1212,-729,-1249,-763,-1296,-780,-1359,-782],[20,13,"p",-1359,-782,-1424,-790,-1496,-818,-1522,-821,-1557,-815,-1591,-797,-1670,-687,-1697,-662,-1725,-645,-1849,-613,-1898,-614,-1942,-626],[2,9,"t",70,-1662,52,-1632,-14,-1465,-37,-1427,-100,-1356,-172,-1287,-279,-1198,-503,-1035],[2,6,"s",52,-1632,25,-1587,-22,-1480,-50,-1448],[2,6,"s",-10,-1411,18,-1497,76,-1646,91,-1669,184,-1776,206,-1816,255,-1933,289,-1980,423,-2107,444,-2135,514,-2266,543,-2301,614,-2364,640,-2398,661,-2446,665,-2474],[26,10,"s",306,-241,317,-304,309,-366,310,-396,317,-413,338,-438,416,-492,456,-587,525,-663,532,-697,525,-752,513,-787,488,-836],[24,10,"s",320,-151,312,-128,283,-80,197,19,145,43,124,59,89,104,40,145,8,192,-32,222,-50,247,-161,464,-229,522,-300,594,-434,749,-580,1054,-639,1191],[10,6,"s",422,-895,409,-875,168,-670,109,-640,33,-619,-294,-581,-321,-586],[24,6,"s",-688,1638,-738,1569,-740,1581,-726,1646],[24,6,"s",-726,1658,-737,1687,-764,1730,-787,1757,-866,1813,-931,1878],[24,8,"p",-1934,1729,-1883,1776,-1848,1816,-1822,1879],[18,5,"t",-1085,-1694,-1123,-1703,-1371,-1847,-1409,-1879,-1429,-1914,-1436,-1937,-1438,-1981,-1433,-1999,-1396,-2065,-1293,-2219],[8,8,"t",-882,-1205,-888,-1185,-881,-1169,-825,-1135,-809,-1118,-793,-1077,-793,-1049,-799,-1027,-814,-1002,-830,-987,-890,-955,-897,-940,-893,-927],[28,8,"p",-1049,-2100,-1049,-2456],[17,6,"s",-1049,-2100,-1185,-2151,-1231,-2174,-1302,-2227],[28,8,"p",-1062,-2455,-1060,-2104],[6,6,"s",-243,-1817,-298,-1828,-999,-2087,-1049,-2100],[29,5,"t",-1235,-2291,-1281,-2254,-1302,-2227],[26,10,"s",481,-847,473,-857],[9,5,"t",-1879,-123,-1894,-154,-1898,-189,-1844,-458,-1849,-502,-1864,-528,-1890,-547,-1937,-558],[11,6,"s",-46,-610,-45,-596],[15,6,"s",-45,-596,-42,-575,-36,-566,-32,-575,-33,-597],[11,5,"t",-34,-611,-56,-773,-49,-801,-37,-823],[11,6,"s",-33,-597,-34,-611],[13,5,"t",45,-900,51,-920,38,-950,-89,-1090,-111,-1097,-132,-1092,-235,-999]],"labels":[[15,-21,-300],[24,-161,464],[24,1085,-1039],[26,416,-492],[10,-150,-584],[5,-623,-82],[4,-569,-904],[7,-1041,-407],[2,237,-1928],[0,-1295,-377],[6,-652,-1954],[14,260,-1105]]};
@@ -369,7 +381,7 @@ window.YF = (() => {
     let built = '';
     function build(canopy, style) {
       const key = canopy + style; if (key === built) return; built = key;
-      const real = style === 'real', wide = real ? 1 : 1.7, edgeW = real ? 0.6 : 2;
+      const real = style === 'real', wide = real ? 0.8 : 1.05, edgeW = real ? 0.4 : 1.1;
       mats.edge.color.setHex(real ? 0x6e6c65 : 0x5b584f); mats.major.color.setHex(real ? 0xa4a29b : 0xf2bd4b); mats.minor.color.setHex(real ? 0xa4a29b : 0xfbf8f1);
       while (group.children.length) group.children.pop().geometry.dispose();
       const out = { edge: [[], []], major: [[], []], minor: [[], []] };
@@ -408,15 +420,29 @@ window.YF = (() => {
   // any sight-line or sea-view figure.
   function makeBuildings(THREE, P, surfH) {
     const group = new THREE.Group();
-    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    const WALL = [0.85, 0.83, 0.79], ROOF = [0.95, 0.94, 0.91];
+    // walls carry a faint floor-and-window pattern (one floor = 3 m, one bay = 3 m) tinted per building; roofs are plain
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const cx2 = cv.getContext('2d');
+    cx2.fillStyle = '#fff'; cx2.fillRect(0, 0, 64, 64);
+    cx2.fillStyle = '#b4bcc4'; cx2.fillRect(0, 22, 64, 26);            // window band
+    cx2.fillStyle = '#e6eaee'; for (let u = 0; u < 64; u += 32) cx2.fillRect(u, 22, 4, 26);   // mullions
+    cx2.fillStyle = '#eeeeee'; cx2.fillRect(0, 60, 64, 4);             // slab edge
+    const tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, map: tex });
+    // muted colours: warm creams and sands for houses, pale stone and cool greys for blocks and towers
+    const HOUSE = ['#e7dccb', '#dccfb9', '#efe7da', '#d6c7af', '#e4d5c0', '#d9cdbf', '#e9e1d2'];
+    const ROOF_H = ['#b9ab97', '#a99a86', '#c4b8a6', '#9f8f7c', '#b3a38c'];
+    const TOWER = ['#dfe1e2', '#d3d8dc', '#e5e2da', '#ccd3d9', '#dcd8cf', '#d8dee3'];
+    const ROOF_T = ['#c9cbcc', '#bfc4c8', '#cfccc4'];
+    const rgb = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+    const pick = (list, k) => rgb(list[k % list.length]);
     let built = null;
     function build(canopy) {
       if (built === canopy) return; built = canopy;
       while (group.children.length) group.children.pop().geometry.dispose();
-      const pos = [], nor = [], col = [], idx = [];
-      const vert = (x, y, h, n, c) => { const v = P(x, y, h); pos.push(v.x, v.y, v.z); nor.push(n[0], 0 + (n[2] || 0), -n[1]); col.push(c[0], c[1], c[2]); return pos.length / 3 - 1; };
-      for (const r of BLDG) {
+      const pos = [], nor = [], col = [], uv = [], idx = [];
+      const vert = (x, y, h, n, c, u, v) => { const p = P(x, y, h); pos.push(p.x, p.y, p.z); nor.push(n[0], n[2] || 0, -n[1]); col.push(c[0], c[1], c[2]); uv.push(u, v); return pos.length / 3 - 1; };
+      BLDG.forEach((r, bi) => {
         let x = r[1], y = r[2]; const pts = [[x, y]];
         for (let i = 3; i + 1 < r.length; i += 2) { x += r[i]; y += r[i + 1]; pts.push([x, y]); }
         let a = 0; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; a += p[0] * q[1] - q[0] * p[1]; }
@@ -424,21 +450,26 @@ window.YF = (() => {
         let cx = 0, cy = 0, lo = Infinity; for (const [px, py] of pts) { cx += px; cy += py; lo = Math.min(lo, surfH(px, py, canopy)); }
         cx /= pts.length; cy /= pts.length;
         const base = Math.max(-1, lo - 1), top = Math.max(base + 2, Math.max(0, surfH(cx, cy, canopy)) + r[0]);
+        const k = (bi * 2654435761) >>> 7, low = r[0] <= 12;
+        const wall = pick(low ? HOUSE : TOWER, k), roof = pick(low ? ROOF_H : ROOF_T, k >>> 3);
+        const foot = wall.map(c => c * 0.78);   // darker at the foot of the walls, so they sit on the ground
+        let s = 0;
         for (let i = 0; i < pts.length; i++) {
           const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length], l = Math.hypot(x2 - x1, y2 - y1) || 1, n = [(y2 - y1) / l, -(x2 - x1) / l];
-          const v0 = vert(x1, y1, base, n, WALL), v1 = vert(x2, y2, base, n, WALL), v2 = vert(x2, y2, top, n, WALL), v3 = vert(x1, y1, top, n, WALL);
+          const u0 = s / 6, u1 = (s + l) / 6, vt = (top - base) / 3; s += l;
+          const v0 = vert(x1, y1, base, n, foot, u0, 0), v1 = vert(x2, y2, base, n, foot, u1, 0), v2 = vert(x2, y2, top, n, wall, u1, vt), v3 = vert(x1, y1, top, n, wall, u0, vt);
           idx.push(v0, v1, v2, v0, v2, v3);
         }
         const tris = THREE.ShapeUtils.triangulateShape(pts.map(([px, py]) => new THREE.Vector2(px, py)), []);
-        const first = pos.length / 3; for (const [px, py] of pts) vert(px, py, top, [0, 0, 1], ROOF);
-        for (const [i, j, k] of tris) {
-          const [ax, ay] = pts[i], [bx, by] = pts[j], [qx, qy] = pts[k];
-          if ((bx - ax) * (qy - ay) - (qx - ax) * (by - ay) >= 0) idx.push(first + i, first + j, first + k); else idx.push(first + i, first + k, first + j);
+        const first = pos.length / 3; for (const [px, py] of pts) vert(px, py, top, [0, 0, 1], roof, 0.5, 0.05);   // a plain part of the pattern
+        for (const [i, j, kk] of tris) {
+          const [ax, ay] = pts[i], [bx, by] = pts[j], [qx, qy] = pts[kk];
+          if ((bx - ax) * (qy - ay) - (qx - ax) * (by - ay) >= 0) idx.push(first + i, first + j, first + kk); else idx.push(first + i, first + kk, first + j);
         }
-      }
+      });
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-      g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx);
+      g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
       group.add(new THREE.Mesh(g, mat));
     }
     return { group, build };
@@ -457,21 +488,22 @@ window.YF = (() => {
       + `<span>${t('Ying Fai Court site', '影輝苑地盤範圍')}</span><span class="d">${ha}</span></div><p class="poinote">${t(SITE.en, SITE.zh)}</p></div>`;
     for (const k of Object.keys(CATS)) {
       const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
-      s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
+      const fold = EST_CATS.includes(k), head = `<h3><i></i>${t(CATS[k].en, CATS[k].zh)}${fold ? ` <span class="d">${ps.length}</span>` : ''}</h3>`;
+      s += fold ? `<details class="poigrp" style="--c:${CATS[k].color}"><summary>${head}</summary>` : `<div class="poigrp" style="--c:${CATS[k].color}">${head}`;
       for (const p of ps) {
         s += pickFn
           ? `<div class="poirow pick" role="button" tabindex="0" data-id="${p.id}"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`
           : `<div class="poirow"><span>${poiName(p)}</span><span class="d">${where(p)}</span></div>`;
         if (p.noteEn) s += `<p class="poinote">${t(p.noteEn, p.noteZh)}</p>`;
       }
-      s += '</div>';
+      s += fold ? '</details>' : '</div>';
     }
     host.innerHTML = s;
     if (pickFn) host.querySelectorAll('.poirow.pick').forEach(r => {
       const site = r.dataset.id === 'site';
       const go = () => {
         if (site) { if (!siteOn) setSite(true); pickFn({ id: 'site', site: true, x: SITE.cx, y: SITE.cy }); }
-        else { if (!poiOn) setPoi(true); pickFn(POIS.find(p => p.id === r.dataset.id)); }
+        else { const p = POIS.find(q => q.id === r.dataset.id); if (isEst(p)) { if (!estOn) setEst(true); } else if (!poiOn) setPoi(true); pickFn(p); }
       };
       r.addEventListener('click', go);
       r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
@@ -509,6 +541,11 @@ window.YF = (() => {
     const c = document.getElementById('siteChk'); if (c) c.checked = on;
     siteFns.forEach(f => f());
   }
+  function setEst(on) {
+    estOn = on; store.set('yf-est', on ? '1' : '0');
+    const c = document.getElementById('estChk'); if (c) c.checked = on;
+    estFns.forEach(f => f());
+  }
   function setBldg(on) {
     bldgOn = on; store.set('yf-bldg', on ? '1' : '0');
     const c = document.getElementById('bldgChk'); if (c) c.checked = on;
@@ -545,14 +582,16 @@ window.YF = (() => {
   if (pc) { pc.checked = poiOn; pc.addEventListener('change', e => setPoi(e.target.checked)); }
   const sc = document.getElementById('siteChk');
   if (sc) { sc.checked = siteOn; sc.addEventListener('change', e => setSite(e.target.checked)); }
+  const ec = document.getElementById('estChk');
+  if (ec) { ec.checked = estOn; ec.addEventListener('change', e => setEst(e.target.checked)); }
   const bc = document.getElementById('bldgChk');
   if (bc) { bc.checked = bldgOn; bc.addEventListener('change', e => setBldg(e.target.checked)); }
   const rc = document.getElementById('roadChk');
   if (rc) { rc.checked = roadsOn; rc.addEventListener('change', e => setRoads(e.target.checked)); }
   applyStatic();
   return {
-    get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; }, get roadsOn() { return roadsOn; }, get bldgOn() { return bldgOn; },
-    t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f), onRoads: f => roadFns.push(f), onBldg: f => bldgFns.push(f),
+    get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; }, get roadsOn() { return roadsOn; }, get bldgOn() { return bldgOn; }, get estOn() { return estOn; }, isEst, poiShown,
+    t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f), onRoads: f => roadFns.push(f), onBldg: f => bldgFns.push(f), onEst: f => estFns.push(f),
     ROADS, roadName, surfaceH, makeRoads, makeBuildings,
     onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
     onPick: f => { pickFn = f; poiList(); }
@@ -1489,15 +1528,15 @@ function mkLabel(cls, html) { const el = document.createElement('div'); el.class
 XLABELS.forEach(L => { L.el = mkLabel(L.sea ? 'sea' : L.blk ? 'blk' : '', L.t); L.v = P(L.x, L.y, L.h); });
 // nearby places (shared list): a label on a pin 30 m above the ground
 const POI_L = YF.POIS.map(p => {
-  const g = elev(p.x, p.y), ground = g && !g[1] ? g[0] : 2, h = ground + 30;
-  const el = mkLabel('poi', ''); el.style.setProperty('--c', YF.CATS[p.cat].color);
+  const g = elev(p.x, p.y), ground = g && !g[1] ? g[0] : 2, h = ground + (p.lift || 30);
+  const el = mkLabel(YF.isEst(p) ? 'poi est' : 'poi', ''); el.style.setProperty('--c', YF.CATS[p.cat].color);
   return { p, x: p.x, y: p.y, h, ground, el, v: P(p.x, p.y, h) };
 });
-const poiPins = new THREE.Group(); scene.add(poiPins);
+const poiPins = new THREE.Group(), estPins = new THREE.Group(); scene.add(poiPins, estPins);
 {
   const byCat = {};
   for (const L of POI_L) (byCat[L.p.cat] = byCat[L.p.cat] || []).push(P(L.x, L.y, L.ground), P(L.x, L.y, L.h));
-  for (const k in byCat) poiPins.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
+  for (const k in byCat) (YF.isEst({ cat: k }) ? estPins : poiPins).add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
 }
 // road names, a little above the road
 const ROAD_L = YF.ROADS.labels.map(([n, x, y]) => {
@@ -1538,7 +1577,7 @@ function updateLabelVisibility() {
   const area = showPlaces();
   for (const L of OUT_L) {
     L.hidden = true; L.behind = false;
-    if ((L.p && !YF.poiOn) || (L.road != null && !YF.roadsOn) || (L.site && !YF.siteOn)) continue;
+    if ((L.p && !YF.poiShown(L.p)) || (L.road != null && !YF.roadsOn) || (L.site && !YF.siteOn)) continue;
     if (st.mode !== 'walk') {
       if (!area || L.fin) continue;
       L.hidden = false; L.el.classList.remove('hid'); L.el.textContent = labelName(L);
@@ -1554,7 +1593,7 @@ function updateLabelVisibility() {
     L.el.classList.toggle('hid', L.behind);
     L.el.textContent = labelName(L) + (L.behind ? T(' · behind the hill', ' · 被山遮擋') : '');
   }
-  poiPins.visible = YF.poiOn && (st.mode === 'walk' || area);
+  poiPins.visible = YF.poiOn && (st.mode === 'walk' || area); estPins.visible = YF.estOn && (st.mode === 'walk' || area);
 }
 function placeLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
@@ -1970,6 +2009,7 @@ function loop(t) {
 
 YF.onLang(() => { applyLayout(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dockKey = ''; dirty = true; });
 YF.onPoi(() => { updateLabelVisibility(); dirty = true; });
+YF.onEst(() => { updateLabelVisibility(); dirty = true; });
 YF.onSite(() => { siteGroup.visible = YF.siteOn; updateLabelVisibility(); dirty = true; });
 YF.onRoads(() => { roadGroup.visible = YF.roadsOn; updateLabelVisibility(); dirty = true; });
 YF.onBldg(() => { blds.group.visible = YF.bldgOn; dirty = true; });
