@@ -287,6 +287,7 @@ details.poigrp[open] > summary h3::after { content: "−"; }
       <div class="checks">
         <label class="check"><input type="checkbox" id="furn" checked> <span data-zh="家具">Furniture</span></label>
         <label class="check"><input type="checkbox" id="trees"> <span data-zh="山上加10米高樹木">10 m of trees on the hills</span></label>
+        <label class="check"><input type="checkbox" id="snapChk"> <span data-zh="拉遠時自動飛到周邊景觀">Jump to the area view when zooming out</span></label>
       </div>
     </div>
 
@@ -1592,11 +1593,13 @@ function flyDoll(to, ms) {
   dollGlide = { t0: performance.now(), ms: ms || 1100, a: controls.target.clone(), b: to.tgt.clone(), d0: o0.clone().normalize(), d1: o1.clone().normalize(), l0: Math.log(o0.length()), l1: Math.log(o1.length()) };
 }
 controls.addEventListener('start', () => { dollGlide = null; });
-// two zoom levels in the dollhouse: zooming out a few steps from the flat glides out to the area view (turned to face the
-// way you were facing), and zooming back in on the estate from the area view glides back to the flat. Zooming is paused
-// while the camera is flying so a long scroll or pinch doesn't cut the flight short.
+// optional, off unless the switch in the panel is on: two zoom levels in the dollhouse. Zooming out a few steps from the
+// flat glides out to the area view (turned to face the way you were facing), and zooming back in on the estate from the
+// area view glides back to the flat. Zooming is paused while the camera is flying so a long scroll or pinch doesn't cut
+// the flight short. With the switch off, zooming is plain and the Area and Dollhouse buttons do the jumps.
 const SNAP_OUT = 24, SNAP_IN = 500, ESTATE_R = 350, AREA_D = AREA_START.pos.distanceTo(AREA_START.tgt);
-let zoomRef = null, pickedPlace = false;
+let zoomRef = null, pickedPlace = false, autoSnap = false;
+try { autoSnap = localStorage.getItem('yf-tour-snap') === '1'; } catch (e) {}
 function areaFacing(theta) {
   const Y = new THREE.Vector3(0, 1, 0), off = areaPose.pos.clone().sub(areaPose.tgt), turn = theta - Math.atan2(off.x, off.z);
   const rel = areaPose.tgt.clone().sub(FLAT_C); rel.y = 0; rel.applyAxisAngle(Y, turn);
@@ -1604,7 +1607,7 @@ function areaFacing(theta) {
   return { tgt, pos: tgt.clone().add(off.applyAxisAngle(Y, turn)) };
 }
 function zoomSnap() {
-  if (st.mode !== 'doll' || dollGlide) { zoomRef = null; return; }
+  if (!autoSnap || st.mode !== 'doll' || dollGlide) { zoomRef = null; return; }
   const d = camDist(), prev = zoomRef; zoomRef = d;
   if (prev == null || Math.abs(d - prev) < 1e-4) return;
   const tg = controls.target, off = cam.position.clone().sub(tg), fromFlat = Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z);
@@ -1929,6 +1932,8 @@ function setPanel(open) {
 }
 $('panelBtn').addEventListener('click', () => setPanel($('app').classList.contains('collapsed')));
 { let open = true; try { open = localStorage.getItem('yf-tour-panel') !== '0'; } catch (e) {} setPanel(open); }
+$('snapChk').checked = autoSnap;
+$('snapChk').addEventListener('change', e => { autoSnap = e.target.checked; zoomRef = null; try { localStorage.setItem('yf-tour-snap', autoSnap ? '1' : '0'); } catch (err) {} });
 $('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuildTerrain(); buildRoads(); seaTable(); windowTable(); compareTable(); lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true; });
 
 function hud() {
