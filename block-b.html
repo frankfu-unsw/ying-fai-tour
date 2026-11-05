@@ -126,6 +126,9 @@ body { margin: 0; }
 .lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
 .lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
 .lbl.poi.hid { opacity: .6; font-weight: 500; }
+.lbl.svc { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12px; color: #fff; padding: 1px 7px; }
+.lbl.svc.lifts { background: rgba(47,93,138,.95); }
+.lbl.svc.bins { background: rgba(78,122,48,.95); }
 .lbl.poi.est { font-size: 11.5px; padding: 0 6px 0 5px; background: rgba(255,252,246,.9); }
 .lbl.poi.est::before { width: 7px; height: 7px; border-radius: 1px; }
 details.poigrp > summary { list-style: none; cursor: pointer; }
@@ -359,7 +362,7 @@ window.YF = (() => {
     let built = '';
     function build(canopy, style) {
       const key = canopy + style; if (key === built) return; built = key;
-      const real = style === 'real', wide = real ? 0.8 : 1.05, edgeW = real ? 0.4 : 1.1;
+      const real = style === 'real', wide = real ? 0.62 : 0.62, edgeW = real ? 0.3 : 0.75;
       mats.edge.color.setHex(real ? 0x6e6c65 : 0x5b584f); mats.major.color.setHex(real ? 0xa4a29b : 0xf2bd4b); mats.minor.color.setHex(real ? 0xa4a29b : 0xfbf8f1);
       while (group.children.length) group.children.pop().geometry.dispose();
       const out = { edge: [[], []], major: [[], []], minor: [[], []] };
@@ -451,6 +454,236 @@ window.YF = (() => {
       group.add(new THREE.Mesh(g, mat));
     }
     return { group, build };
+  }
+
+  // ---------------- the estate: towers, base and podium ----------------
+  // wings [cx, cy, sx, sy, rot]; rot turns the box anticlockwise from east
+  const Q = Math.PI / 4;
+  const BLOCKS = {
+    A: {
+      top: 162, res: 57.55, flats: '2/F-39/F',
+      wings: [
+        [-7.3, -1.8625, 14.6, 14.9, 0],            // east wing: flats 1-4
+        [-4.28, 6.7125, 2.68, 2.25, 0],            // flat 2's bay
+        [-4.28, -10.4375, 2.68, 2.25, 0],          // flat 3's bay
+        [-24.95, 15.6, 15.7, 14.3, 0],             // north wing: flats 19-22
+        [-27.3, 5.9, 5.6, 5.0, 0],                 // link to the north wing (refuse room)
+        [-52.3, -5.74, 18.4, 18.3, 0],             // west wing: flats 11-16
+        [-38, -5.25, 12, 3.5, 0],                  // corridor to the west wing
+        [-31.65, -24.05, 16.3, 16.3, 0],           // south wing: flats 7-10
+        [-33.1, -14.25, 4, 3.3, 0],                // link to the south wing
+        [-37.5, 2.76, 8, 10, -Q],                  // north-west arm: flats 17, 18
+        [-21.1, -10.2, 8, 10, -Q],                 // south-east arm: flats 5, 6
+        [-26.8, -4.6, 15, 15, Q]                   // core and lift lobby
+      ],
+      east: 3,                                     // the first three wings are the east wing
+      core: [-26.8, -4.6, 15, 15, Q],
+      lifts: [[-29.7, -0.2], [-27.7, -2.28], [-25.5, -4.36], [-33.6, -4.18], [-31.5, -6.31], [-29.4, -8.39]],
+      lobby: [-29.6, -4.18], bins: [-29.1, 8.38],
+      doors: { 2: [-7.07, -0.4675], 3: [-7.07, -3.2575] }   // front doors, off the corridor down the middle of the east wing
+    },
+    B: {
+      top: 159.3, res: 60.3, flats: '3/F-38/F',
+      wings: [
+        [-26.785, -79.55, 8.37, 12.4, 0],          // east wing: flats 9, 10
+        [-26.88, -72.225, 2.68, 2.25, 0],          // flat 9's bay
+        [-26.88, -86.875, 2.68, 2.25, 0],          // flat 10's bay
+        [-33.5, -79.5, 5.2, 2.6, 0],               // corridor to the core
+        [-44.95, -61.25, 12.9, 30.5, 0],           // north wing: flats 1-6
+        [-42.75, -102.4, 13.9, 28, 0],             // south wing: flats 11-18
+        [-57.95, -76.2, 6.5, 11.8, 0],             // west wing: flats 21, 22
+        [-53.05, -77.45, 3.3, 3.1, 0],             // link to the west wing (refuse room)
+        [-48.5, -82.96, 8, 10, Q],                 // south-west arm: flats 19, 20
+        [-33.5, -71.7, 8, 10, Q],                  // north-east arm: flats 7, 8
+        [-42.3, -77.1, 14, 14, Q]                  // core and lift lobby
+      ],
+      east: 4,
+      core: [-42.3, -77.1, 14, 14, Q],
+      lifts: [[-45.97, -75.81], [-43.97, -73.79], [-41.96, -71.77], [-42.21, -79.45], [-40.2, -77.44], [-38.18, -75.43]],
+      lobby: [-42.14, -75.68], bins: [-54.33, -76.22],
+      doors: { 9: [-29.67, -79.405], 10: [-29.67, -79.695] }
+    }
+  };
+  const TOWER_BASE = 45, DECK = 52;
+  // the podium: developed platform round both towers, from the layout plan
+  const PODIUM = [[-64.3, 20.0], [-37.0, 29.1], [4.7, 23.9], [17.7, 0.5], [33.3, -20.3], [43.8, -23.0], [41.1, -43.8], [25.5, -56.8],
+    [4.7, -69.8], [-13.5, -90.7], [-16.1, -116.7], [-34.4, -121.9], [-57.8, -114.1], [-66.9, -80.2], [-70.8, -43.8], [-68.2, -12.5]];
+  const CARPARK = [33.3, -50.4, 9, -0.7];          // vehicle run-in/out on the south-east face: x, y, width, facing (rad)
+  const PLAY = [[43.8, -12.5], [56.8, -14.0], [55.0, -25.6], [43.8, -24.0]];   // 1/F communal play area
+  const BRIDGE = [[-17, -103], [12, -124]];        // footbridge over Ying Yip Road, deck to stair tower
+  const floorZ = F => 57.55 + (F - 2) * 2.75;
+
+  function canvasTex(THREE, draw) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    draw(cv.getContext('2d'));
+    const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+  }
+  // corners of a wing box, anticlockwise
+  function corners([cx, cy, sx, sy, rot]) {
+    const c = Math.cos(rot), s = Math.sin(rot), hx = sx / 2, hy = sy / 2;
+    return [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([u, v]) => [cx + u * c - v * s, cy + u * s + v * c]);
+  }
+  // walls (u along the wall, v up, in units of uvx and uvy metres) and a flat top for a list of polygons
+  function prism(THREE, P, polys, z0, z1, opts) {
+    const o = Object.assign({ uvx: 3, uvy: 2.75, v0: z0, top: true, colorFor: () => [1, 1, 1], topColor: [1, 1, 1], shade: null }, opts || {});
+    const pos = [], nor = [], col = [], uv = [], idx = [];
+    const vert = (x, y, h, n, c, u, v) => { const p = P(x, y, h); pos.push(p.x, p.y, p.z); nor.push(n[0], n[2] || 0, -n[1]); col.push(c[0], c[1], c[2]); uv.push(u, v); return pos.length / 3 - 1; };
+    for (const pts of polys) {
+      let a = 0; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; a += p[0] * q[1] - q[0] * p[1]; }
+      const ring = a < 0 ? pts.slice().reverse() : pts;
+      let s = 0;
+      for (let i = 0; i < ring.length; i++) {
+        const [x1, y1] = ring[i], [x2, y2] = ring[(i + 1) % ring.length], l = Math.hypot(x2 - x1, y2 - y1) || 1, n = [(y2 - y1) / l, -(x2 - x1) / l];
+        const c = o.colorFor(l, n), cb = o.shade ? c.map(k => k * o.shade) : c;
+        const u0 = s / o.uvx, u1 = (s + l) / o.uvx, va = (z0 - o.v0) / o.uvy, vb = (z1 - o.v0) / o.uvy; s += l;
+        const v0 = vert(x1, y1, z0, n, cb, u0, va), v1 = vert(x2, y2, z0, n, cb, u1, va), v2 = vert(x2, y2, z1, n, c, u1, vb), v3 = vert(x1, y1, z1, n, c, u0, vb);
+        idx.push(v0, v1, v2, v0, v2, v3);
+      }
+      if (o.top) {
+        const tris = THREE.ShapeUtils.triangulateShape(ring.map(([x, y]) => new THREE.Vector2(x, y)), []);
+        const first = pos.length / 3; for (const [x, y] of ring) vert(x, y, z1, [0, 0, 1], o.topColor, 0.02, 0.02);
+        for (const [i, j, k] of tris) {
+          const [ax, ay] = ring[i], [bx, by] = ring[j], [qx, qy] = ring[k];
+          if ((bx - ax) * (qy - ay) - (qx - ax) * (by - ay) >= 0) idx.push(first + i, first + j, first + k); else idx.push(first + i, first + k, first + j);
+        }
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    return g;
+  }
+  const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+  let estateMats = null;
+  function estateMaterials(THREE, clip) {
+    const mk = (o) => new THREE.MeshLambertMaterial(Object.assign({ vertexColors: true }, clip ? { clippingPlanes: clip } : {}, o));
+    // one floor (2.75 m) and one 3 m bay per tile: a window with a frame and a sill band, on white (tinted by the walls' colour)
+    const win = canvasTex(THREE, c => {
+      c.fillStyle = '#fff'; c.fillRect(0, 0, 128, 128);
+      c.fillStyle = '#9fb3c0'; c.fillRect(18, 34, 92, 66);            // glass
+      c.fillStyle = '#dfe6ea'; c.fillRect(62, 34, 5, 66); c.fillRect(18, 58, 92, 4);   // mullion, transom
+      c.fillStyle = '#e9e5dc'; c.fillRect(0, 0, 128, 10);               // floor band
+    });
+    // the base: tall glazing between stone piers
+    const base = canvasTex(THREE, c => {
+      c.fillStyle = '#fff'; c.fillRect(0, 0, 128, 128);
+      c.fillStyle = '#93a7b3'; c.fillRect(14, 22, 100, 96);
+      c.fillStyle = '#e3e7e9'; for (const x of [46, 80]) c.fillRect(x, 22, 3, 96);
+      c.fillStyle = '#d9d5cc'; c.fillRect(0, 0, 128, 12);
+    });
+    // podium walls: horizontal stone courses with slot windows
+    const pod = canvasTex(THREE, c => {
+      c.fillStyle = '#fff'; c.fillRect(0, 0, 128, 128);
+      c.fillStyle = '#d8d5ce'; for (let y = 0; y < 128; y += 32) c.fillRect(0, y, 128, 3);
+      c.fillStyle = '#8e9ca5'; c.fillRect(20, 52, 88, 16);
+    });
+    return {
+      facade: mk({ map: win }), base: mk({ map: base }), pod: mk({ map: pod }),
+      plain: mk({}), glass: new THREE.MeshLambertMaterial(Object.assign({ color: 0xbfd3dc, transparent: true, opacity: 0.55 }, clip ? { clippingPlanes: clip } : {})),
+      green: new THREE.MeshLambertMaterial({ color: 0x7f9f6a }), tree: new THREE.MeshLambertMaterial({ color: 0x4f7a45 }),
+      trunk: new THREE.MeshLambertMaterial({ color: 0x7a6650 }), play: new THREE.MeshLambertMaterial({ color: 0xe9d68a }),
+      lift: new THREE.MeshBasicMaterial({ color: 0x2f5d8a }), bin: new THREE.MeshBasicMaterial({ color: 0x5d8a3a })
+    };
+  }
+  // one tower: pale stone base up to the first flats, cream walls with taupe bands on the narrow faces, a darker crown,
+  // roof plant over the core and a small gable at each wing end. skip: wing indexes to leave out (the tour draws those itself)
+  function makeTower(THREE, P, key, mats, skip) {
+    const B = BLOCKS[key], g = new THREE.Group();
+    const polys = B.wings.filter((w, i) => !(skip && skip.includes(i))).map(corners);
+    const CREAM = hex('#e9dfc8'), TAUPE = hex('#c8b391'), CROWN = hex('#b49e78'), STONE = hex('#d9d6cf');
+    const colorFor = l => (l < 9 ? TAUPE : CREAM);
+    const crown0 = B.top - 7;
+    g.add(new THREE.Mesh(prism(THREE, P, polys, TOWER_BASE, B.res - 0.15, { uvx: 4.5, uvy: 6.5, colorFor: () => STONE, top: false, shade: 0.8 }), mats.base));
+    g.add(new THREE.Mesh(prism(THREE, P, polys, B.res - 0.15, crown0, { v0: B.res - 0.15, colorFor, top: false }), mats.facade));
+    g.add(new THREE.Mesh(prism(THREE, P, polys, crown0, B.top, { v0: B.res - 0.15, colorFor: l => (l < 9 ? CROWN : hex('#d6c7a6')), topColor: hex('#c9c3b6') }), mats.facade));
+    // roof plant over the core, and a parapet-high gable at the outer end of each long wing
+    const [cx, cy, , , rot] = B.core;
+    g.add(new THREE.Mesh(prism(THREE, P, [corners([cx, cy, 9, 9, rot])], B.top, B.top + 6.5, { colorFor: () => CROWN, topColor: hex('#a89676') }), mats.plain));
+    g.add(new THREE.Mesh(prism(THREE, P, [corners([cx, cy, 4, 4, rot])], B.top + 6.5, B.top + 9, { colorFor: () => hex('#9c8a6c'), topColor: hex('#9c8a6c') }), mats.plain));
+    B.wings.forEach((w, i) => {
+      if ((skip && skip.includes(i)) || Math.max(w[2], w[3]) < 12 || w === B.core) return;
+      const [wx, wy, sx, sy, r] = w, c = Math.cos(r), s = Math.sin(r);
+      // the end farther from the core
+      const ax = sx >= sy ? [c, s] : [-s, c], half = Math.max(sx, sy) / 2, wide = Math.min(sx, sy);
+      const e1 = [wx + ax[0] * half, wy + ax[1] * half], e2 = [wx - ax[0] * half, wy - ax[1] * half];
+      const far = Math.hypot(e1[0] - cx, e1[1] - cy) > Math.hypot(e2[0] - cx, e2[1] - cy) ? e1 : e2;
+      const shape = new THREE.Shape([new THREE.Vector2(-wide / 2, 0), new THREE.Vector2(wide / 2, 0), new THREE.Vector2(0, 4.5)]);
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: false });
+      const m = new THREE.Mesh(geo, mats.plain);
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geo.attributes.position.count * 3).fill(0).map((_, k) => CROWN[k % 3]), 3));
+      const inward = Math.atan2(cy - far[1], cx - far[0]);
+      const p = P(far[0], far[1], B.top);
+      m.position.copy(p); m.rotation.y = inward + Math.PI / 2;
+      g.add(m);
+    });
+    return g;
+  }
+  // the podium: stone walls with slot windows up to the deck, a garden on top, trees, the car-park mouth,
+  // the play area and the footbridge over Ying Yip Road
+  function makePodium(THREE, P, mats, surfH) {
+    const g = new THREE.Group(), STONE = hex('#dcd9d2');
+    g.add(new THREE.Mesh(prism(THREE, P, [PODIUM], 36, DECK, { uvx: 6, uvy: 4, v0: 36, colorFor: () => STONE, topColor: hex('#8eab78') }), mats.pod));
+    // a paler ring path and a lawn circle in the courtyard between the towers
+    const ring = new THREE.Mesh(new THREE.RingGeometry(7, 9.5, 40), new THREE.MeshLambertMaterial({ color: 0xd9d2c0 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.copy(P(-12, -38, DECK + 0.05)); g.add(ring);
+    // trees on the deck, kept clear of the towers
+    const inTower = (x, y) => ['A', 'B'].some(k => BLOCKS[k].wings.some(w => { const [cx, cy, sx, sy, r] = w, c = Math.cos(-r), s = Math.sin(-r), u = (x - cx) * c - (y - cy) * s, v = (x - cx) * s + (y - cy) * c; return Math.abs(u) < sx / 2 + 3 && Math.abs(v) < sy / 2 + 3; }));
+    const inPoly = (x, y, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const crown = new THREE.SphereGeometry(1, 10, 8), trunk = new THREE.CylinderGeometry(0.18, 0.25, 1, 6);
+    let n = 0;
+    for (let k = 0; k < 400 && n < 46; k++) {
+      const x = -62 + rnd() * 100, y = -118 + rnd() * 140;
+      if (!inPoly(x, y, PODIUM) || inTower(x, y) || Math.hypot(x + 12, y + 38) < 10) continue;
+      const h = 3 + rnd() * 3, r = 1.6 + rnd() * 1.4;
+      const t = new THREE.Mesh(trunk, mats.trunk); t.scale.set(1, h * 0.5, 1); t.position.copy(P(x, y, DECK + h * 0.25)); g.add(t);
+      const c = new THREE.Mesh(crown, mats.tree); c.scale.set(r, r * 0.9, r); c.position.copy(P(x, y, DECK + h * 0.5 + r * 0.7)); g.add(c);
+      n++;
+    }
+    // car-park mouth: a dark opening on the south-east face
+    const [mx, my, mw, face] = CARPARK, gm = surfH ? Math.max(30, surfH(mx, my, 0)) : 40;
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(mw, 5, 1.2), new THREE.MeshLambertMaterial({ color: 0x2b2f33 }));
+    mouth.position.copy(P(mx, my, gm + 2.5)); mouth.rotation.y = face; g.add(mouth);
+    // the 1/F communal play area (yellow in the model)
+    const pz = surfH ? Math.max(...PLAY.map(([x, y]) => surfH(x, y, 0))) + 0.4 : 45;
+    g.add(new THREE.Mesh(prism(THREE, P, [PLAY], pz - 3, pz, { colorFor: () => STONE, topColor: hex('#e6d27f') }), mats.pod));
+    // footbridge: glazed deck at podium level, a stair-and-lift tower at the far end
+    const [[x0, y0], [x1, y1]] = BRIDGE, L = Math.hypot(x1 - x0, y1 - y0), ang = Math.atan2(y1 - y0, x1 - x0);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(L, 3.2, 3.4), mats.glass);
+    deck.position.copy(P((x0 + x1) / 2, (y0 + y1) / 2, DECK - 3)); deck.rotation.y = ang; g.add(deck);
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(L, 0.5, 3.6), new THREE.MeshLambertMaterial({ color: 0xd2cfc8 }));
+    slab.position.copy(P((x0 + x1) / 2, (y0 + y1) / 2, DECK - 4.6)); slab.rotation.y = ang; g.add(slab);
+    const gt = surfH ? surfH(x1, y1, 0) : 38;
+    g.add(new THREE.Mesh(prism(THREE, P, [corners([x1 + 3 * Math.cos(ang), y1 + 3 * Math.sin(ang), 6, 6, ang])], gt - 1, DECK - 1, { uvx: 6, uvy: 4, v0: gt, colorFor: () => STONE, topColor: hex('#c9c5bc') }), mats.pod));
+    return g;
+  }
+  // everything: { group, towers: { A, B }, podium }. opts: clip (planes for the towers), skip: { A: [...], B: [...] }, surfH
+  function makeEstate(THREE, P, opts) {
+    const o = opts || {}, mats = estateMaterials(THREE, o.clip);
+    const group = new THREE.Group(), towers = {};
+    for (const k of ['A', 'B']) { towers[k] = makeTower(THREE, P, k, mats, o.skip && o.skip[k]); group.add(towers[k]); }
+    const podium = makePodium(THREE, P, mats, o.surfH); group.add(podium);
+    return { group, towers, podium, mats };
+  }
+  // thin dark caps where a cut plane slices the towers (for the tour's dollhouse), lifts in blue, refuse room in green
+  function estateCaps(THREE, P, h, skip, colors) {
+    const g = new THREE.Group(), capMat = new THREE.MeshBasicMaterial({ color: (colors && colors.cap) || 0xa8a397 });
+    for (const k of ['A', 'B']) {
+      const B = BLOCKS[k];
+      B.wings.forEach((w, i) => {
+        if (skip && skip[k] && skip[k].includes(i)) return;
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w[2], 0.03, w[3]), capMat);
+        m.position.copy(P(w[0], w[1], h)); m.rotation.y = w[4]; g.add(m);
+      });
+    }
+    return g;
+  }
+  // lift cars and the refuse room on one floor of a block, as small blue and green boxes (for when the walls are cut away)
+  function serviceMarks(THREE, P, key, h, mats) {
+    const B = BLOCKS[key], g = new THREE.Group();
+    for (const [x, y] of B.lifts) { const m = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.06, 1.7), mats.lift); m.position.copy(P(x, y, h)); m.rotation.y = Q; g.add(m); }
+    const r = new THREE.Mesh(new THREE.BoxGeometry(3, 0.06, 2.6), mats.bin); r.position.copy(P(B.bins[0], B.bins[1], h)); g.add(r);
+    return g;
   }
   const poiName = p => (lang === 'zh' ? p.zh : p.en);
   const dist = d => d < 1000 ? t(`${Math.round(d / 10) * 10} m`, `${Math.round(d / 10) * 10}米`) : t(`${(d / 1000).toFixed(1)} km`, `${(d / 1000).toFixed(1)}公里`);
@@ -571,6 +804,7 @@ window.YF = (() => {
     get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; }, get roadsOn() { return roadsOn; }, get bldgOn() { return bldgOn; }, get estOn() { return estOn; }, isEst, poiShown,
     t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f), onRoads: f => roadFns.push(f), onBldg: f => bldgFns.push(f), onEst: f => estFns.push(f),
     ROADS, roadName, surfaceH, makeRoads, makeBuildings,
+    BLOCKS, corners, makeEstate, estateCaps, serviceMarks, floorZ,
     onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
     onPick: f => { pickFn = f; poiList(); }
   };
@@ -949,22 +1183,9 @@ const buildRoads = () => roads.build(st.trees ? 10 : 0, st.view === 'win' ? 'rea
 // nearby buildings (shared), simple blocks for context; not part of the sight lines
 const blds = YF.makeBuildings(THREE, P, surfH); scene.add(blds.group);
 
-// Ying Fai Court blocks: arms as [east offset, north offset, east-west size, north-south size, rotation]
-function tower(cx, cy, base, top, mat, arms) {
-  const grp = new THREE.Group(), hgt = top - base;
-  for (const [dx, dy, sx, sy, rot] of arms) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, hgt, sy), mat);
-    m.position.copy(P(cx + dx, cy + dy, base + hgt / 2)); m.rotation.y = rot; grp.add(m);
-  }
-  return grp;
-}
-const towerMat = new THREE.MeshLambertMaterial({ color: 0xe9e4d6 });
-const ARMS_A = [[13, 0, 26, 14, 0], [-13, 0, 26, 14, 0], [0, 13, 14, 26, 0], [0, -13, 14, 26, 0], [-13, 13, 22, 12, Math.PI / 4], [13, -13, 22, 12, Math.PI / 4]];
-// Block B from its floor plan: east wing (flats 9, 10), north wing (1-6), south wing (11-18), west wing (21, 22), diagonals (7, 8 and 19, 20)
-const ARMS_B = [[9.5, -4.1, 19, 17, 0], [-10.5, 2, 21, 16, 0], [-2.2, 15, 16, 30, 0], [1.7, -20, 16, 40, 0], [5.7, 6.8, 18, 12, -Math.PI / 4], [-5.9, -7.3, 18, 12, -Math.PI / 4]];
-const blockA = tower(-25.7, 3.3, 45, 162, towerMat, ARMS_A);
-const blockB = tower(-41.6, -75.5, 45, 159, towerMat, ARMS_B);
-scene.add(blockA, blockB);
+// Ying Fai Court: both towers and the podium (shared with the other pages, traced from the HA floor plans)
+const estate = YF.makeEstate(THREE, P, { surfH }); scene.add(estate.group);
+const blockA = estate.towers.A, blockB = estate.towers.B;
 const winMat = new THREE.MeshBasicMaterial({ color: 0xc2512b });
 const winMark = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 5.5), winMat);
 scene.add(winMark);
@@ -975,7 +1196,7 @@ function finMesh(y, z0, z1) { // Block A flats 2 and 3, for context
   const m = new THREE.Mesh(new THREE.BoxGeometry(FIN_L, z1 - z0, 0.2), finMat);
   m.position.copy(P(FIN_L / 2, y, (z0 + z1) / 2)); return m;
 }
-scene.add(finMesh(4.4 + FIN_Y + 0.1, floorZ(2), 162), finMesh(-4.4 - FIN_Y - 0.1, floorZ(2), floorZ(26)));
+scene.add(finMesh(3.075 + FIN_Y + 0.1, floorZ(2), 162), finMesh(-6.8 - FIN_Y - 0.1, floorZ(2), floorZ(26)));
 
 // the living room you stand in (window view only)
 const room = new THREE.Group(); scene.add(room);
@@ -1037,8 +1258,8 @@ const LABELS = [
   { t: 'Port Shelter', zh: '牛尾海', x: 2900, y: 2700, h: 2, sea: true },
   { t: 'Clear Water Bay hills', zh: '清水灣山嶺', x: 1650, y: -1650, h: 240 },
   { t: 'Ridge 110–140 m', zh: '山脊 110–140米', x: 230, y: 170, h: 140 },
-  { t: 'Block A', zh: 'A座', x: -26, y: 3, h: 120, blk: true },
-  { t: 'Block B', zh: 'B座', x: -41.6, y: -75.5, h: 167, blk: true }
+  { t: 'Block A', zh: 'A座', x: -26.8, y: -4.6, h: 176, blk: true },
+  { t: 'Block B', zh: 'B座', x: -42.3, y: -77.1, h: 173, blk: true }
 ];
 const labelHost = document.getElementById('labels');
 LABELS.forEach(L => { const el = document.createElement('div'); el.className = 'lbl' + (L.sea ? ' sea' : '') + (L.blk ? ' blk' : ''); el.textContent = L.t; labelHost.appendChild(el); L.el = el; L.v = P(L.x, L.y, L.h); });
@@ -1068,7 +1289,21 @@ YF.ROADS.labels.forEach(([n, x, y]) => {
   const h = Math.max(0, surfH(x, y, 0)) + 12;
   LABELS.push({ road: n, x, y, h, el, v: P(x, y, h) });
 });
-const labelName = L => (L.site ? T(`Ying Fai Court site · ${YF.SITE.ha} ha`, `影輝苑範圍 · 約${YF.SITE.ha}公頃`) : L.road != null ? YF.roadName(L.road) : L.p ? YF.poiName(L.p) : T(L.t, L.zh));
+// the lift lobby and the refuse room on the chosen floor of this block (from its typical floor plan), with the
+// walk from the flat's front door along the corridors
+const SVC_BLOCK = Object.keys(FLATS)[0][0];
+const SVC_L = ['lifts', 'bins'].map(kind => {
+  const el = document.createElement('div'); el.className = 'lbl svc ' + kind; labelHost.appendChild(el);
+  const L = { svc: kind, x: 0, y: 0, h: 0, el, v: new THREE.Vector3() }; LABELS.push(L); return L;
+});
+function placeSvc() {
+  const B = YF.BLOCKS[SVC_BLOCK], h = floorZ(st.floor) + 1.2, door = B.doors[st.flat.slice(1)];
+  for (const L of SVC_L) {
+    const [x, y] = L.svc === 'lifts' ? B.lobby : B.bins;
+    L.x = x; L.y = y; L.h = h; L.v.copy(P(x, y, h)); L.walk = Math.round((Math.abs(door[0] - x) + Math.abs(door[1] - y)) / 5) * 5;
+  }
+}
+const labelName = L => (L.svc ? (L.svc === 'lifts' ? T(`Lifts · ${st.floor}/F · ~${L.walk} m from the door`, `升降機 · ${st.floor}樓 · 距大門約${L.walk}米`) : T(`Refuse room · ~${L.walk} m`, `垃圾房 · 約${L.walk}米`)) : L.site ? T(`Ying Fai Court site · ${YF.SITE.ha} ha`, `影輝苑範圍 · 約${YF.SITE.ha}公頃`) : L.road != null ? YF.roadName(L.road) : L.p ? YF.poiName(L.p) : T(L.t, L.zh));
 // in the window view, grey out labels for places the hills hide
 function labelOcclusion() {
   const ox = FLATS[st.flat].x, oy = FLATS[st.flat].y, H = eyeH(st.floor), can = st.trees ? 10 : 0, A = aperture(st.flat, st.floor, st.d);
@@ -1091,7 +1326,7 @@ function placeLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
   for (const L of LABELS) {
     v.copy(L.v).project(cam);
-    const show = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 && !(st.view === 'win' && (L.blk || L.site)) && !L.out && (!L.p || YF.poiShown(L.p)) && (!L.site || YF.siteOn) && (L.road == null || YF.roadsOn);
+    const show = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 && !(st.view === 'win' && (L.blk || L.site || L.svc)) && !L.out && (!L.p || YF.poiShown(L.p)) && (!L.site || YF.siteOn) && (L.road == null || YF.roadsOn);
     L.el.hidden = !show;
     if (show) { L.el.style.left = ((v.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
   }
@@ -1210,7 +1445,7 @@ function drawRows() {
 function refresh(full) {
   rebuildTerrain(); buildRoads(); blds.build(st.trees ? 10 : 0); buildRoom();
   const res = computeRays();
-  drawRays(res); applyCamera(); updatePanel(res); labelOcclusion();
+  drawRays(res); applyCamera(); updatePanel(res); placeSvc(); labelOcclusion();
   if (full) drawRows(); else document.querySelectorAll('.floorrow').forEach((el, i) => el.classList.toggle('on', i + F0 === st.floor));
   const keysHint = matchMedia('(hover: hover) and (pointer: fine)').matches ? T(' · ↑ ↓ floors', ' · ↑ ↓ 轉樓層') : '';
   $('hint').textContent = (st.view === 'win' ? T('Drag to look around', '拖動環顧') : T('Drag to orbit · scroll or pinch to zoom', '拖動旋轉 · 滾輪或雙指縮放')) + keysHint;
