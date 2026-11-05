@@ -1363,6 +1363,7 @@ function applyCamera() {
 let pending = false;
 function render() { if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; renderer.render(scene, cam); placeLabels(); hud(); }); }
 controls.addEventListener('change', render);
+window.__view = { cam, controls, render, st };
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix(); render();
 }
