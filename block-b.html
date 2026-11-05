@@ -810,9 +810,12 @@ const roadMat = {
   major: new THREE.MeshBasicMaterial({ color: 0xf2bd4b, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }),
   minor: new THREE.MeshBasicMaterial({ color: 0xfbf8f1, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 })
 };
-let builtRoads = -1;
+let builtRoads = '';
+// overview: map colours and roads drawn wider so they read from a distance; window view: true width, asphalt grey
 function buildRoads() {
-  const c = st.trees ? 10 : 0; if (c === builtRoads) return; builtRoads = c;
+  const c = st.trees ? 10 : 0, win = st.view === 'win', key = c + st.view; if (key === builtRoads) return; builtRoads = key;
+  const wide = win ? 1 : 1.7, edgeW = win ? 0.6 : 2;
+  roadMat.edge.color.setHex(win ? 0x6e6c65 : 0x5b584f); roadMat.major.color.setHex(win ? 0xa4a29b : 0xf2bd4b); roadMat.minor.color.setHex(win ? 0xa4a29b : 0xfbf8f1);
   while (roadGroup.children.length) roadGroup.children.pop().geometry.dispose();
   const out = { edge: [[], []], major: [[], []], minor: [[], []] };
   const strip = (key, pts, half, lift) => {
@@ -834,8 +837,8 @@ function buildRoads() {
       for (let k = 0; k < n; k++) pts.push([ax + (bx - ax) * k / n, ay + (by - ay) * k / n]);
     }
     pts.push([w[w.length - 2], w[w.length - 1]]);
-    strip('edge', pts, w[1] / 2 + 1.5, 1.6);
-    strip(w[2] === 'p' || (w[2] === 't' && w[1] >= 9) ? 'major' : 'minor', pts, w[1] / 2, 1.9);   // trunk and primary roads in amber
+    strip('edge', pts, w[1] * wide / 2 + edgeW, 1.6);
+    strip(w[2] === 'p' || (w[2] === 't' && w[1] >= 9) ? 'major' : 'minor', pts, w[1] * wide / 2, 1.9);   // trunk and primary roads in amber
   }
   for (const key of ['edge', 'major', 'minor']) {
     const [pos, idx] = out[key]; if (!pos.length) continue;
