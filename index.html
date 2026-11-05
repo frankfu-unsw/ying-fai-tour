@@ -158,6 +158,7 @@ body { margin: 0; }
 .lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
 .lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
 .lbl.poi.hid { opacity: .6; font-weight: 500; }
+.lbl.site { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #fff; background: #d6336c; padding: 1px 7px; }
 .poibox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
 .poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
 .poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
@@ -256,8 +257,9 @@ body { margin: 0; }
     </section>
 
     <section class="poibox" aria-labelledby="poiHd">
-      <div class="eyebrow" id="poiHd" data-zh="附近地點">Nearby places</div>
-      <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示標記">Show markers on the 3D view</span></label>
+      <div class="eyebrow" id="poiHd" data-zh="屋苑範圍及附近地點">The estate and nearby places</div>
+      <label class="check"><input type="checkbox" id="siteChk" checked> <span data-zh="在立體模型上顯示屋苑範圍">Show the estate boundary on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示附近地點">Show nearby places on the 3D view</span></label>
       <div id="poiList"></div>
       <p class="poifoot" data-zh="距離為與屋苑的直線距離，地點位置取自 OpenStreetMap。">Straight-line distance from the estate. Locations from OpenStreetMap.</p>
     </section>
@@ -291,12 +293,15 @@ window.YF = (() => {
   let poiOn = store.get('yf-poi') !== '0';
   const langFns = [], poiFns = [];
   let pickFn = null;
+  let siteOn = store.get('yf-site') !== '0';
+  const siteFns = [];
   const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
   const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
   const dir16 = az => (lang === 'zh' ? DIR_ZH : DIR_EN)[Math.round((((az % 360) + 360) % 360) / 22.5) % 16];
   const POIS = [{"id": "hh", "cat": "mtr", "en": "Hang Hau station", "zh": "港鐵坑口站", "x": -133, "y": -1106, "noteEn": "About 15–20 min on foot, uphill on the way home (HK01)", "noteZh": "步行約15至20分鐘，回程上斜（香港01）"}, {"id": "pl", "cat": "mtr", "en": "Po Lam station", "zh": "港鐵寶琳站", "x": -825, "y": -246}, {"id": "tko", "cat": "mtr", "en": "Tseung Kwan O station", "zh": "港鐵將軍澳站", "x": -636, "y": -1910}, {"id": "epc", "cat": "shop", "en": "East Point City", "zh": "東港城", "x": -51, "y": -907}, {"id": "mcp", "cat": "shop", "en": "Metro City Plaza", "zh": "新都城中心", "x": -897, "y": -373}, {"id": "fng", "cat": "shop", "en": "Fu Ning Garden Market", "zh": "富寧花園街市", "x": 232, "y": -677}, {"id": "ssm", "cat": "shop", "en": "Silverstrand Mart", "zh": "銀線灣廣場", "x": 599, "y": -421}, {"id": "tkoh", "cat": "health", "en": "Tseung Kwan O Hospital", "zh": "將軍澳醫院", "x": 383, "y": -697}, {"id": "hoh", "cat": "health", "en": "Haven of Hope Hospital", "zh": "靈實醫院", "x": -963, "y": -1106}, {"id": "ust", "cat": "edu", "en": "HKUST", "zh": "香港科技大學", "x": -24, "y": 1273}, {"id": "ssb", "cat": "leisure", "en": "Silverstrand Beach", "zh": "銀線灣泳灘", "x": 631, "y": -190}, {"id": "hhsc", "cat": "leisure", "en": "Hang Hau Sports Centre", "zh": "坑口體育館", "x": 250, "y": -808}, {"id": "tkop", "cat": "leisure", "en": "Tseung Kwan O Swimming Pool", "zh": "將軍澳游泳池", "x": -566, "y": -744}, {"id": "tkosg", "cat": "leisure", "en": "Tseung Kwan O Sports Ground", "zh": "將軍澳運動場", "x": -257, "y": -1477}, {"id": "duck", "cat": "hill", "en": "Duckling Hill (153 m)", "zh": "鴨仔山（153米）", "x": -238, "y": -115}, {"id": "razor", "cat": "hill", "en": "Razor Hill (432 m)", "zh": "鷓鴣山（432米）", "x": -1440, "y": 1591}, {"id": "syshan", "cat": "hill", "en": "Sheung Yeung Shan (260 m)", "zh": "上洋山（260米）", "x": 1595, "y": -1696}, {"id": "hhv", "cat": "local", "en": "Hang Hau Village", "zh": "坑口村", "x": 91, "y": -376, "noteEn": "Nearest minibus stops, about 8 min on foot (HK01)", "noteZh": "最近的小巴站，步行約8分鐘（香港01）"}, {"id": "cwbfs", "cat": "local", "en": "Clear Water Bay Film Studio", "zh": "清水灣電影製片廠", "x": 85, "y": -199, "noteEn": "Opposite the estate; due for redevelopment (HK01)", "noteZh": "屋苑對面，將會重建（香港01）"}];
   const CATS = {"mtr": {"en": "MTR stations", "zh": "港鐵站", "color": "#c0392b"}, "shop": {"en": "Shops and markets", "zh": "商場及街市", "color": "#7b4fb0"}, "health": {"en": "Hospitals", "zh": "醫院", "color": "#2e8b57"}, "edu": {"en": "University", "zh": "大學", "color": "#2f6db3"}, "leisure": {"en": "Beaches and sport", "zh": "泳灘及運動", "color": "#1d8aa8"}, "hill": {"en": "Hills", "zh": "山峰", "color": "#8a6a3c"}, "local": {"en": "Next to the estate", "zh": "屋苑附近", "color": "#5d6670"}};
+  const SITE = {"pts": [[-79.9, -51.7], [-73, -83.6], [-61.6, -110.1], [-32.9, -140.4], [-27.9, -122.9], [-24.7, -102.5], [-15.8, -86], [-22.4, -81.5], [-12, -66.2], [-4, -71.6], [3.2, -62.9], [19.4, -54.9], [22.1, -53.7], [23.9, -51.3], [24.5, -48.4], [23.6, -45.5], [34, -41.4], [42.8, -37.8], [90.2, -39.3], [97.8, -40.3], [96.8, -32.4], [91.9, -28.9], [75.1, -20.6], [22.2, 5.7], [21.9, 23.9], [5.6, 34.4], [-45.1, 44.6], [-54.9, 37.5], [-60, 23.9], [-72.7, -3.1]], "cx": -19.1, "cy": -32.0, "label": [-61.6, -110.1], "color": "#d6336c", "ha": 1.4, "en": "About 1.4 hectares: 185 m from north to south and about 105 m from east to west, or 180 m counting the strip that runs east towards Ying Yip Road.", "zh": "約1.4公頃：南北長185米，東西闊約105米；連向東伸往影業路的一段，約闊180米。"};
   const poiName = p => (lang === 'zh' ? p.zh : p.en);
   const dist = d => d < 1000 ? t(`${Math.round(d / 10) * 10} m`, `${Math.round(d / 10) * 10}米`) : t(`${(d / 1000).toFixed(1)} km`, `${(d / 1000).toFixed(1)}公里`);
   function where(p) {
@@ -305,7 +310,10 @@ window.YF = (() => {
   }
   function poiList() {
     const host = document.getElementById('poiList'); if (!host) return;
-    let s = '';
+    const ha = t(`${SITE.ha} ha`, `約${SITE.ha}公頃`);
+    let s = `<div class="poigrp" style="--c:${SITE.color}"><h3><i></i>${t('The estate', '屋苑')}</h3>`
+      + (pickFn ? `<div class="poirow pick" role="button" tabindex="0" data-id="site">` : '<div class="poirow">')
+      + `<span>${t('Ying Fai Court site', '影輝苑地盤範圍')}</span><span class="d">${ha}</span></div><p class="poinote">${t(SITE.en, SITE.zh)}</p></div>`;
     for (const k of Object.keys(CATS)) {
       const ps = POIS.filter(p => p.cat === k); if (!ps.length) continue;
       s += `<div class="poigrp" style="--c:${CATS[k].color}"><h3><i></i>${t(CATS[k].en, CATS[k].zh)}</h3>`;
@@ -319,7 +327,11 @@ window.YF = (() => {
     }
     host.innerHTML = s;
     if (pickFn) host.querySelectorAll('.poirow.pick').forEach(r => {
-      const go = () => { if (!poiOn) setPoi(true); pickFn(POIS.find(p => p.id === r.dataset.id)); };
+      const site = r.dataset.id === 'site';
+      const go = () => {
+        if (site) { if (!siteOn) setSite(true); pickFn({ id: 'site', site: true, x: SITE.cx, y: SITE.cy }); }
+        else { if (!poiOn) setPoi(true); pickFn(POIS.find(p => p.id === r.dataset.id)); }
+      };
       r.addEventListener('click', go);
       r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
@@ -351,14 +363,41 @@ window.YF = (() => {
     const c = document.getElementById('poiChk'); if (c) c.checked = on;
     poiFns.forEach(f => f());
   }
+  function setSite(on) {
+    siteOn = on; store.set('yf-site', on ? '1' : '0');
+    const c = document.getElementById('siteChk'); if (c) c.checked = on;
+    siteFns.forEach(f => f());
+  }
+  // the site boundary as a see-through fence H metres tall, following the ground
+  function buildSite(THREE, P, elev, H) {
+    const g = new THREE.Group(), pts = SITE.pts.concat([SITE.pts[0]]), smp = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 4));
+      for (let k = 0; k < n; k++) smp.push([x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n]);
+    }
+    smp.push(smp[0]);
+    const pos = [], idx = [], top = [], bot = [];
+    smp.forEach(([x, y], i) => {
+      const e = elev(x, y), z = e ? e[0] : 0, b = P(x, y, z - 1), tp = P(x, y, z + H);
+      pos.push(b.x, b.y, b.z, tp.x, tp.y, tp.z); top.push(tp); bot.push(P(x, y, z + .8));
+      if (i) { const a = 2 * (i - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    });
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
+    g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: SITE.color, transparent: true, opacity: .28, side: THREE.DoubleSide, depthWrite: false })));
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(top), new THREE.LineBasicMaterial({ color: SITE.color })));
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(bot), new THREE.LineBasicMaterial({ color: SITE.color })));
+    return g;
+  }
   const lb = document.getElementById('langBtn');
   if (lb) lb.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));
   const pc = document.getElementById('poiChk');
   if (pc) { pc.checked = poiOn; pc.addEventListener('change', e => setPoi(e.target.checked)); }
+  const sc = document.getElementById('siteChk');
+  if (sc) { sc.checked = siteOn; sc.addEventListener('change', e => setSite(e.target.checked)); }
   applyStatic();
   return {
-    get lang() { return lang; }, get poiOn() { return poiOn; },
-    t, dir16, POIS, CATS, poiName,
+    get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; },
+    t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f),
     onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
     onPick: f => { pickFn = f; poiList(); }
   };
@@ -1289,6 +1328,8 @@ const poiPins = new THREE.Group(); scene.add(poiPins);
   for (const k in byCat) poiPins.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
 }
 const labelName = L => (L.p ? YF.poiName(L.p) : tr(L.t));
+// the estate's site boundary, as a see-through fence round the ground
+const siteGroup = YF.buildSite(THREE, P, elev, 14); scene.add(siteGroup); siteGroup.visible = YF.siteOn;
 let roomLabels = [];
 function buildRoomLabels() {
   roomLabels.forEach(r => r.el.remove());
@@ -1674,6 +1715,7 @@ function loop(t) {
 
 YF.onLang(() => { applyLayout(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dirty = true; });
 YF.onPoi(() => { updateLabelVisibility(); dirty = true; });
+YF.onSite(() => { siteGroup.visible = YF.siteOn; dirty = true; });
 
 // ---------------- start ----------------
 seaTable();
