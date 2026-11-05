@@ -295,6 +295,8 @@ window.YF = (() => {
   let pickFn = null;
   let siteOn = store.get('yf-site') !== '0';
   const siteFns = [];
+  let roadsOn = store.get('yf-roads') !== '0';
+  const roadFns = [];
   const t = (en, zh) => (lang === 'zh' && zh != null ? zh : en);
   const DIR_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const DIR_ZH = ['北', '北北東', '東北', '東北東', '東', '東南東', '東南', '南南東', '南', '南南西', '西南', '西南西', '西', '西北西', '西北', '北北西'];
@@ -368,6 +370,11 @@ window.YF = (() => {
     const c = document.getElementById('siteChk'); if (c) c.checked = on;
     siteFns.forEach(f => f());
   }
+  function setRoads(on) {
+    roadsOn = on; store.set('yf-roads', on ? '1' : '0');
+    const c = document.getElementById('roadChk'); if (c) c.checked = on;
+    roadFns.forEach(f => f());
+  }
   // the site boundary as a see-through fence H metres tall, following the ground
   function buildSite(THREE, P, elev, H) {
     const g = new THREE.Group(), pts = SITE.pts.concat([SITE.pts[0]]), smp = [];
@@ -394,10 +401,12 @@ window.YF = (() => {
   if (pc) { pc.checked = poiOn; pc.addEventListener('change', e => setPoi(e.target.checked)); }
   const sc = document.getElementById('siteChk');
   if (sc) { sc.checked = siteOn; sc.addEventListener('change', e => setSite(e.target.checked)); }
+  const rc = document.getElementById('roadChk');
+  if (rc) { rc.checked = roadsOn; rc.addEventListener('change', e => setRoads(e.target.checked)); }
   applyStatic();
   return {
-    get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; },
-    t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f),
+    get lang() { return lang; }, get poiOn() { return poiOn; }, get siteOn() { return siteOn; }, get roadsOn() { return roadsOn; },
+    t, dir16, POIS, CATS, SITE, poiName, buildSite, onSite: f => siteFns.push(f), onRoads: f => roadFns.push(f),
     onLang: f => langFns.push(f), onPoi: f => poiFns.push(f),
     onPick: f => { pickFn = f; poiList(); }
   };
