@@ -240,9 +240,25 @@ window.YF = (() => {
       g.fillStyle = '#d2c9b6'; g.fillRect(0, 0, w, 8); g.fillRect(0, 100, w, 4);
       g.fillStyle = '#c9c0ad'; for (let u = 0; u < w; u += 64) g.fillRect(u, 0, 3, h);
     });
+    // the roof: grey concrete paving in 1 m squares (the uv repeat is 4 m), lit from above so the colour is kept dark
+    const roofTex = canvasTex(128, 128, (g, w, h) => {
+      g.fillStyle = '#97928a'; g.fillRect(0, 0, w, h);
+      g.fillStyle = '#8b867d'; for (let u = 0; u < w; u += 32) { g.fillRect(u, 0, 2, h); g.fillRect(0, u, w, 2); }
+      g.fillStyle = '#a19c93'; g.fillRect(34, 34, 28, 28); g.fillRect(98, 66, 28, 28);
+    });
+    // the rooftop structures over the lift core: tan walls with louvred panels, one 3 m bay by one 2.75 m storey
+    const crownTex = canvasTex(128, 128, (g, w, h) => {
+      g.fillStyle = '#d9cbac'; g.fillRect(0, 0, w, h);
+      g.fillStyle = '#9a8c71'; g.fillRect(22, 26, 84, 74);
+      g.fillStyle = '#b8aa8c'; for (let v = 30; v < 98; v += 7) g.fillRect(22, v, 84, 2);
+      g.fillStyle = '#e6dbc2'; g.fillRect(0, 0, w, 7);
+      g.fillStyle = '#c7b897'; g.fillRect(0, 0, 3, h);
+    });
     const M = {
       facade: lam({ map: facadeTex }), recess: lam({ color: 0x9c8f79 }), lobby: lam({ map: lobbyTex }),
-      roof: lam({ color: 0xcbc3b2 }), crown: lam({ color: 0xa39580 }), crownDark: lam({ color: 0x8c7f6b }),
+      roof: lam({ map: roofTex }), crown: lam({ map: crownTex }), crownTop: lam({ color: 0x968c7c }),
+      parapet: lam({ color: 0xebe4d5, side: THREE.DoubleSide }), parapetRecess: lam({ color: 0x9c8f79, side: THREE.DoubleSide }),
+      crownDark: lam({ color: 0x8c7f6b }),
       podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x86ab63 }),
       tree: lam({ color: 0x6fa452 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
       drum: lam({ color: 0xd9dfe0 })
@@ -280,7 +296,7 @@ window.YF = (() => {
     // tower walls, rebuilt when the tour moves to another floor: below and above the cut floor every wall is drawn;
     // on the cut floor itself the walls inside the flat's box are left out so the flat's own walls and windows show
     function buildTower(k, cut) {
-      const B = BLOCKS[k], foot = B.foot, top = B.roof + 1.2, Gf = Geo(), Gr = Geo();
+      const B = BLOCKS[k], foot = B.foot, top = B.roof, Gf = Geo(), Gr = Geo();
       const bands = cut && cut.block === k ? [[B.lobbyTop, cut.lo, null], [cut.lo, cut.hi, cut.box], [cut.hi, top, null]] : [[B.lobbyTop, top, null]];
       for (let i = 0; i < foot.length; i++) {
         const [x1, y1] = foot[i], [x2, y2] = foot[(i + 1) % foot.length], l = Math.hypot(x2 - x1, y2 - y1);
@@ -294,20 +310,41 @@ window.YF = (() => {
       const g = towerWalls[k]; clear(g);
       g.add(mesh(Gf, M.facade), mesh(Gr, M.recess));
     }
-    // roofs, crowns (lift machine room and water tanks, as on the model) and the lobby storeys
+    // roofs and the lobby storeys. As on the HA's model, each wing ends in a plain cream parapet over a paved roof, and the
+    // lift core carries a stepped tan block with louvred walls (lift machine room with the water tanks above it) about
+    // three storeys tall, with lower stair and plant rooms along the corridor either side and a stair head by the refuse room
+    const PARA = 1.3;
     for (const k of ['A', 'B']) {
-      const B = BLOCKS[k], G = Geo(), Gl = Geo();
+      const B = BLOCKS[k], G = Geo(), Gl = Geo(), Gp = Geo(), Gpr = Geo();
       flat(G, B.foot, B.roof);
       blocks[k].add(mesh(G, M.roof));
       for (let i = 0; i < B.foot.length; i++) {
         const [x1, y1] = B.foot[i], [x2, y2] = B.foot[(i + 1) % B.foot.length], l = Math.hypot(x2 - x1, y2 - y1);
         quad(Gl, x1, y1, x2, y2, DECK - .2, B.lobbyTop, 0, Math.max(1, Math.round(l / 1.5)) / 4, 0, 1);
+        quad(l < 1.6 ? Gpr : Gp, x1, y1, x2, y2, B.roof, B.roof + PARA, 0, 1, 0, 1);
       }
-      blocks[k].add(mesh(Gl, M.lobby));
-      const [lx, ly] = B.lobby, rot = k === 'A' ? -Math.PI / 4 : Math.PI / 4;
-      boxAt(blocks[k], lx, ly, B.roof, 15, 9, 7.5, M.crown, rot);
-      boxAt(blocks[k], lx, ly, B.roof + 7.5, 10, 6, 2.5, M.crownDark, rot);
-      boxAt(blocks[k], B.rs[0], B.rs[1] - (k === 'A' ? 3 : 0), B.roof, 7, 5, 4.5, M.crown);
+      blocks[k].add(mesh(Gl, M.lobby), mesh(Gp, M.parapet), mesh(Gpr, M.parapetRecess));
+      // the core's axes: u along the two rows of lifts, v across them
+      const [cx, cy] = B.lobby, s = Math.SQRT1_2, U = k === 'A' ? [s, -s] : [s, s], V = k === 'A' ? [s, s] : [-s, s];
+      const at = (u, v) => [cx + u * U[0] + v * V[0], cy + u * U[1] + v * V[1]];
+      const Gc = Geo(), Gt = Geo();
+      const prism = (pts, z0, z1) => {
+        let a = 0; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; a += p[0] * q[1] - q[0] * p[1]; }
+        if (a < 0) pts.reverse();
+        for (let i = 0; i < pts.length; i++) {
+          const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length], l = Math.hypot(x2 - x1, y2 - y1);
+          quad(Gc, x1, y1, x2, y2, z0, z1, 0, l / 3, (z0 - B.roof) / STOREY, (z1 - B.roof) / STOREY);
+        }
+        flat(Gt, pts, z1);
+      };
+      const rect = (u0, u1, v0, v1, z0, z1) => prism([at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)], z0, z1);
+      const [v0, v1] = k === 'A' ? [-4.6, 4.2] : [-4.2, 3.8], R = B.roof;
+      rect(-5.5, 5.5, v0, v1, R, R + 5.6);                 // lift machine room
+      rect(-4, 3.5, v0 + 1.2, v1 - 1.2, R + 5.6, R + 8.6);  // water tanks
+      rect(5.5, 10.5, -3, 3, R, R + 3.4);                  // stair and plant rooms either side
+      rect(-10.5, -5.5, -3, 3, R, R + 3.4);
+      prism([[B.rs[0] - 2.2, B.rs[1] - 2.2], [B.rs[0] + 2.2, B.rs[1] - 2.2], [B.rs[0] + 2.2, B.rs[1] + 2.2], [B.rs[0] - 2.2, B.rs[1] + 2.2]], R, R + 3.2);
+      blocks[k].add(mesh(Gc, M.crown), mesh(Gt, M.crownTop));
     }
     buildTower('A', null); buildTower('B', null);
     // Block A's round entrance drum at the foot of the north-east corner, as on the model
