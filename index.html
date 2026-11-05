@@ -1480,9 +1480,9 @@ function terrainHides(L) {
   return false;
 }
 // outside labels: from inside, the ones you can see through a window (greyed when a hill is in the way);
-// from the dollhouse, all of them once you zoom out to the area
+// from the dollhouse, all of them once you zoom out a little
 function updateLabelVisibility() {
-  const area = inArea();
+  const area = showPlaces();
   for (const L of OUT_L) {
     L.hidden = true; L.behind = false;
     if ((L.p && !YF.poiOn) || (L.road != null && !YF.roadsOn) || (L.site && !YF.siteOn)) continue;
@@ -1518,7 +1518,7 @@ function placeLabels() {
 
 // ---------------- cameras ----------------
 const controls = new THREE.OrbitControls(cam, canvas);
-controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 4000;
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 4000; controls.zoomSpeed = 1.6;
 const FLAT_C = P(wx(4000), wy(1900), FL + .3);
 controls.target.copy(FLAT_C);
 let lastWalk = null;
@@ -1526,8 +1526,12 @@ let dollPose = { pos: P(wx(4000) - 6.8, wy(1900) - 8, FL + 10.1), tgt: FLAT_C.cl
 const DOLL_START = { pos: dollPose.pos.clone(), tgt: dollPose.tgt.clone() };
 // the dollhouse zoomed out to show the estate, Block B, the roads and nearby places (same angle as the Block pages' overview)
 const AREA_START = { pos: new THREE.Vector3(-800, 820, 1100), tgt: new THREE.Vector3(300, 40, 0) };
-const AREA_DIST = 150;   // further than this from the flat counts as the area view
-function inArea() { return st.mode === 'doll' && cam.position.distanceTo(controls.target) > AREA_DIST; }
+// zooming out of the dollhouse: nearby places, roads and blocks are labelled once you pull back a little (the start
+// view is about 14 m away); further out the room labels drop away and it counts as the area view
+const PLACES_DIST = 20, AREA_DIST = 60;
+const camDist = () => cam.position.distanceTo(controls.target);
+function showPlaces() { return st.mode === 'doll' && camDist() > PLACES_DIST; }
+function inArea() { return st.mode === 'doll' && camDist() > AREA_DIST; }
 let closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }, areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
 // fly the dollhouse camera: distance changes on a log scale; when zooming out the camera pulls back before it pans,
 // when zooming in it pans before it closes in, and it never dips below 25 m above the ground
@@ -1546,7 +1550,7 @@ function applyWalkCam() {
 }
 function setHint() {
   $('hint').textContent = st.mode === 'doll'
-    ? T('Drag to turn · scroll or pinch to zoom · tap a room to step inside', '拖動旋轉 · 滾輪或雙指縮放 · 點房間走進去')
+    ? T('Drag to turn · zoom out a little for nearby places · tap a room to step inside', '拖動旋轉 · 稍為拉遠可見附近地點 · 點房間走進去')
     : T('Drag to look around · tap the floor to walk · arrow keys or WASD to move', '拖動環顧 · 點地面行過去 · 方向鍵或 WASD 移動');
 }
 function setMode(m) {
@@ -1879,7 +1883,7 @@ function loop(t) {
   }
   if (dirty) {
     dirty = false;
-    const a = inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
+    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
 }
@@ -1890,7 +1894,7 @@ YF.onSite(() => { siteGroup.visible = YF.siteOn; updateLabelVisibility(); dirty 
 YF.onRoads(() => { roadGroup.visible = YF.roadsOn; updateLabelVisibility(); dirty = true; });
 
 // ---------------- Inside / Dollhouse / Area switch over the 3D view ----------------
-let lastArea = false, dockKey = '';
+let lastArea = '', dockKey = '';
 function syncDock() {
   const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang;
   if (key === dockKey) return; dockKey = key;
