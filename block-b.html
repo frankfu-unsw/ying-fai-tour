@@ -567,13 +567,14 @@ window.YF = (() => {
       g.fillStyle = '#8b867d'; for (let u = 0; u < w; u += 32) { g.fillRect(u, 0, 2, h); g.fillRect(0, u, w, 2); }
       g.fillStyle = '#a19c93'; g.fillRect(34, 34, 28, 28); g.fillRect(98, 66, 28, 28);
     });
-    // the rooftop structures over the lift core: tan walls with louvred panels, one 3 m bay by one 2.75 m storey
+    // the rooftop structures over the lift core: plain tan panels 1.5 m wide with one small louvre every 6 m, one storey
+    // (2.75 m) high, with a light band at each storey
     const crownTex = canvasTex(128, 128, (g, w, h) => {
       g.fillStyle = '#d9cbac'; g.fillRect(0, 0, w, h);
-      g.fillStyle = '#9a8c71'; g.fillRect(22, 26, 84, 74);
-      g.fillStyle = '#b8aa8c'; for (let v = 30; v < 98; v += 7) g.fillRect(22, v, 84, 2);
-      g.fillStyle = '#e6dbc2'; g.fillRect(0, 0, w, 7);
-      g.fillStyle = '#c7b897'; g.fillRect(0, 0, 3, h);
+      g.fillStyle = '#cbbd9d'; for (let u = 0; u < w; u += 32) g.fillRect(u, 0, 2, h);
+      g.fillStyle = '#8f8169'; g.fillRect(46, 40, 36, 52);
+      g.fillStyle = '#ad9f83'; for (let v = 44; v < 90; v += 6) g.fillRect(46, v, 36, 2);
+      g.fillStyle = '#e6dbc2'; g.fillRect(0, 0, w, 6);
     });
     const M = {
       facade: lam({ map: facadeTex }), recess: lam({ color: 0xbcae90 }), lobby: lam({ map: lobbyTex }),
@@ -654,7 +655,7 @@ window.YF = (() => {
         if (a < 0) pts.reverse();
         for (let i = 0; i < pts.length; i++) {
           const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length], l = Math.hypot(x2 - x1, y2 - y1);
-          quad(Gc, x1, y1, x2, y2, z0, z1, 0, l / 3, (z0 - B.roof) / STOREY, (z1 - B.roof) / STOREY);
+          quad(Gc, x1, y1, x2, y2, z0, z1, 0, l / 6, (z0 - B.roof) / STOREY, (z1 - B.roof) / STOREY);
         }
         flat(Gt, pts, z1);
       };
