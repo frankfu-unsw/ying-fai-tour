@@ -566,8 +566,8 @@ window.YF = (() => {
     const M = {
       facade: lam({ map: facadeTex }), recess: lam({ color: 0x9c8f79 }), lobby: lam({ map: lobbyTex }),
       roof: lam({ color: 0xcbc3b2 }), crown: lam({ color: 0xa39580 }), crownDark: lam({ color: 0x8c7f6b }),
-      podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x7c9d5e }),
-      tree: lam({ color: 0x5d8849 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
+      podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x86ab63 }),
+      tree: lam({ color: 0x6fa452 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
       drum: lam({ color: 0xd9dfe0 })
     };
     const group = new THREE.Group(), blocks = { A: new THREE.Group(), B: new THREE.Group() }, base = new THREE.Group(), fins = new THREE.Group();
@@ -826,7 +826,9 @@ window.YF = (() => {
     roadFns.forEach(f => f());
   }
   // the site boundary as a see-through fence H metres tall, following the ground
+  // (on the podium the fence stands on the deck and is kept low, so the podium and lobbies stay visible)
   function buildSite(THREE, P, elev, H) {
+    H = Math.min(H, 4);
     const g = new THREE.Group(), pts = SITE.pts.concat([SITE.pts[0]]), smp = [];
     for (let i = 0; i < pts.length - 1; i++) {
       const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 4));
@@ -835,7 +837,7 @@ window.YF = (() => {
     smp.push(smp[0]);
     const pos = [], idx = [], top = [], bot = [];
     smp.forEach(([x, y], i) => {
-      const e = elev(x, y), z = e ? e[0] : 0, b = P(x, y, z - 1), tp = P(x, y, z + H);
+      const e = elev(x, y), z = Math.max(e ? e[0] : 0, DECK), b = P(x, y, z - 1), tp = P(x, y, z + H);
       pos.push(b.x, b.y, b.z, tp.x, tp.y, tp.z); top.push(tp); bot.push(P(x, y, z + .8));
       if (i) { const a = 2 * (i - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     });

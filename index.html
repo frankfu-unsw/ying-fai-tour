@@ -614,8 +614,8 @@ window.YF = (() => {
     const M = {
       facade: lam({ map: facadeTex }), recess: lam({ color: 0x9c8f79 }), lobby: lam({ map: lobbyTex }),
       roof: lam({ color: 0xcbc3b2 }), crown: lam({ color: 0xa39580 }), crownDark: lam({ color: 0x8c7f6b }),
-      podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x7c9d5e }),
-      tree: lam({ color: 0x5d8849 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
+      podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x86ab63 }),
+      tree: lam({ color: 0x6fa452 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
       drum: lam({ color: 0xd9dfe0 })
     };
     const group = new THREE.Group(), blocks = { A: new THREE.Group(), B: new THREE.Group() }, base = new THREE.Group(), fins = new THREE.Group();
@@ -874,7 +874,9 @@ window.YF = (() => {
     roadFns.forEach(f => f());
   }
   // the site boundary as a see-through fence H metres tall, following the ground
+  // (on the podium the fence stands on the deck and is kept low, so the podium and lobbies stay visible)
   function buildSite(THREE, P, elev, H) {
+    H = Math.min(H, 4);
     const g = new THREE.Group(), pts = SITE.pts.concat([SITE.pts[0]]), smp = [];
     for (let i = 0; i < pts.length - 1; i++) {
       const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 4));
@@ -883,7 +885,7 @@ window.YF = (() => {
     smp.push(smp[0]);
     const pos = [], idx = [], top = [], bot = [];
     smp.forEach(([x, y], i) => {
-      const e = elev(x, y), z = e ? e[0] : 0, b = P(x, y, z - 1), tp = P(x, y, z + H);
+      const e = elev(x, y), z = Math.max(e ? e[0] : 0, DECK), b = P(x, y, z - 1), tp = P(x, y, z + H);
       pos.push(b.x, b.y, b.z, tp.x, tp.y, tp.z); top.push(tp); bot.push(P(x, y, z + .8));
       if (i) { const a = 2 * (i - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     });
@@ -1651,7 +1653,7 @@ const STOPDEF_B = {
     text: 'The dining table sits in the middle of the room, with the bay straight ahead and the living area and sea window to one side.' },
   living: { name: 'Living area', sub: 'Sofa facing the sea', X: 5300, Y: 2300, yaw: 85, pitch: -6,
     text: 'The east end of the room, about 2.9 × 4.5 m, with the full-width sea window. The sofa faces the view, and two smaller side windows add light from either side.' },
-  window: { name: 'East window', sub: 'Best view', X: 7300, Y: 2262, yaw: 90, pitch: -7,
+  window: { name: 'East window', sub: 'Best view', X: 7300, Y: 1300, yaw: 95, pitch: -7,
     text: 'Close to the glass of the 4.5 m east window. There is no acoustic fin beside flats 9 and 10, so only the window frame limits the view.' },
   bay: { name: 'The bay', sub: '2.1 × 2.4 m', X: 3500, Y: -800, yaw: 80, pitch: -12,
     text: 'A deep bay off the middle of the room with its own east-facing window. Here it is a small study, with a desk under the window and shelves.' },
@@ -2419,8 +2421,10 @@ function compareTable() {
   $('cmp').innerHTML = head + rows.join('');
 }
 
+let visCut = null;   // whether the dollhouse cut is on (it is off once you zoom out to the area)
 function setVis() {
   const doll = st.mode === 'doll', cutOn = doll && !inArea(), furn = LAYOUTS[st.layout].furnished && st.furn;
+  visCut = cutOn;
   CLIP.constant = cutOn ? FL + CUT : 1e7;
   for (const k of LAYOUT_KEYS) {
     const on = k === st.layout;
@@ -2575,7 +2579,8 @@ function loop(t) {
   if (dirty) {
     dirty = false;
     zoomSnap();
-    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; setVis(); updateLabelVisibility(); }
+    if ((st.mode === 'doll' && !inArea()) !== visCut) setVis();
+    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
 }
