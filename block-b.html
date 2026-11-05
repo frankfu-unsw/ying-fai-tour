@@ -539,7 +539,7 @@ window.YF = (() => {
     const clip = o.clip ? { clippingPlanes: o.clip } : {};
     const lam = (extra) => new THREE.MeshLambertMaterial(Object.assign({}, clip, extra));
     // one bay of facade, 3 m wide and one storey (2.75 m) high: cream wall, a tall window with a mullion and transom,
-    // and a thin slab band; the walls of the narrow recesses between flats are a darker taupe, as on the HA's model
+    // and a thin slab band; the walls of the narrow recesses between flats are tan, as on the HA's model
     const facadeTex = canvasTex(128, 128, (g, w, h) => {
       g.fillStyle = '#eee7d8'; g.fillRect(0, 0, w, h);
       const gr = g.createLinearGradient(0, 14, 0, 92); gr.addColorStop(0, '#9fb3bd'); gr.addColorStop(.55, '#7d95a3'); gr.addColorStop(1, '#647d8b');
@@ -576,9 +576,9 @@ window.YF = (() => {
       g.fillStyle = '#c7b897'; g.fillRect(0, 0, 3, h);
     });
     const M = {
-      facade: lam({ map: facadeTex }), recess: lam({ color: 0x9c8f79 }), lobby: lam({ map: lobbyTex }),
+      facade: lam({ map: facadeTex }), recess: lam({ color: 0xbcae90 }), lobby: lam({ map: lobbyTex }),
       roof: lam({ map: roofTex }), crown: lam({ map: crownTex }), crownTop: lam({ color: 0x968c7c }),
-      parapet: lam({ color: 0xebe4d5, side: THREE.DoubleSide }), parapetRecess: lam({ color: 0x9c8f79, side: THREE.DoubleSide }),
+      parapet: lam({ color: 0xebe4d5, side: THREE.DoubleSide }), parapetRecess: lam({ color: 0xbcae90, side: THREE.DoubleSide }),
       crownDark: lam({ color: 0x8c7f6b }),
       podium: lam({ map: podiumTex }), deck: lam({ color: 0xd8d1c2 }), green: lam({ color: 0x86ab63 }),
       tree: lam({ color: 0x6fa452 }), wood: lam({ color: 0xa9825e }), play: lam({ color: 0x9fc3d6 }), fin: lam({ color: 0xd5cdbf }),
@@ -632,8 +632,8 @@ window.YF = (() => {
       g.add(mesh(Gf, M.facade), mesh(Gr, M.recess));
     }
     // roofs and the lobby storeys. As on the HA's model, each wing ends in a plain cream parapet over a paved roof, and the
-    // lift core carries a stepped tan block with louvred walls (lift machine room with the water tanks above it) about
-    // three storeys tall, with lower stair and plant rooms along the corridor either side and a stair head by the refuse room
+    // lift core carries a tan block with louvred walls about three storeys tall (lift machine room, with the water tanks a
+    // little taller at one end), lower stair and plant rooms along the corridor either side, and a stair head by the refuse room
     const PARA = 1.3;
     for (const k of ['A', 'B']) {
       const B = BLOCKS[k], G = Geo(), Gl = Geo(), Gp = Geo(), Gpr = Geo();
@@ -660,10 +660,10 @@ window.YF = (() => {
       };
       const rect = (u0, u1, v0, v1, z0, z1) => prism([at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)], z0, z1);
       const [v0, v1] = k === 'A' ? [-4.6, 4.2] : [-4.2, 3.8], R = B.roof;
-      rect(-5.5, 5.5, v0, v1, R, R + 5.6);                 // lift machine room
-      rect(-4, 3.5, v0 + 1.2, v1 - 1.2, R + 5.6, R + 8.6);  // water tanks
+      rect(-1, 5.5, v0, v1, R, R + 8.25);                  // lift machine room, three storeys, flush with the core walls
+      rect(-5.5, -1, v0, v1, R, R + 9.6);                  // water tanks, a little taller
       rect(5.5, 10.5, -3, 3, R, R + 3.4);                  // stair and plant rooms either side
-      rect(-10.5, -5.5, -3, 3, R, R + 3.4);
+      rect(-10.5, -5.5, -3, 3, R, R + 4.6);
       prism([[B.rs[0] - 2.2, B.rs[1] - 2.2], [B.rs[0] + 2.2, B.rs[1] - 2.2], [B.rs[0] + 2.2, B.rs[1] + 2.2], [B.rs[0] - 2.2, B.rs[1] + 2.2]], R, R + 3.2);
       blocks[k].add(mesh(Gc, M.crown), mesh(Gt, M.crownTop));
     }
