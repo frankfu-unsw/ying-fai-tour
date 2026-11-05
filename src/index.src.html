@@ -1,0 +1,2121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="3D walk-through of Ying Fai Court flats 2 and 3 (Block A) and 9 and 10 (Block B) on any floor, with room layouts and the real view from each window.">
+<title>Ying Fai Flat Tour</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 3D walk-through on the left, tour column on the right (stacks on phones). Survey-sheet palette shared with the view models. */
+:root {
+  --paper: #f2f3ee;
+  --panel: #fbfbf8;
+  --ink: #1d2a33;
+  --ink-2: #51606a;
+  --rule: #d6d9d0;
+  --sea: #1f7aa3;
+  --sea-soft: #9fcbe0;
+  --bay: #0b5a7d;
+  --land: #c9d2bf;
+  --chip: #e7eae2;
+  --mark: #c2512b;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --land: #3a4a3c; --chip: #22303a; --mark: #ef8a63; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #11181d; --panel: #172128; --ink: #e4e9ea; --ink-2: #9aa9b0; --rule: #2b3840;
+  --sea: #4fb0d9; --sea-soft: #24566d; --bay: #8fd3f0; --land: #3a4a3c; --chip: #22303a; --mark: #ef8a63; color-scheme: dark }
+
+html, body { height: 100%; margin: 0; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
+.stage { position: relative; min-width: 0; min-height: 320px; background: #cfe0e8; overflow: hidden; outline: none; }
+#gl { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#gl:active { cursor: grabbing; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; transform: translate(-50%, -100%); font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #13232c; background: rgba(255,255,255,.8); padding: 1px 6px; border-radius: 2px; white-space: nowrap; }
+.lbl.sea { color: #0b4a68; }
+.lbl.room { background: #13232c; color: #fff; text-transform: none; letter-spacing: .02em; font-size: 14px; text-align: center; line-height: 1.15; padding: 3px 7px; }
+.lbl.room small { display: block; font-family: var(--f-data); font-size: 11px; font-weight: 400; opacity: .8; }
+.lbl.hid { opacity: .55; font-weight: 500; }
+.hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; max-width: calc(100% - 290px); display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
+.tools button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; font: 600 13.5px/1 var(--f-body); color: #eef4f6; background: rgba(19,35,44,.84); border: 0; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
+.tools button:hover { background: rgba(19,35,44,.96); }
+.tools svg { width: 18px; height: 18px; flex: none; }
+.app.collapsed { grid-template-columns: minmax(0, 1fr) 0; }
+.app.collapsed .side { display: none; }
+@media (max-width: 640px) {
+  .tools button { padding: 0 10px; }
+  .tools button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .hud { max-width: calc(100% - 120px); }
+}
+.hud span { font-family: var(--f-data); font-size: 12px; background: rgba(19,35,44,.82); color: #eef4f6; padding: 3px 8px; border-radius: 2px; }
+.hint { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 10px; left: 12px; text-align: right; font-size: 12px; color: #13232c; pointer-events: none; }
+.hint span { background: rgba(255,255,255,.78); padding: 2px 8px; border-radius: 2px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-data); font-size: 13px; color: #13232c; background: #cfe0e8; }
+
+.side { background: var(--panel); border-left: 1px solid var(--rule); overflow-y: auto; padding-block: 18px 28px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-family: var(--f-display); font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1.02; margin: 2px 0 0; text-wrap: balance; letter-spacing: .01em; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 22px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { color: var(--ink-2); font-size: 14px; margin: 6px 0 0; }
+.ctl { display: flex; flex-direction: column; gap: 8px; }
+.t { font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.seg button { font: 600 14px/1.2 var(--f-body); color: var(--ink); background: transparent; border: 0; padding: 8px 6px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg.four button { padding: 7px 4px; line-height: 1.15; text-wrap: balance; }
+.seg.four button small { display: block; font-weight: 400; font-size: 11.5px; opacity: .78; margin-top: 2px; }
+.ldesc { margin: 0; font-size: 14px; color: var(--ink-2); }
+table.cmp td { font-size: 12.5px; line-height: 1.3; }
+table.cmp td b { font-family: var(--f-data); font-weight: 500; font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+table.cmp td:first-child { color: var(--ink-2); padding-right: 4px; }
+table.cmp td.on { background: color-mix(in srgb, var(--sea-soft) 30%, transparent); }
+table.cmp th.on { color: var(--ink); }
+.checks { display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.check { display: flex; gap: 7px; align-items: center; font-size: 14px; }
+.check input { accent-color: var(--ink); margin: 0; }
+.stops { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.stops button { text-align: left; font: 600 14px/1.2 var(--f-body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 3px; padding: 7px 9px; cursor: pointer; min-width: 0; }
+.stops button small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.stops button:hover { border-color: var(--ink-2); }
+.stops button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.stops button[aria-pressed="true"] small { color: var(--panel); opacity: .75; }
+.stops .wide { grid-column: 1 / -1; }
+button:focus-visible, input:focus-visible, summary:focus-visible, .stage:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.card { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.card p { margin: 0; font-size: 14.5px; }
+.verdict { font-family: var(--f-display); font-weight: 600; font-size: 22px; line-height: 1.15; }
+.verdict b { color: var(--sea); }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; margin: 0; }
+.facts dt { color: var(--ink-2); }
+.facts dd { margin: 0; font-family: var(--f-data); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 0; }
+.compass svg, .planbox svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 12px; height: 8px; margin-right: 5px; vertical-align: middle; }
+.planbox { border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); cursor: crosshair; }
+.planbox .rm { fill: var(--chip); }
+.planbox .rm.sea { fill: color-mix(in srgb, var(--sea-soft) 45%, var(--chip)); }
+.planbox .wl { fill: var(--ink); }
+.planbox .pt { fill: var(--ink-2); }
+.planbox .wn { fill: var(--sea); }
+.planbox .fn { fill: var(--mark); }
+.planbox .fu { fill: none; stroke: var(--ink-2); stroke-width: 22; opacity: .55; }
+.planbox .rl { font-family: var(--f-display); font-weight: 600; font-size: 330px; fill: var(--ink); text-anchor: middle; }
+.planbox .rs { font-family: var(--f-data); font-size: 230px; fill: var(--ink-2); text-anchor: middle; }
+.planbox .cone { fill: var(--mark); opacity: .22; }
+.planbox .dot { fill: var(--mark); stroke: var(--panel); stroke-width: 50; }
+.planbox .na { fill: var(--ink-2); font-family: var(--f-display); font-weight: 700; font-size: 360px; text-anchor: middle; }
+table.rt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.rt th { text-align: left; font-weight: 600; color: var(--ink-2); font-size: 12px; padding: 0 6px 4px 0; }
+table.rt td { border-top: 1px solid var(--rule); padding: 5px 6px 5px 0; vertical-align: top; }
+table.rt td.n { font-family: var(--f-data); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.rt td.s { font-family: var(--f-data); font-size: 12.5px; color: var(--sea); font-weight: 500; white-space: nowrap; text-align: right; }
+details { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2); }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: var(--ink); }
+details ul { padding-left: 18px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 64vh; min-height: 360px; }
+  .side { border-left: 0; border-top: 1px solid var(--rule); overflow: visible; }
+  .app.collapsed .stage { height: 100vh; height: 100dvh; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* links between the three pages */
+.site { display: flex; border-bottom: 1px solid var(--rule); margin: -6px 0 -4px; }
+.site a { flex: 1; text-align: center; text-decoration: none; color: var(--ink-2); font: 600 13.5px/1.15 var(--f-body); padding: 6px 4px 8px; border-bottom: 2px solid transparent; margin-bottom: -1px; text-wrap: balance; }
+.site a small { display: block; font-weight: 400; font-size: 11px; margin-top: 2px; }
+.site a:hover { color: var(--ink); }
+.site a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.site a:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+/* buttons over the 3D view */
+.tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
+.tools button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; font: 600 13.5px/1 var(--f-body); color: #eef4f6; background: rgba(19,35,44,.84); border: 0; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
+.tools button:hover { background: rgba(19,35,44,.96); }
+.tools button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tools svg { width: 18px; height: 18px; flex: none; }
+.stage { container-type: inline-size; }
+@container (max-width: 760px) {
+  .tools button { padding: 0 10px; }
+  .tools button:not(#langBtn) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* nearby places */
+.lbl.poi { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: rgba(255,255,255,.92); padding: 1px 7px 1px 6px; }
+.lbl.poi::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; }
+.lbl.poi.hid { opacity: .6; font-weight: 500; }
+.lbl.poi.est { font-size: 11.5px; padding: 0 6px 0 5px; background: rgba(255,252,246,.9); }
+.lbl.poi.est::before { width: 7px; height: 7px; border-radius: 1px; }
+details.poigrp > summary { list-style: none; cursor: pointer; }
+details.poigrp > summary::-webkit-details-marker { display: none; }
+details.poigrp > summary h3::after { content: "+"; margin-left: auto; font-size: 14px; letter-spacing: 0; }
+details.poigrp[open] > summary h3::after { content: "−"; }
+.lbl.site { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #fff; background: #d6336c; padding: 1px 7px; }
+.poibox { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.poigrp h3 { margin: 0 0 3px; font: 600 12px/1.2 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.poigrp h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); display: inline-block; }
+.poirow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; padding: 1px 0; }
+.poirow.pick { cursor: pointer; border-radius: 2px; }
+.poirow.pick:hover { background: var(--chip); }
+.poirow.pick:focus-visible { outline: 2px solid var(--mark); outline-offset: 1px; }
+.poirow .d { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.poinote { font-size: 12.5px; color: var(--ink-2); margin: 0 0 3px; }
+.poifoot { font-size: 12.5px; color: var(--ink-2); margin: 0; }
+/* controls along the bottom of the 3D view */
+.dock { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); right: 10px; bottom: 10px; display: flex; flex-wrap: wrap-reverse; align-items: flex-end; gap: 6px; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.dock .grp { pointer-events: auto; display: flex; background: rgba(19,35,44,.86); border-radius: 3px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.dock button { min-height: 44px; padding: 0 13px; font: 600 14px/1 var(--f-body); color: #eef4f6; background: transparent; border: 0; cursor: pointer; touch-action: manipulation; white-space: nowrap; }
+.dock button + button { border-left: 1px solid rgba(238,244,246,.16); }
+.dock button[aria-pressed="true"] { background: #eef4f6; color: #13232c; }
+.dock button:not([aria-pressed="true"]):not(:disabled):hover { background: rgba(255,255,255,.1); }
+.dock button:disabled { opacity: .32; cursor: default; }
+.dock button:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.dock .sq { width: 44px; padding: 0; display: grid; place-items: center; }
+.dock .sq svg { width: 20px; height: 20px; }
+.dock .fl { min-width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 6px; color: #fff; border-inline: 1px solid rgba(238,244,246,.16); }
+.dock .fl b { font: 700 21px/1 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.dock .fl small { font: 500 10.5px/1.15 var(--f-data); color: #b9d9e8; margin-top: 2px; white-space: nowrap; }
+/* road names */
+.lbl.road { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12px; color: #4a3a10; background: rgba(255,246,214,.93); border: 1px solid #ddb04a; padding: 0 6px; border-radius: 9px; }
+
+.hud { max-width: calc(100% - 390px); }
+@container (max-width: 760px) { .hud { max-width: calc(100% - 230px); } }
+@container (max-width: 900px) { .hint { display: none; } }
+.lbl.blk { background: #13232c; color: #fff; }
+
+/* lifts and refuse room on your floor */
+.kpbox { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.keyplan svg { display: block; width: 100%; height: auto; max-height: 340px; }
+.kp-foot { fill: var(--chip); stroke: var(--ink-2); stroke-width: .18; stroke-linejoin: round; }
+.kp-mine { fill: var(--mark); fill-opacity: .55; }
+.kp-sib { fill: var(--mark); fill-opacity: .16; }
+.kp-lift { fill: var(--ink); }
+.kp-lobby { fill: none; stroke: var(--ink-2); stroke-width: .18; stroke-dasharray: .6 .5; }
+.kp-rs { fill: #d9a441; stroke: #8a6418; stroke-width: .15; }
+.kp-door { fill: var(--mark); stroke: #fff; stroke-width: .25; }
+.kp-path { stroke: var(--mark); stroke-width: .28; stroke-dasharray: .9 .6; }
+.kp-t { font: 600 2.3px var(--f-body); fill: var(--ink); paint-order: stroke; stroke: var(--paper, #fff); stroke-width: .6px; stroke-linejoin: round; }
+.kp-tm { font-size: 2.6px; }
+.kp-n { fill: var(--ink-2); }
+.kp-bar { stroke: var(--ink-2); stroke-width: .35; }
+.kpnote { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.kpnote b { color: var(--ink); }
+/* flat and floor */
+.floorline { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.floorval { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.floorval small { font-size: 15px; color: var(--ink-2); font-weight: 600; margin-left: 3px; }
+.mpd { font-family: var(--f-data); font-size: 12px; color: var(--ink-2); text-align: right; }
+#floorIn { width: 100%; accent-color: var(--ink); margin: 0; }
+.lbl.core { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: #f5d58e; padding: 1px 7px; }
+.lbl.core.lift { background: #13232c; color: #fff; }
+.dock .fl b { font-size: 19px; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="stage" id="stage" tabindex="0" aria-label="3D walk-through of a Ying Fai Court flat" data-zh-aria="影輝苑單位立體導覽">
+    <canvas id="gl"></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="hud" id="hud"></div>
+    <div class="tools">
+      <button type="button" id="langBtn" lang="zh-Hant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg><span>中文</span></button>
+      <button type="button" id="resetBtn" title="Back to the starting dollhouse view" aria-label="Reset view" data-zh-title="返回起始鳥瞰視角" data-zh-aria="重設視角">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span data-zh="重設視角">Reset view</span>
+      </button>
+      <button type="button" id="panelBtn" aria-controls="side" aria-expanded="true" title="Hide the side panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg><span>Hide panel</span>
+      </button>
+    </div>
+    <div class="hint"><span id="hint"></span></div>
+    <div class="dock" id="dock">
+      <div class="grp" role="group" id="dModeGrp" aria-label="View">
+        <button type="button" id="dWalk" aria-pressed="false">Inside</button>
+        <button type="button" id="dDoll" aria-pressed="true">Dollhouse</button>
+        <button type="button" id="dArea" aria-pressed="false">Area</button>
+      </div>
+      <div class="grp step" role="group" id="dFloorGrp" aria-label="Floor">
+        <button type="button" id="dDn" class="sq" aria-label="One floor down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+        <div class="fl" id="dFl" aria-live="polite"><b>36/F</b><small></small></div>
+        <button type="button" id="dUp" class="sq" aria-label="One floor up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12M12 6v12"/></svg></button>
+      </div>
+      <div class="grp" role="group" id="dFlatGrp" aria-label="Flat">
+        <button type="button" id="dA2" aria-pressed="true">A2</button><button type="button" id="dA3" aria-pressed="false">A3</button><button type="button" id="dB9" aria-pressed="false">B9</button><button type="button" id="dB10" aria-pressed="false">B10</button>
+      </div>
+    </div>
+    <div class="loading" id="loading" data-zh="正在建立單位模型…">Building the flat…</div>
+  </div>
+
+  <aside class="side" id="side">
+    <nav class="site" aria-label="Ying Fai Court pages" data-zh-aria="影輝苑頁面"><a href="index.html" aria-current="page" data-zh="單位導覽&lt;small&gt;2、3、9、10室，任何樓層&lt;/small&gt;">Flat tour<small>Flats 2, 3, 9, 10 inside</small></a><a href="block-a.html" data-zh="A座景觀&lt;small&gt;2、3室，所有樓層&lt;/small&gt;">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" data-zh="B座景觀&lt;small&gt;9、10室，所有樓層&lt;/small&gt;">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
+
+    <div>
+      <div class="eyebrow" id="eyebrow">Ying Fai Court · Block A · 36/F</div>
+      <h1 id="ttl">Flat 2 walk-through</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+
+    <div class="ctl">
+      <span class="t" id="flatLbl" data-zh="單位">Flat</span>
+      <div class="seg four" id="flats" role="group" aria-labelledby="flatLbl"></div>
+      <div class="floorline">
+        <label class="t" for="floorIn" data-zh="樓層">Floor</label>
+        <div class="mpd" id="mpd"></div>
+      </div>
+      <div class="floorline"><div class="floorval" id="floorVal">36<small>/F</small></div></div>
+      <input type="range" id="floorIn" min="2" max="39" step="1" value="36">
+    </div>
+
+    <div class="ctl">
+      <span class="t" id="layLbl" data-zh="間隔方案">Layout</span>
+      <div class="seg four" id="lays" role="group" aria-labelledby="layLbl"></div>
+      <p class="ldesc" id="ldesc"></p>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="furn" checked> <span data-zh="家具">Furniture</span></label>
+        <label class="check"><input type="checkbox" id="trees"> <span data-zh="山上加10米高樹木">10 m of trees on the hills</span></label>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <span class="t" data-zh="導覽">Tour</span>
+      <div class="stops" id="stops"></div>
+    </div>
+
+    <section class="card" aria-live="polite">
+      <h2 id="stopTitle"></h2>
+      <p id="stopDesc"></p>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" data-zh="你所在位置的景觀">From where you stand</div>
+      <div class="verdict" id="verdict"></div>
+      <dl class="facts" id="facts"></dl>
+      <div class="compass" id="compass"></div>
+      <div class="legend">
+        <span data-zh="&lt;i style=&quot;background:var(--bay)&quot;&gt;&lt;/i&gt;銀線灣"><i style="background:var(--bay)"></i>Silverstrand Bay</span>
+        <span data-zh="&lt;i style=&quot;background:var(--sea-soft)&quot;&gt;&lt;/i&gt;較遠海面"><i style="background:var(--sea-soft)"></i>Sea further out</span>
+        <span data-zh="&lt;i style=&quot;background:var(--land)&quot;&gt;&lt;/i&gt;山和天空"><i style="background:var(--land)"></i>Hills and sky</span>
+        <span data-zh="&lt;i style=&quot;background:var(--chip)&quot;&gt;&lt;/i&gt;牆"><i style="background:var(--chip)"></i>Walls</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" data-zh="平面圖 · 點一下就可以站到那裡">Floor plan · tap to stand there</div>
+      <div class="planbox"><svg id="plan" role="img" aria-label="Floor plan of flat 2 with your position"></svg></div>
+    </section>
+
+    <section class="card" id="cmpCard">
+      <div class="eyebrow" data-zh="方案比較">Compare the plans</div>
+      <table class="rt cmp" id="cmp"></table>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" id="winsT">Sea from each window</div>
+      <table class="rt" id="wins"></table>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow" id="roomsT">Rooms</div>
+      <table class="rt" id="rooms"></table>
+    </section>
+
+    <section class="kpbox" aria-labelledby="kpHd">
+      <div class="eyebrow" id="kpHd" data-zh="同層的升降機和垃圾房">Lifts and refuse room on your floor</div>
+      <div class="keyplan" id="keyPlan"></div>
+      <p class="kpnote" id="kpNote"></p>
+    </section>
+
+    <section class="poibox" aria-labelledby="poiHd">
+      <div class="eyebrow" id="poiHd" data-zh="屋苑範圍及附近地點">The estate and nearby places</div>
+      <label class="check"><input type="checkbox" id="siteChk" checked> <span data-zh="在立體模型上顯示屋苑範圍">Show the estate boundary on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="poiChk" checked> <span data-zh="在立體模型上顯示附近地點">Show nearby places on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="roadChk" checked> <span data-zh="在立體模型上顯示主要道路">Show main roads on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="estChk" checked> <span data-zh="在立體模型上標示主要屋苑及別墅">Mark major housing estates and villas on the 3D view</span></label>
+      <label class="check"><input type="checkbox" id="bldgChk" checked> <span data-zh="在立體模型上顯示附近建築（簡化）">Show nearby buildings on the 3D view (simplified)</span></label>
+      <div id="poiList"></div>
+      <p class="poifoot" data-zh="點一下屋苑或地點，就會拉遠到周邊景觀並飛到那裡。">Tap the estate or a place to zoom out to the area view and fly to it.</p>
+      <p class="poifoot" data-zh="距離為與屋苑的直線距離，地點和道路取自 OpenStreetMap。">Straight-line distance from the estate. Places and roads from OpenStreetMap.</p>
+    </section>
+
+    <details>
+      <summary data-zh="製作方法">How this was built</summary>
+      <ul>
+        <li data-zh="牆、房間和窗按房委會標準樓層平面圖繪畫：2室和3室用A座3樓至39樓的平面圖，9室和10室用B座4樓至38樓的平面圖。按圖則所示，3室畫成2室的鏡像，10室畫成9室的鏡像。尺寸取自圖上的標示，窗台和窗頂高度是估算。">Walls, rooms and windows follow the HA typical floor plans: Block A 3/F to 39/F for flats 2 and 3, Block B 4/F to 38/F for flats 9 and 10. Flat 3 is drawn as a mirror image of flat 2, and flat 10 of flat 9, as the plans show. Sizes come from the dimension strings; window sill and head heights are estimates.</li>
+        <li data-zh="樓層高度：2樓在主水平基準上57.55米，每層加2.75米；假設B座與A座逐層相同。視線高度設在地台以上1.55米。A座2樓和B座3樓按標準樓層的間隔繪畫。">Floor levels: 2/F is at +57.55 mPD and each floor adds 2.75 m; Block B is assumed to match Block A floor for floor. Eye level is 1.55 m above the floor. 2/F in Block A and 3/F in Block B are drawn with the typical layout.</li>
+        <li data-zh="方案A、B、C都加建75毫米的輕質間牆。方案B主人房的新間牆在東窗北半中段與窗相接，所以要對正窗框直料；實際直料的位置可能令間牆移動幾百毫米。任何間隔工程都要先按單位的裝修指引取得房委會批准。">Plans A, B and C add light 75 mm partitions. In plan B the master bedroom's new wall meets the east window part-way along its north half, so it has to land on a window frame post; where the real posts are may move it by a few hundred millimetres. Any partition needs HA approval under the flat's decoration guidelines before you build it.</li>
+        <li data-zh="沒有窗的房間（例如方案B的工人房）需要機械通風，例如抽氣扇或冷氣。">A room with no window, like the helper's room in plan B, needs mechanical ventilation such as an extractor fan or air-con.</li>
+        <li data-zh="2室的隔音鰭與北牆對齊，每層都伸出東面外牆1.5米；3室的在南面，只到25樓。9室和10室沒有隔音鰭。">The acoustic fin beside flat 2 sits in line with its north wall and sticks out 1.5 m past the east facade on every floor; flat 3's is on its south side and stops at 25/F. Flats 9 and 10 have none.</li>
+        <li data-zh="室外地形採用以 SRTM 為基礎的高程數據，屋苑附近解像度約 30 米，較遠處約 100 米。附近建築按 OpenStreetMap 的平面輪廓和樓層數畫成簡單方塊，只作參考；它們、樹木（除非剔選）和 7 公里以外的島嶼都不計入海景數字。">Outside, the terrain is SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Nearby buildings are simple blocks from OpenStreetMap footprints and floor counts, for context only; they, trees (unless ticked) and islands more than 7 km away do not count in the sea figures.</li>
+        <li data-zh="兩座大廈的外形按房委會標準樓層平面圖描畫，並按說明書的位置圖擺放；升降機和垃圾房位置取自同一份平面圖。平台（1樓，約主水平基準上52米）、大堂、天台設施和花槽是按布局圖和房委會模型估算。主要道路取自 OpenStreetMap，鋪在地形上，所以天橋和路塹都以地面高度顯示；隧道沒有畫出。拉遠鏡頭或選「周邊」，就可以連同附近地點一併看到。">Both towers are traced from the HA typical floor plans and placed from the brochure's key plan; the lifts and refuse rooms come from the same plans. The podium deck (1/F, taken at about +52 mPD), the lobbies, the roof features and the planters are estimates from the layout plan and the HA's model. Main roads come from OpenStreetMap and are laid on the terrain, so flyovers and cuttings show at ground level; tunnels are left out. Zoom out, or pick Area, to see them with the nearby places.</li>
+        <li data-zh="「海景角度」是指從你所站的位置經窗口看得到海的方位度數，已計及牆、隔音鰭、鄰座單位和山勢。各窗的數字大致在離玻璃1.5米處量度（視乎房間大小）。睡房和浴室門當作關上：在這些房間內只計該房的窗，在其他位置也不能穿過這些門看出去。">"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
+      </ul>
+    </details>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+%%COMMON%%
+<script>
+(() => {
+const NEAR_TXT = `!COadfcccddfhlledddgcWZbSXYVROWXabbdiWpW~De~Ce~1
+!CRZddcdcedeglnfdadhdZdbQVVWTSVTabZeiicTidfe~Ce~2
+!CYWabdedddfgjqiYacihfeZMTVWWSUSacXffdeebbeefe~4
+!CbVZbdddddeikojZadilebZPSVWVOTUcbXcgfdbdbeefe~4
+!CbXaacdceddikmiedeijdZYRTVXTKRYbcaaffcbfYidefe~3
+!CbYaabededdgkkiihfhhaYXQVVWULTXcddZZddcefdedefe~2
+!CbXbacededcgimikhggfZaYSVVTXRSXcbaZXddbecchfeeee~1
+!CZYcbbedddefhllmgegeaacWVXVWOWcaZVZWeecbYajfddeee~0
+!CZZbbbecedefglmkhffecaZYXYWWRbcZYTYYdedcXXXnddcee~Igffe~n
+!CZaaacddeeeegmkiihdfeZWZZYXaddaZWSWYcedaUXYjccced~Igffe~n
+!CWZadddeeddeglkjigcefaYYaacdjfZYXXVWcabYRVYbhbbdd~Ig~Ce~m
+!CUYcgedceccegkljigeecbcYabddigaZaYYXYZYXPSYdgbadc~Hg~De~m
+!CZVeliZYcbbeelmjehfececXcecdigddbYcZUVXVLRYcRqZcc~Hg~De~m
+!CiZejfWWabcccmnicggdggaXdfdeghffdbaYWWWUIUZZfXXbc~Hg~De~m
+!CucgeZTVZbcaclmicfgfifcacfedgigfhcXWZXTTMWZUDrZbc~Hg~Ce~n
+!C5egeYUQXZZadhkk~CggfggdeceihcehcaSZZPRRXXNYZZcc~Hg~Ce~n
+!DAffebUOWWWaeeinheggegjjeceegfcdeeaSYYORRUUNeZZcd~Hg~De~m
+!DEfdffUPWVUZbdhmjgggghkjedefbdecdccSVXQQORQUhZadd~Hg~De~m
+!C/gdhgXSWVVZYbhligggikjieegeadecbbcSTWPNOSTWgaade~Hg~De~m
+!C4gfghbWXWVXXciiffghkljhfghecfdaZaaRRVNMMWXUhabd~Ig~De~m
+!CxcehjeaaYSVZdhffehjnkijgggghfcbYSWOQTNRPXVTjbcd~Jgffe~n
+!CqbfgihccYSWbcfiffhlojiigegihedcVKVPPTOVTVWWfbce~Kge~o
+!ChbdfkifebUZaafihgkmnhggfegigecaQLWOPSRWWXYUecdd~1
+!CTWbhmkiggdbbYdghkqkieefgeeigcZVRRTIRTSYZZZYXjcee~0
+!CNRafomjhhhgbYdghkpkeeeggeghebVUUROIRVUaaZacaeeeeffe~x
+!B/OZhnlnlgjkhceedjph~CegggfaWWVSOONUWWbcbbcddddeefefe~v
+!B0MYimlpnkllkfdcciohghefefedXVYWTKURWWWbddcaeSmdeeeeee~v
+!BnObfkmrmmomjjfbdgjikhfedacbYYWXWPVUXWXbddccbXfddeedee~v
+!BZTZdjlullqllpjedefhkhgdaYZabcYZYRXXYZYbbccbcaUgcedded~v
+!BSSYdhnwokommokkfdefhihaYXcbcdbcaUVXZYXbZccbcfVModdddee~u
+!BLSaZdpzojmqnnnohedeehfbYdfdZbbfeYUTYXVbadcbdeXTQocddde~u
+!BJSZWZq0mjnqonpsifeddggdcgfcZbbecXWSYYWdccbYcdXVZcccddd~u
+!BFTWXcqtmkrnnopvlifbegieffddcgbYZWXTZYXcceaWdbVZEqdbddee~Ggffe~i
+!A+QYckmlilvoornvrpcadgihhgcehgYWXWZTYYVbdfbZeYQYTZbbdcee~Ggffe~i
+!A6NdimihgkupqsowtqebafjkkhchheVYYVYSVWWcegdZdYNTSbbbcdde~Gg~Ce~h
+!AzTgqhedimpoott!CVrifcdefimmggfdYWWUVTXUYfedbZdYKSRbbbccde~Gg~Ce~h
+!AyYkjdgcjkqpntt+wkldbccfkpi~CaUVQUWZWZdddZYdYLT!ABpiaccde~Gg~Ce~h
+!Axajigecfkpppxu6unogZZdbhokihgYWWQUWZYXcdbXYcXMUNZjaccde~Gg~Ce~h
+!Avafigecgkppqyx3ojpmcccYbjnnmkbWXWQTYXXaZWXZaWRVRZkabcde~Gg~Ce~h
+!Arbacfiijlooswu1pioojbaVaioopngaYURQVXVZWVXYZYSXQYnZccde~Gg~Ce~h
+!AlcXadjqklplovtyokvriaYTdkllpnjfdUVMSWVZTVXXXVWYRbmaccde~Fg~Ce~i
+!AidZZciqkkqklyutmm1reZYTdllkmmnhcYXLSYWXRVYVWWWZJwbaccde~Fg~Ce~i
++dabdgnjlpmnzoomp3qdYXUclnlmkmjdbXNUZWWRWYUWXVZWjaaccee~Eg~De~i
+6bafhffjmqoptlmnt3oYWYZeijmplmjhbZQXaWXUWVTXWTXXiaadcee~Eg~De~i
+5aZgieeintomolpqr3qRVZbffhlslojihbRYaXYVVUQWXTWWhaaddd~Gg~Ce~i
+6Zafgdfhoukkupqow2fQVWVeegmrnpjlofWZZZZWVROXXSXWbbadde~u
+5ZcfedfjlsmqznoqwucUUSRadhmrmonmoiadbZaVUQQYVTYUYbbcd~v
+2XggeeeilqqxwkptunfYRQNXbilnjrqmnmgedYZUSSSZWWY!ABqbbdd~v
+vbkgdeehkvuxrkqqppmZRQMPWjjihrqnokligZXQSVWZaaZSQYcdd~v
+sfkfbehhmwtrppsknwoaSTJLSfjihnopoilljbVORXZbcacVPUbde~Xg~Ie~M
+ubhgcejjmunoutqlr2lXURJNPbffjmlmrlkjkdTLTZYcgedZOScdd~Vg~Le~L
+2Ueheffinumoyqmmw5kWTRJOQaccklhhrplhkeTNWZYdhfbVQZbdd~Vg~Me~K
+/Qdfhecfowmmwpjkx/mYTPKPQYachjfhnooikeURYaaeebZBpccdde~Ug~Le~L
+9ahdgcYdnwmlrpnis!CDudPPMSOVXaehhkimpkjcZUYaZdbZYXgcbddee~Gg~Ce~h
+4klfYZZdmsnooosfp!CAyfQQMPRTTYefjjjmnkjdbXXXXcbYZcjbbddefeeffgfg~Ceffe~f
+6koiNZcbhrqnpoqgo!B5zhXRJPQPSbffhhllnjjgfbXVTabVZXnXnddeee~Dg~Defee~f
+3jslSTWYfumlrppkkzzscTJSMPUffggghmqlijjebXOWYTZcehifdeee~Dgffefeeeee~e
+wjwubQJXksjjrnqkjtwxeUNQOQWcffhgilrmikigdYPWZRYaeemgcfee~Geeedeee~e
+xdrumWKZnradlmqkjpw0hYPPOTUYgfghklslhjkleaTXaSYVcfgfddeggi~Cefdededde~Tge~I
+0flkedbgmkTahnqllns2laORQSTYggdgllulhmnneaVZZVZWadddcdefgVpffglOocdded~Qgfgfefe~G
+yjhcemmfiWUcikrmmqrwlcTTOSVWfedfjlwnkpqnfaWZYVcZabbcbcdhgfgdbeiXggdced~Nggfg~Cefee~F
+wgZelnqhcZWediqmkoqumhWROUUVe~CijtrpoooidXaaWZbbbYcccdijjfcbdbYedccdd~Fggffgfggfg~Dcfhedefe~C
+vbYjpjnkcdfcWeqklokoqnYRPVUVdghggjrppqnohdbccYYYcaZcddfkkifccccaXbabdee~Cgggggggfgggecefgjeddeeefefe
+wachnfqmebeaZahmqsgmspYSQVUWefgghkpqpnklfdegfdYXcccecdhlifebbddYVYUjceeffhghhhhghggfgPsfgggdbVkfeeeef
+zebfljojfZacbaelnuomokZTQWWYdegfhkptpjgifdgjifbYddfecdhkfeccZcbaXVdbdeefgghjhihhhggghcegfdebaYjgeeeee
+2ecenkgghaYbgdgiitolljbVRXYZcegggjrsmhefeeknkgcaffgfcdghdedbYaaaaVbcdeefhhhjijhaijjF!Aiaefcacbabcngeeee
+1ebcnfchmcXckkideonmjjdYUYZXbehfgionl~CehnolhfehhhhfedbcccdYZYbaVRoefaghiikdQf1lkklgaccVZccbdeaojdZi
+yebeifchlgYclrnbYlmkiibbWYYZcfjgdfkjlgfhhiomjiiihijjgddbaZddZaXYaWaffcdghhiRwjkkmlkifbbZTbdcdgfYWsSfp
+weefedffhdeenunVaijjhgdcYXbbdiklacejheejmkmkfinmjiohgedbZZcdbcWWWYaYZfiiilmkjmkklkhfdYaaaeeeefdadeccd
+ufefddfegdgglmkaZglnidbfZadbdjkjediegdagmlmifinpkkniheebZZcdccWUWaZWcfjipklplmmkjhfZdXacehfefccbffcaX
+ueegecffegfgmlkbVguxhZRacdcZdklhffgcddbekkmigknnlmpjhgcbaYcccdWUXaaYfhijrlkplomliecZcWbehiheebabdfbaX
+tefgfeefdhghpkmSUot2jUTYVeeWlfjieeheYXefiiliillnlstigeeZZYcdccXVXbccfjnklmnomnljhecbdXcghiifcaaZacdaY
+sffg~CeefhiqmbPfqk2lWZXVebZfdkjgegeYYehhhjigilqpusggffZZXdeedVUXadchkqkjlnrmmkhgedcebdefhigeZbaababW
+rffgggedgffgjkbcjjespfUTbhdfefkgcefeZahghihhfflssvohihfbaYceecWWYccchknllmosmnhgeeccfgecbgigdbdabcZZV
+sdegifefgfehhgdjncZiniSXilcfgfjgadddbeghhhiiefnrqspjkgfcbaadccabbdcbgilloonomogffdebeifbaegedcdbcdbXX
+rdfghgefgdgjibelmfYcliUbnjZekdhhbcaddefjigkheiopnopklhfcddZbbccgfccbfhjlqqokllggfedcfhecZeedcbeccebaZ
+qdefhhffeehjfcehkobckeZdlfagjdchceacegemkihedopokjmllhhdfgaabeehhdbaehhkqrrnhighdeegieYbbddbbacdddeda
+odeggghfefjgdeehhkfjgabghfefhecedgcbgfemkihdfppqlklhhihgfhcbefehicYaehgkqqrokifgddekhaXYcfbcbYbcdefdb
+obhhhdfghiiceefgfeikfdfeeefghgbagfcfhecikifehnouopnefgfigehghfegiZZcffhkqmlrnjhgefdgdXXacdcddZZYcffdc
+odhifcfgilhcedffeejhbfliddfigdZaiedihdcijebfikmurqrhefgfgeijjighgZabefilqkiqokgifgebbUXbbddfeaZXbefcb
+oehiceghilhfbeeheclgYcnphZfhfaXdhffiieiieaVehkkusqvkggfdfehknkjihYabcelmpjhnnmiifedbZRXcbcefebaZbcebb
+oggccikhfghfefkphYhfTTksjdjhdWZgjffijklhXWUdehlrsswpihgecdgjqnmkhaZadfjpnhhlnnkhdcbaXRYecacedcdbaaebc
+ogebgjjgeedgiirthThgPOhlkomjaRdkjafkmmfYYZZcdgkrrtvqlhgebcfjpnnnkaYagfinpkimkmigfcaYWTaeaZadcddaZaded
+miedhihegedhjissgXfWUZedoqhkaZhodVgmkiWPbfeecflrpqyrphfebadjpknpkbYciiilqpmpmhgefabZVWaaXZZabadZYadfc
+ogfeghfeghejkijpofUQdjfYllcnrcdiaYgniVSVdgihdejmmqyrqjfecbdhokkmkdaejjkmqpopphgfcbZbWVaYTaYZZYbZaaedY
+qffeggeeghgjmhdirmQTonieXXds2gYWcejjaNUdghmiffegkptrslhddddgmjhijhdfikonqomppmggdaadVTZWRbVXYXbbbbdbX
+qffehgeffefiigdchnYf0vexGJZnvrcVkhfWQSdiikojjjcbiikmuojgefcdjjhfhkgfjmqpqmlprnijfcdWTPYWOXVWYYdedddcZ
+offghgdedfiiheccggdou1nvQ!AgPooliilcSRVYgjjnrkmleaefchsqliffdchjhehkhgimrsukmqpnlkiebPRNXWNWVYZYeggfedY
+meghifcdelkhdccdfinkauwpYGVpfinldXNVbfhlmprllqhabgabilmkggeegihfgjggimvtxmlrmpmkkeWORMWTMXYabaekjdccY
+lefijfedepkdbbbggjnnhcZfcfghenlfYXVbcilomnollrkcbeeZbhkighgfgijihdfgimwvvmltmnlklcWQSLTSOZZedagjgeddX
+kehijefcfnlaaadnkcmuhTRdfghijliaUbdfflnqmlnkipmhccdbaffegiggjjnmiXcfgmxwvlltmlkkjcXRSMPSVacgdcgfehfcY
+`;
+const FAR_TXT = `!BnObbbabcYbRMUckifXdefgfpqeRbbffge~GgefflgzmFeYfgfefgfijcfhfgifhgbdjpZTce~DgflZgdffgf
+!BqJWdgdVYYXUUaXejhZde~CnxhGgbefge~Ggefijh0nKPe~EgfgjffghchjhgdbkmcTafeffgffjbfeffgf
+!BtIOZjoXXUSTdZVgcfde~DhvpQXbdfge~GgefiiyvXSQcd~EgiefhjhefmgcedjjeWXee~EjhZ~Che
+!BpKPRblnfUQVfWaaYe~CgefhlvYSaffge~GgefhmyuSQXcdee~CgffhgkjffhhffdgjmeXRce~Digb~Cgt
+!BkMNQWfjkhaaWUaVcdfge~CiiqgTbdfge~GgefhkzsTQZbgdd~DgffikjehjgfbfeimiZMfdfge~Fhey
+!BgLQQYZfjtnaMLXaee~GkshRcc~JgeffjnxWUfZheafge~CgjlieilgiafcheZbaddfgefgeffhigs
+!BbPPQUbhjppbLMYbe~DgfefjskTacd~Mhhjkabegbffge~DgmmhkjigbdcefWVffe~Dgeffgjvl
+!BcNOPPdgipmZMScde~GgjvnYUWd~OiirXZfbffgegeffgpmjiknhbUYfiaWad~Egeffjmqm
+!BUOSVQOiomjXFhed~HikwibdPae~JgeffhjqgWeXffgegeffikmkgqqoWTWacbWfeffg~Ceffidsn
+!BFSVbURVljrVNgee~GijqpZYeWbgfee~KgitvRSYffge~DgjiiqopoZbXUXXbfe~Ighdr
+!A0WcbXZTajpaS~Ce~CgfgiosdTZhdigacde~HgffhrwWRWffge~CgfidjsnkrkfRTYaVfgfee~Hgf
+!ApWeeWYZbejfZicfeffggggktmURfilohWUbe~HgefhmzeLXffge~CgfnaglhotviNRWabecffe~Hgf
+/UbibXcdegeeideeffghlgjsgPWjohneTVc~MirlRZe~FgfunaTfptwfYWVXcZlhTfheee~Eg
+2YZgeaceffhfheceffgikdfkfXeoqldTUdd~Mgikcafe~FgjsobWduvucQQeZXdncXbfgd~F
+tadfhaedfghciedeffghhdffeeisupZJSefge~LgfgfeeffgeffgjnrvdNez0iNShbRXlnUekQe~F
+nbfghddfee~CggdeffggfeefhmstuVNPYfge~Mghfed~EidzslonMUrzlSfgUQRfrjacSYe~E
+kefdgfee~Fhgeeee~DgfkqvvTSRVfge~Mhkbed~DgfyxtmijSSlnoimcSQLbhndURe~F
+kfedffe~Dgegjfjcbc~CgefimvsRMaefge~LgimWee~CgfryypjhcWTpmgtseQQOSXefSbe~F
+leedgeekedeifdkikcWddffgefiismGggcfge~Lgffgee~Chiu1wmkkYeWameotncVNPRQeYZe~F
+ocegddhlcdkliUkqgaTacggeefhjmoRZd~Sge~Dhe6tpsrsUcfZfdblqonOPLDcfSe~F
+uccfccikhcwlUSkqjYUUfigecffikjUfe~VgefggypvxvtUZabjlcXhppcUM!AVTjZZe~E
+3ecaYgeilcxlQankcUWajkcabffggffee~Zgixz2wpbaQcknodQchgeVGEZegfe~D
+!ArfYPbnYdlasmdemjbLTcjlfUb~fgegfyyx0nYYaahopkXRNbjhRGVefge~D
+!A2fVKcocffctolcmbTQSYihWhc~fgefguyzueZalZYoomeZGPgfeTQe~G
+!A8TVSiojbeZoupZeXUTTYfZffe~fgefhe5xrfSmjOenrqiYKNUcdXfe~G
+!A5OZgnlkeeWiykUafcVUUTZfe~ggeffgf20aYsZGksuopbeHLQde~I
+!A3XjegislZUcucZcomaRNEYe~lherrcptMIjuurlgoYMGRe~I
+!BCbhfcgqqZRYnmbalocML!ABgdffge~hggeka7wJIff2rphphVJEgdffge~D
+!BVZdjeekhWYUpphZScXQQLgdffge~hgeffmZ6LbbjczmlngkU!ABhcffge~D
+!BeYiohahdUWTkolZMLTWbSgd~pidffgdfgkatlkhcLcdffge~D
+!BlZnuiefUVTPbjhaSGPYgade~qhffd~ChfeihhfYfe~H
+!B2ZlvqjgVMJJVbfbTISfacdfe~mgfe~Dgfegffgigebhde~G
+!B6dlt1ucSMB!BQUZddXJfcVXYfe~ugffggmrmeOVfe~G
+!B4jou5zdJHBBTcZdabcVSRSgee~ogffefgfnnelvqjJSOfe~F
+!B7imv31pCFBGRXXbefYbUOLhdffe~mgfeffgfrvnjpqnHOPTeffgeff
+!B9ojnwwwVDAHOQaagjcYRLJjbffe~rgqovtpqoiHIKQeffgffg
+!CDohgmspvQBDIPWbfledOKQZcbe~she2wtuusbHIMLX~Cghd
+!B+wfackpwmL!B3HNXbemiaRMTVZYgd~rgfu0ytrqiMKHJV~Cgfr
+!B9pecNgmuuiABNZcclibWaZSVHjaffgfe~nid7yznrqTEKORYhcgfs
+!BzdfdTWlwtxLINcTZkgfadgYQKMfefgfe~oht01vnoZINdTRPgefm
+!BfaZglOiuywcQSdOSfjhidcZMIQZffgfe~Uge~OgefirtysjplOTkbU!AGdcfg
+!BRRYglYgvuurSOebRbhmjhaPGKUc~Zge~OgefgwrojhqxaSpmMFJaeg
+!A7SZgkcjr0rpbHYmealkfgUIHUVfe~Tggfee~TidsjlnrygbnqGCNadf
+!A3IaifekyxipcFUsqigjeYSLPZThde~ShjhZdffgfe~OheimsrsmhgfpQ!ATVWff
+!BCDPbgjh1klpcFSussjfbaaTRYZOgd~OgeffjorTVde~OgeffhnstpofiZXsaBPYff
+!BILIQdhkxamqhKVnuxucjfYRQaYDhbffge~KgeffgxrZSUgd~Cge~Igeffhf4usgWkcRke!AHdbef
+!BNNFPWgknaipjWffr41dfmYNRZVDeaffge~KgeffgtokaXQhcffge~Nku1oWcclOaYThdef
+!BOEHPcddhijgfjZls1zkXqlRLQRIjaffge~KgfefgqqlohMLjcd~Pip3PVgcuYPideeff
+!BBKKSdbeliqcadbitu1fYopbQQOQabffge~OgrmkpoZOLib~PgjbmYffoWfe~E
+!A2QUUZddijindUbguy0WOkspbPNJbd~SgfqmnpnfMGe~Qggdffhefe~F
+!A0VcSUYbiijfebdhvx0cEYmrkMXXRd~Fg~Ce~IgpqjmriKHc~f
+!A1ShVaQaqvQWiheasu2jFOgnmUWPhdefge~Qgn1cigIXe~f
+!A5RgWVPjcmpcSfpRmsvuJLfmqeQSbfhgede~PhefomdZXe~Rg~Ceffgfe~D
+!BBSWWTVkXetvIahjbhuwRKdmvnWTZaakYgd~Dhefe~Ihggciede~f
+!A/WUaXWeifWbhcendaqsZNdkwjgaadiaYTfgiiYmeZhdffe~s
+!A9ZVXdXdlrJPigehekhnbTehmhokjgaYVR~CwlaXbZ~De~r
+!BCcfXVXkmhLIdgfdgmdrWYigcgmpriYZTWgprocYgcaXZYgd~Dgfefgfe~g
+!BLifXSTjfgTGYffgfihlZcgfagjoxjaaWZlrsicedcZWZRaefgefg~Ee~g
+!BVidVWYdXfUHVfehgfigdffcdjisqjgbfbgtqgfZaZabZXNefge~o
+!BclXZSiZPUTPacfgjegeigbeifaqykfllZgpqjaTZbZadWIe~r
+!BiiWcSdcPWNVYZehglnWdmgciUekzrdiqdksrfXTTXXaZWRefge~o
+!BtgWdTZcQUMRVbffghfosOpdQhqihqifjirvtnTLNVeZTYZeefe~o
+!BzmPfYbXKOMVRchfibkkZhjYgrpocbhindsztmRHTdgZSWOfgd~Dg~Ce~g
+!B5bLcnoNDMOURfmbdfegfggpivnkbZfhrclvtlTMcijVPVaYPfefge~l
+!B2WNZosUBHONakigebdfgfrpjoshcXcimiosqjYPVlkSTbWQQfefge~l
+!B0QQVovWCFKThhhgiYdegiqtmwjeaaZhmlwsnfaMQbecbXPVYbe~Cggfefe~f
+!BxHNamgYQNHdgcegjaeelikvvuiaZaacksxuthZHJWeiVUbZMe~CgiiZffgfeffe~a
+!BkQKXbfXTQUgdefghdcgjkdsv0oPUgehmtwtrpTILWcdXcZFeaffg~DiclgYe~c
+!BaRKOPhbYdddddefhefehkhiy0oTUefhoyvpsrNQPSadaXMNhdegffzxhKXcaceffge~Y
+!BWPJGUdddmWibefehghfcghhx0oaVcfhtwrkxqVRMQebWNKagefhd2luYSfcSXeffgfe~X
+!BNQJFbclaceeffefjkjYceghptscceehmpvrxtZQINefOLUhdcfiomnviVejUDfgd~a
+!BFQHNccfdeegegehihececijmmskcdfdfoz2zpVNMKUeTXbeabfforlwqZgnXQJSe~a
+!A+NGZbbdeffheffghfegddjinlhpefechu1v5fNQNNRZhhaVXdffmvnwtiglfSF!ABfgdffge~U
+!AsNUcfZagfe~Cgggffedflknhimicdfjwyu3hFOSUSZmiYQYicfhsosuuknkOCSAfgd~X
+!ApbdOZZbfgdgefgggeffhehonhifibekkqwz4jLWSQLemcVSbjedgnhntxwsiONRU!ABfgd~W
+!A5kWWVXQYed~Dghegehhhonigfdbdmksww30dKMHPcmbSVcjfgmqfakvxylWTSRP!ABfe~W
+!BRdRVcRYUcTb~Cgffegjkilndffhcbglv0v34lKGMQUhiUSalkponfXesrsphQSSPSCfe~V
+!BpTRfZJVUgHZ~GgkjmigedjifZhqvtt59vMHQOKZjXSWmrvtkiUZtknmjVSSNPPTfe~U
+!BvRWhWMMPRUe~GhkjlgZhelkbbohuwz183bDKLKXdVTbouovvjRWoonmkTQUPUV!ACfdffge~Q
+!BpRVXeXJMTV~Hhkiiddgcgiaihf43zu31nIJMKYcUVeosqmxrXVpqslbFLRSRWHhcffge~Q
+!BhNTUiZL!AB~Jgjhfedefgfehent5xwwqsjQMIUdWWemntrnrfgmrpdPJLKJNSfgd~U
+!BbOKXfW!ABka~Jghfd~CgghefvwttqrtvugKKPYXXekpwrgnqgkjfVQILNRNXeffge~S
+!BKYQOVH~Ogefgfgfhehw4sonowqs0VCJSWTgrxpmicbhmngQPRZYRJKeffge~S
+!A+VWQEfge~Mhfdgffggdky1pkmrwouxbHGLTYipupkcZWhsvtUWWaYOD!ABeffge~S
+!A9QPaH~Pg~Cegfgfnwsjoomqt2mcILONaqpliggVamvwskRUXbT!AgCcffge~S
+!AxPPP~Rg~Cg~Ckqmnqnnmt5lYMNPMZvtabdjZhornneSLabeFReffge~S
+!AnPJ~Ugefhgehojoqqjov7nXKNLJZtpXdelhjjkkmcT!ABrcWfhc~W
+9Cjb~Tgefigfennjopju40gRMPOGUknceiqhlklgcYMLlceeee~W
+gka~Wgh~Cmpminqz3hTQRUTAficfksofulbaTEffe~b
+gge~VhfgegfhrtsppzhRRPTUMjaffgwqebwnaTAfe~d
+g~Xheffhfk2wswngRKOTTUhcffgftlabtqdTNa~e
+g~Wggeehgfnz2zmhcTINSWae~CgicffjbwfWYdfgegfe~Y
+g~VggeffgiftxrmfltiIMNUYd~Cgfgffgdffgeefg~Ce~Y
+g~VgfggchigyigjhwxrRQLNQhdffe~Igfe~d
+g~XhfdifgsZfnny2wcPHJVaZfe~q
+g~Wggfggffibhmpuy0jaGEHgeffe~p
+g~Whfgfihchfdhkhv3wcJ!AKdYeg~Ie~h
+g~Tgeiffgdhhgjdegeekv4iSBWafgfe~p
+g~TgqjTeicfhljfdcdhfi8rPKOe~Jggefe~e
+g~ThpoWXgdfinifgaffcn6pPMLe~Ighgede~e
+g~SiiprdPYeflmjhdeddjyrkWSOQfkdfeeeehefndZe~e
+`;
+
+// ---------------- terrain data ----------------
+const A64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+const IDX = {}; for (let i = 0; i < A64.length; i++) IDX[A64[i]] = i;
+function decode(txt, nx, qm) {
+  const rows = txt.split('\n').filter(r => r.length);
+  const out = new Float32Array(rows.length * nx);
+  rows.forEach((r, j) => {
+    let prev = 0, k = 0, i = 0;
+    while (i < r.length) {
+      const c = r[i];
+      if (c === '~') { const n = IDX[r[i + 1]] + 1; for (let t = 0; t < n; t++) out[j * nx + k++] = prev * qm; i += 2; }
+      else if (c === '!') { const v = IDX[r[i + 1]] * 64 + IDX[r[i + 2]]; out[j * nx + k++] = v * qm; prev = v; i += 3; }
+      else { const v = prev + IDX[c] - 31; out[j * nx + k++] = v * qm; prev = v; i += 1; }
+    }
+  });
+  return { nx, ny: rows.length, z: out };
+}
+// grids in local metres: x east, y north, origin = east tip of Block A's east wing
+const NEAR = Object.assign(decode(NEAR_TXT, 101, 1), { x0: -800, y1: 1500, s: 30 });
+const FAR = Object.assign(decode(FAR_TXT, 91, 2), { x0: -2000, y1: 5000, s: 100 });
+// Low sea-noise cells in Port Shelter become sea; Tseung Kwan O's reclaimed land is left alone.
+function reclass(g) {
+  const out = g.z.slice();
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const x = g.x0 + i * g.s, y = g.y1 - j * g.s, v = g.z[j * g.nx + i];
+    if (x <= 400 || y <= -1300 || v === 0 || v > 2) continue;
+    let ok = true;
+    for (let dj = -2; dj <= 2 && ok; dj++) for (let di = -2; di <= 2; di++) {
+      const jj = j + dj, ii = i + di;
+      if (jj >= 0 && jj < g.ny && ii >= 0 && ii < g.nx && g.z[jj * g.nx + ii] > 4) { ok = false; break; }
+    }
+    if (ok) out[j * g.nx + i] = 0;
+  }
+  g.z = out;
+}
+reclass(NEAR); reclass(FAR);
+function samp(g, x, y) {
+  const fx = (x - g.x0) / g.s, fy = (g.y1 - y) / g.s;
+  const i = Math.floor(fx), j = Math.floor(fy);
+  if (i < 0 || j < 0 || i >= g.nx - 1 || j >= g.ny - 1) return null;
+  const tx = fx - i, ty = fy - j, z = g.z, nx = g.nx;
+  const a = z[j * nx + i], b = z[j * nx + i + 1], c = z[(j + 1) * nx + i], d = z[(j + 1) * nx + i + 1];
+  const wn = z[(j + (ty > .5 ? 1 : 0)) * nx + i + (tx > .5 ? 1 : 0)] === 0;
+  return [a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty, wn];
+}
+function elev(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y); }
+const R = 6371000;
+
+// ---------------- the flats ----------------
+// Four flats at the tips of the two east wings: 2 and 3 in Block A, 9 and 10 in Block B. Flat 3 is flat 2 mirrored
+// across the gap between them, and flat 10 is flat 9 mirrored. Plan coordinates are in mm: X east from the inside face
+// of the west wall, Y inwards from the inside face of the outer side wall (north for flats 2 and 9, south for 3 and 10).
+const CEIL = 2.6, EYE = 1.55;
+const P = (x, y, h) => new THREE.Vector3(x, h, -y);
+const FLATS = {
+  A2: { id: 'A2', type: 'A', block: 'A', no: 2, ox: 0, oy: 5.3375, sy: -1, sea: [-4, 3.2], F0: 2, F1: 39, finTop: 39, side: 'north' },
+  A3: { id: 'A3', type: 'A', block: 'A', no: 3, ox: 0, oy: -8.3375, sy: 1, sea: [-4, -6.2], F0: 2, F1: 39, finTop: 25, side: 'south', mirror: true },
+  B9: { id: 'B9', type: 'B', block: 'B', no: 9, ox: -22.6, oy: -73.638, sy: -1, sea: [-26.6, -75.9], F0: 3, F1: 38, finTop: 0, side: 'north' },
+  B10: { id: 'B10', type: 'B', block: 'B', no: 10, ox: -22.6, oy: -85.462, sy: 1, sea: [-26.6, -83.2], F0: 3, F1: 38, finTop: 0, side: 'south', mirror: true }
+};
+const FLAT_IDS = ['A2', 'A3', 'B9', 'B10'];
+let FLAT = FLATS.A2, FLOOR = 36, FL = 0, EYE_H = 0;
+const floorLevel = F => 57.55 + (F - 2) * 2.75;
+// plan mm -> world metres (x east, y north) for the flat on show, and back
+const wx = X => FLAT.ox + (X - 8115) / 1000;
+const wy = Y => FLAT.oy + FLAT.sy * Y / 1000;
+const pX = x => (x - FLAT.ox) * 1000 + 8115, pY = y => (y - FLAT.oy) * 1000 / FLAT.sy;
+const finHere = () => FLAT.finTop >= FLOOR;
+
+// ---------------- flats 2 and 3 (type A) ----------------
+// [kind, X0, X1, Y0, Y1, opts]; kinds: wall, win (opening with sill/head), mull, door, open
+const PIECES_A = [
+  ['wall', -250, 0, -250, 5805],
+  ['wall', 0, 450, -250, 0],
+  ['win', 450, 1800, -250, 0, { sill: .9, head: 2.3, id: 'north' }],
+  ['wall', 1800, 3650, -250, 0],
+  ['open', 3650, 4800, -250, 0, { head: 2.3 }],
+  ['wall', 4800, 8115, -250, 0],
+  ['wall', 2500, 2750, -2500, -250],
+  ['wall', 2500, 5175, -2500, -2250],
+  ['wall', 4900, 5175, -2250, -2100],
+  ['win', 4900, 5175, -2100, -400, { sill: .9, head: 2.3, id: 'bay' }],
+  ['wall', 4900, 5175, -400, -250],
+  ['win', 7965, 8115, 0, 2510, { sill: .55, head: 2.3, id: 'eastN' }],
+  ['mull', 7965, 8115, 2510, 2570, { sill: .55, head: 2.3 }],
+  ['win', 7965, 8115, 2570, 4525, { sill: .55, head: 2.3, id: 'eastS' }],
+  ['wall', 7965, 8115, 4525, 4775],
+  ['wall', 3440, 4550, 4525, 4775],
+  ['win', 4550, 4950, 4525, 4775, { sill: 1.5, head: 2.2, id: 'bathW' }],
+  ['wall', 4950, 6000, 4525, 4775],
+  ['win', 6000, 6500, 4525, 4775, { sill: .9, head: 2.3, id: 'south' }],
+  ['wall', 6500, 7965, 4525, 4775],
+  ['wall', 3440, 3665, 4775, 5100],
+  ['win', 3440, 3665, 5100, 5850, { sill: 1.05, head: 2.2, id: 'kitW' }],
+  ['wall', 3440, 3665, 5850, 6150],
+  ['wall', 1600, 3440, 5935, 6150],
+  ['wall', 1600, 1800, 3835, 5935],
+  ['wall', -250, 600, 5555, 5805],
+  ['door', 600, 1500, 5555, 5805, { head: 2.1 }],
+  ['wall', 1500, 1600, 5555, 5805],
+  ['wall', 1600, 2650, 3835, 3920],
+  ['door', 2650, 3400, 3835, 3920, { head: 2.05 }],
+  ['wall', 3400, 3440, 3835, 3920],
+  ['wall', 3440, 5080, 2440, 2525],
+  ['wall', 3440, 3525, 2525, 2600],
+  ['door', 3440, 3525, 2600, 3300, { head: 2.05 }],
+  ['wall', 3440, 3525, 3300, 4525],
+  ['wall', 4995, 5080, 2525, 4525]
+];
+const WIN_NAMES_A = { north: 'north window', bay: 'bay window', eastN: 'east window (north half)', eastS: 'east window (south half)', bathW: 'bathroom window', south: 'small south window', kitW: 'kitchen window' };
+// floor slabs (include wall footprints); material key
+const FLOORS_A = [
+  ['main', -250, 8115, -250, 2440], ['main', -250, 3440, 2440, 3835], ['bath', 3440, 5080, 2440, 4775],
+  ['main', 5080, 8115, 2440, 4775], ['main', -250, 1600, 3835, 5805], ['kit', 1600, 3440, 3835, 6150],
+  ['kit', 3440, 3665, 4775, 6150], ['main', 2500, 5175, -2500, -250]
+];
+// furniture [X0, X1, Y0, Y1, z0, z1, material, onPlan]; 'all' items appear in both layouts
+const FURN_ALL_A = [
+  // kitchen: counters, sink, hob, wall cabinets
+  [1800, 3440, 5335, 5935, 0, .85, 'white', 1], [1800, 3440, 5335, 5935, .85, .89, 'worktop'],
+  [2840, 3440, 4600, 5335, 0, .85, 'white', 1], [2840, 3440, 4600, 5335, .85, .89, 'worktop'],
+  [2930, 3380, 4760, 5200, .89, .895, 'steel'], [2250, 2850, 5420, 5850, .89, .9, 'black'],
+  [1800, 3440, 5585, 5935, 1.5, 2.2, 'white'], [3090, 3440, 4600, 5050, 1.5, 2.2, 'white'],
+  // bathroom: shower, toilet, basin, mirror
+  [3525, 4400, 3700, 4525, 0, .04, 'white', 1], [4385, 4400, 3700, 4525, .04, 2.0, 'glass'], [3525, 4100, 3700, 3715, .04, 2.0, 'glass'],
+  [3600, 3700, 4440, 4525, 1.95, 2.0, 'steel'],
+  [4620, 4880, 3980, 4380, 0, .4, 'white', 1], [4590, 4910, 3930, 4420, .4, .43, 'white'], [4570, 4930, 4340, 4525, .4, .8, 'white'],
+  [4545, 4995, 2650, 3150, 0, .8, 'white', 1], [4545, 4995, 2650, 3150, .8, .85, 'white'], [4985, 4995, 2700, 3100, 1.1, 1.8, 'mirror']
+];
+
+// ---------------- layouts ----------------
+// Each plan adds light 75 mm partitions: [kind, X0, X1, Y0, Y1, opts]
+//   part = partition, pdoor = door opening in it, jamb = frame post where a partition meets the window
+// furniture rows: [X0, X1, Y0, Y1, z0, z1, material, drawOnPlan]
+const KIDS_NW_PARTS = [
+  ['part', 2450, 2525, 0, 1650], ['pdoor', 2450, 2525, 1650, 2400, { head: 2.1 }], ['part', 2450, 2525, 2400, 2525],
+  ['part', 0, 2525, 2525, 2600]
+];
+const FURN_COMMON_A = [
+  [1810, 2480, 3930, 4600, 0, 1.75, 'steel', 1], [1820, 2420, 5322, 5335, .05, .82, 'white'],   // fridge, washing machine
+  [0, 380, 3950, 5150, 0, 1.0, 'oak', 1]                                                          // shoe cabinet
+];
+const A_FURN = [
+  // master bedroom
+  [0, 1370, 625, 2525, 0, .3, 'oak', 1], [20, 1350, 660, 2490, .3, .5, 'linen'], [10, 1360, 650, 1900, .5, .56, 'navy'],
+  [90, 640, 2060, 2440, .5, .62, 'linen'], [730, 1280, 2060, 2440, .5, .62, 'linen'], [0, 1370, 2475, 2525, .3, 1.05, 'fabric'],
+  [0, 1370, 2175, 2525, 1.9, 2.35, 'white'], [1900, 2450, 0, 1550, 0, 2.2, 'white', 1], [1890, 1900, 770, 780, .9, 1.3, 'steel'],
+  // kids & office: bunk bed, desk, chair, wardrobe
+  [5080, 5130, 3575, 3625, 0, 1.7, 'white'], [6980, 7030, 3575, 3625, 0, 1.7, 'white'], [5080, 5130, 4475, 4525, 0, 1.7, 'white'], [6980, 7030, 4475, 4525, 0, 1.7, 'white'],
+  [5080, 7030, 3575, 4525, .18, .28, 'white', 1], [5110, 7000, 3605, 4495, .28, .44, 'linen'], [5400, 7000, 3600, 4500, .44, .5, 'terracotta'],
+  [5080, 7030, 3575, 4525, 1.08, 1.16, 'white'], [5110, 7000, 3605, 4495, 1.16, 1.32, 'linen'], [5400, 7000, 3600, 4500, 1.32, 1.38, 'navy'],
+  [5650, 7030, 3575, 3605, 1.45, 1.5, 'white'], [5650, 5680, 3575, 3605, 1.16, 1.5, 'white'],
+  [5160, 5190, 3545, 3575, 0, 1.5, 'white'], [5560, 5590, 3545, 3575, 0, 1.5, 'white'],
+  [5190, 5560, 3550, 3570, .55, .58, 'white'], [5190, 5560, 3550, 3570, .8, .83, 'white'], [5190, 5560, 3550, 3570, 1.05, 1.08, 'white'],
+  [7365, 7965, 2700, 3500, .72, .76, 'oak', 1], [7385, 7945, 2700, 2730, 0, .72, 'oak'], [7385, 7945, 3470, 3500, 0, .72, 'oak'],
+  [7550, 7850, 2950, 3300, .76, .78, 'charcoal'],
+  [6950, 7350, 2900, 3300, .44, .5, 'charcoal', 1], [6950, 6990, 2900, 3300, .5, .95, 'charcoal'], [7120, 7180, 3070, 3130, 0, .44, 'steel'],
+  [5950, 6850, 2600, 3050, 0, 2.1, 'white', 1], [6395, 6405, 3050, 3058, .9, 1.3, 'steel'],
+  // helper's room
+  [2750, 4650, -2250, -1350, 0, .3, 'oak', 1], [2770, 4630, -2230, -1370, .3, .46, 'linen'], [3300, 4630, -2240, -1360, .46, .51, 'sage'],
+  [2790, 3150, -2180, -1420, .46, .58, 'linen'], [2750, 3350, -800, -250, 0, 1.9, 'white', 1], [2750, 4650, -2250, -2050, 1.55, 1.58, 'oak'],
+  // living
+  [6100, 7700, 0, 420, 0, .45, 'oak', 1], [6350, 7450, 40, 90, .75, 1.4, 'black'],
+  [6000, 7800, 1700, 2525, .12, .42, 'fabric', 1], [6000, 7800, 2300, 2525, .42, .86, 'fabric'],
+  [6000, 6160, 1700, 2525, .42, .62, 'fabric'], [7640, 7800, 1700, 2525, .42, .62, 'fabric'],
+  [6160, 6890, 1720, 2300, .42, .52, 'fabric2'], [6910, 7640, 1720, 2300, .42, .52, 'fabric2'],
+  [6250, 6620, 2160, 2290, .52, .84, 'terracotta'], [7280, 7600, 2160, 2290, .52, .84, 'sage'],
+  [6450, 7350, 1000, 1450, .36, .4, 'oak', 1], [6600, 7200, 1100, 1350, 0, .36, 'charcoal'],
+  [6150, 7650, 550, 2000, 0, .008, 'rug'],
+  // dining
+  [3300, 4400, 1000, 1700, .72, .76, 'oak', 1],
+  [3330, 3380, 1030, 1080, 0, .72, 'oak'], [4320, 4370, 1030, 1080, 0, .72, 'oak'], [3330, 3380, 1620, 1670, 0, .72, 'oak'], [4320, 4370, 1620, 1670, 0, .72, 'oak']
+];
+// kids' room in the north-west corner (plans B and C): bunk beds, desk under the window, wardrobe, play rug
+const KIDS_NW_FURN = [
+  [0, 50, 575, 625, 0, 1.7, 'white'], [900, 950, 575, 625, 0, 1.7, 'white'], [0, 50, 2475, 2525, 0, 1.7, 'white'], [900, 950, 2475, 2525, 0, 1.7, 'white'],
+  [0, 950, 575, 2525, .18, .28, 'white', 1], [30, 920, 605, 2495, .28, .44, 'linen'], [25, 925, 950, 2500, .44, .5, 'terracotta'], [100, 850, 640, 900, .44, .54, 'linen'],
+  [0, 950, 575, 2525, 1.08, 1.16, 'white'], [30, 920, 605, 2495, 1.16, 1.32, 'linen'], [25, 925, 950, 2500, 1.32, 1.38, 'navy'], [100, 850, 640, 900, 1.32, 1.42, 'linen'],
+  [920, 950, 1100, 2525, 1.45, 1.5, 'white'], [920, 950, 1100, 1130, 1.16, 1.5, 'white'],
+  [950, 980, 640, 670, 0, 1.5, 'white'], [950, 980, 1000, 1030, 0, 1.5, 'white'],
+  [955, 975, 670, 1000, .55, .58, 'white'], [955, 975, 670, 1000, .8, .83, 'white'], [955, 975, 670, 1000, 1.05, 1.08, 'white'],
+  [1050, 1900, 0, 550, .72, .76, 'oak', 1], [1070, 1100, 20, 530, 0, .72, 'oak'], [1850, 1880, 20, 530, 0, .72, 'oak'], [1250, 1550, 120, 360, .76, .79, 'navy'],
+  [1280, 1680, 700, 1100, .44, .5, 'charcoal', 1], [1280, 1680, 1060, 1100, .5, .95, 'charcoal'], [1450, 1510, 870, 930, 0, .44, 'steel'],
+  [1950, 2450, 0, 1550, 0, 2.2, 'white', 1], [1940, 1950, 770, 780, .9, 1.3, 'steel'],
+  [1100, 2350, 1650, 2450, 0, .008, 'mat']
+];
+const B_FURN = KIDS_NW_FURN.concat([
+  // master bedroom: 5' queen bed, wardrobe on the new wall, desk at the window
+  [5080, 6980, 2950, 4470, 0, .3, 'oak', 1], [5130, 6960, 2970, 4450, .3, .5, 'linen'], [5700, 6970, 2960, 4460, .5, .56, 'sage'],
+  [5080, 5130, 2950, 4470, .3, 1.05, 'fabric'], [5160, 5560, 3030, 3670, .5, .62, 'linen'], [5160, 5560, 3750, 4390, .5, .62, 'linen'],
+  [5130, 5530, 2500, 2900, 0, .5, 'oak'], [5280, 5380, 2650, 2750, .5, .78, 'linen'],
+  [5700, 7400, 1700, 2300, 0, 2.2, 'white', 1], [6540, 6560, 2300, 2310, .9, 1.3, 'steel'],
+  [7400, 7965, 3000, 4000, .72, .76, 'oak', 1], [7420, 7450, 3020, 3980, 0, .72, 'oak'], [7915, 7945, 3020, 3980, 0, .72, 'oak'], [7100, 7350, 3350, 3650, 0, .45, 'charcoal'],
+  // helper's room at the back of the bay: single bed, high shelf, narrow wardrobe
+  [2750, 3650, -2250, -350, 0, .3, 'oak', 1], [2770, 3630, -2230, -370, .3, .46, 'linen'], [2760, 3640, -1700, -360, .46, .51, 'sage'], [2800, 3600, -2200, -1900, .46, .58, 'linen'],
+  [2750, 3050, -2250, -350, 1.6, 1.63, 'oak'], [3650, 4050, -2250, -1750, 0, 1.9, 'white', 1],
+  // window seat in the front of the bay
+  [4550, 4900, -2250, -250, 0, .45, 'oak', 1], [4560, 4890, -2100, -400, .45, .52, 'terracotta'], [4600, 4880, -2050, -1750, .52, .8, 'sage'], [4180, 4480, -2200, -1900, 0, .3, 'sage'],
+  // dining by the kids' room
+  [2900, 3900, 550, 1250, .72, .76, 'oak', 1], [2930, 2980, 580, 630, 0, .72, 'oak'], [3820, 3870, 580, 630, 0, .72, 'oak'], [2930, 2980, 1170, 1220, 0, .72, 'oak'], [3820, 3870, 1170, 1220, 0, .72, 'oak'],
+  // sofa facing the sea, and the play zone along the window
+  [5100, 5950, 100, 1550, .12, .42, 'fabric', 1], [5100, 5330, 100, 1550, .42, .86, 'fabric'],
+  [5100, 5950, 100, 260, .42, .62, 'fabric'], [5100, 5950, 1390, 1550, .42, .62, 'fabric'],
+  [5330, 5930, 270, 815, .42, .52, 'fabric2'], [5330, 5930, 835, 1380, .42, .52, 'fabric2'],
+  [5340, 5470, 330, 700, .52, .84, 'terracotta'], [5340, 5470, 950, 1320, .52, .84, 'sage'],
+  [6150, 7800, 150, 1250, 0, .02, 'mat', 1], [6150, 7650, 1325, 1625, 0, .5, 'white', 1],
+  [6500, 6650, 500, 650, .02, .17, 'terracotta'], [6700, 6850, 520, 670, .02, .17, 'navy'], [6600, 6750, 700, 850, .02, .17, 'sage'], [6520, 6630, 520, 630, .17, .28, 'sage']
+]);
+const C_FURN = KIDS_NW_FURN.concat([
+  // master suite: 4'6" double bed against the north wall, wardrobes in the dressing area
+  [6230, 7600, 0, 1900, 0, .3, 'oak', 1], [6230, 7600, 0, 50, .3, 1.05, 'fabric'], [6250, 7580, 50, 1880, .3, .5, 'linen'], [6240, 7590, 650, 1890, .5, .56, 'sage'],
+  [6320, 6870, 90, 490, .5, .62, 'linen'], [6960, 7510, 90, 490, .5, .62, 'linen'],
+  [5885, 6215, 0, 400, 0, .5, 'oak'], [7615, 7955, 0, 400, 0, .5, 'oak'], [6000, 6100, 150, 250, .5, .78, 'linen'],
+  [6775, 7375, 2650, 4525, 0, 2.2, 'white', 1], [7375, 7385, 3550, 3570, .9, 1.3, 'steel'], [7550, 7850, 3700, 4000, 0, .45, 'charcoal'],
+  // helper's room: single bed under the small south window, narrow wardrobe
+  [5800, 6700, 2625, 4525, 0, .3, 'oak', 1], [5820, 6680, 2645, 4505, .3, .46, 'linen'], [5810, 6690, 3100, 4515, .46, .51, 'sage'], [5850, 6650, 2680, 3000, .46, .58, 'linen'],
+  [5080, 5530, 4025, 4525, 0, 1.9, 'white', 1],
+  // dining by the kids' room, sofa against the master suite wall, play mat between
+  [2700, 3700, 500, 1200, .72, .76, 'oak', 1], [2730, 2780, 530, 580, 0, .72, 'oak'], [3620, 3670, 530, 580, 0, .72, 'oak'], [2730, 2780, 1120, 1170, 0, .72, 'oak'], [3620, 3670, 1120, 1170, 0, .72, 'oak'],
+  [4950, 5800, 150, 1650, .12, .42, 'fabric', 1], [5570, 5800, 150, 1650, .42, .86, 'fabric'],
+  [4950, 5800, 150, 310, .42, .62, 'fabric'], [4950, 5800, 1490, 1650, .42, .62, 'fabric'],
+  [4970, 5570, 320, 890, .42, .52, 'fabric2'], [4970, 5570, 910, 1480, .42, .52, 'fabric2'],
+  [5430, 5560, 380, 750, .52, .84, 'terracotta'], [5430, 5560, 1050, 1420, .52, .84, 'sage'],
+  [3900, 4800, 150, 1500, 0, .02, 'mat', 1],
+  // the whole bay as a playroom
+  [2850, 4800, -2150, -350, 0, .02, 'mat', 1], [2750, 3050, -2250, -700, 0, .9, 'white', 1],
+  [3400, 4000, -1700, -1100, .45, .5, 'oak', 1], [3420, 3450, -1680, -1650, 0, .45, 'oak'], [3950, 3980, -1680, -1650, 0, .45, 'oak'], [3420, 3450, -1150, -1120, 0, .45, 'oak'], [3950, 3980, -1150, -1120, 0, .45, 'oak'],
+  [3180, 3360, -1500, -1300, 0, .28, 'terracotta'], [4040, 4220, -1500, -1300, 0, .28, 'navy'],
+  [4550, 4880, -2000, -500, 0, .2, 'sage'], [3500, 3650, -700, -550, .02, .17, 'terracotta'], [3700, 3850, -650, -500, .02, .17, 'navy']
+]);
+
+const KITCHEN_ROOM = { id: 'kitchen', name: 'Kitchen', rects: [[1800, 3440, 3920, 5935]], at: [2620, 4950], win: 'East, into the gap' };
+const BATH_ROOM = { id: 'bath', name: 'Bathroom', rects: [[3525, 4995, 2525, 4525]], at: [4260, 3420], win: 'South, into the gap', only: ['bathW'] };
+const FOYER_ROOM = { id: 'foyer', name: 'Foyer', rects: [[0, 1600, 2600, 5555], [1600, 3440, 2600, 3835]], at: [800, 4650] };
+const KIDS_NW_ROOM = { id: 'kids', name: 'Kids’ room', rects: [[0, 2450, 0, 2525]], at: [1225, 1050], win: 'North, hillside', only: ['north'], role: 'kids' };
+const KITCHEN_ROW = ['Kitchen', 'east, down the gap', 2950, 5475, ['kitW']];
+// rows: [room, window, X, Y, windows counted, role]; X null = no window
+const LAYOUTS_A = {
+  A: {
+    name: 'Plan A', sub: 'Master on the hill side', furnished: true, play: 'Rug by the sofa',
+    desc: 'The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5080, 5150, 2525, 2600], ['pdoor', 5150, 5900, 2525, 2600, { head: 2.1 }], ['part', 5900, 7965, 2525, 2600],
+      ['pdoor', 3650, 4400, -175, -100, { head: 2.1 }], ['part', 4400, 4800, -175, -100]
+    ],
+    leaves: [[3650, 3690, -950, -200, 0, 2.05, 'white']],
+    rooms: [
+      { id: 'master', name: 'Master bedroom', rects: [[0, 2450, 0, 2525]], at: [1225, 1050], win: 'North, hillside', only: ['north'], role: 'master' },
+      { id: 'kids', name: 'Kids & office', rects: [[5080, 7965, 2600, 4525]], at: [6520, 3340], win: 'East, sea', sea: true, only: ['eastS', 'south'], role: 'kids' },
+      { id: 'helper', name: "Helper's room", rects: [[2750, 4900, -2250, -250]], at: [3825, -1500], win: 'East (bay), sea slice', sea: true, only: ['bay'], role: 'helper' },
+      { id: 'living', name: 'Living & dining', rects: [[2525, 7965, 0, 2440], [2525, 3440, 2440, 2525]], at: [5000, 1280], win: 'East, sea', sea: true, role: 'living' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: A_FURN, chairs: [[3600, 770, 'N'], [4100, 770, 'N'], [3600, 1930, 'S'], [4100, 1930, 'S']], pend: [3850, 1350], plant: [7830, 290],
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'kids', 'master', 'helper', 'doll'],
+    over: {},
+    wins: [
+      ['Living room', 'east, north half', 6540, 1255, ['eastN'], 'living'],
+      ['Kids & office', 'east, south half', 6540, 3547, ['eastS', 'south'], 'kids'],
+      ["Helper's room", 'bay, faces east', 4037, -1250, ['bay'], 'helper'],
+      ['Master bedroom', 'north', 1125, 1375, ['north'], 'master'],
+      KITCHEN_ROW
+    ]
+  },
+  B: {
+    name: 'Plan B', sub: 'Sea-view master', furnished: true, play: 'Sea-window strip (about 3.6 m² clear) + window seat',
+    desc: 'The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5005, 7965, 1625, 1700], ['part', 5005, 5080, 1700, 1720], ['pdoor', 5005, 5080, 1720, 2440, { head: 2.1 }],
+      ['jamb', 7965, 8115, 1625, 1700, { sill: .55, head: 2.3 }],
+      ['part', 3650, 4050, -250, 0], ['part', 4050, 4125, -2250, -1050], ['pdoor', 4050, 4125, -1050, -350, { head: 2.1 }], ['part', 4050, 4125, -350, 0]
+    ],
+    leaves: [],
+    rooms: [
+      KIDS_NW_ROOM,
+      { id: 'master', name: 'Master bedroom', rects: [[5080, 7965, 1700, 4525]], at: [6520, 3150], win: 'East, sea', sea: true, only: ['eastN', 'eastS', 'south'], role: 'master' },
+      { id: 'helper', name: "Helper's room", rects: [[2750, 4050, -2250, -250]], at: [3400, -1300], win: 'None', only: [], role: 'helper' },
+      { id: 'living', name: 'Living & play', rects: [[2525, 5005, 0, 2440], [5005, 7965, 0, 1625], [2525, 3440, 2440, 2525], [4125, 4900, -2250, -250], [4125, 4800, -250, 0]], at: [4500, 1100], win: 'East + bay seat', sea: true, role: 'living' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: B_FURN, chairs: [[3150, 330, 'N'], [3650, 330, 'N'], [3150, 1470, 'S'], [3650, 1470, 'S']], pend: [3400, 900], plant: [7830, 290],
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'nook', 'kids', 'master', 'helper', 'doll'],
+    over: {
+      dining: { X: 4700, Y: 2050, yaw: 295, pitch: -10,
+        text: 'The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.' },
+      living: { sub: 'Sofa facing the sea', X: 4400, Y: 850, yaw: 90, pitch: -8,
+        text: 'Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.' },
+      window: { name: 'Play zone', sub: 'At the sea window',
+        text: 'In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.' },
+      kids: { name: 'Kids’ room', sub: '2.45 × 2.5 m', X: 2150, Y: 2200, yaw: 318, pitch: -10,
+        text: 'Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.' },
+      master: { sub: '2.9 × 2.8 m', X: 5650, Y: 2600, yaw: 118, pitch: -16,
+        text: 'A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.' },
+      helper: { sub: '1.3 × 2.0 m, no window', X: 3900, Y: -420, yaw: 335, pitch: -24,
+        text: 'A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.' }
+    },
+    wins: [
+      ['Master bedroom', 'east, south half + 0.9 m', 6465, 3112, ['eastN', 'eastS', 'south'], 'master'],
+      ['Living & play', 'east, north part', 6465, 812, ['eastN'], 'living'],
+      ['Window seat', 'bay, faces east', 4350, -1250, ['bay'], 'play'],
+      ['Kids’ room', 'north', 1125, 1375, ['north'], 'kids'],
+      ["Helper's room", 'none', null, null, [], 'helper'],
+      KITCHEN_ROW
+    ]
+  },
+  C: {
+    name: 'Plan C', sub: 'Master suite', furnished: true, play: 'Bay playroom (4.6 m²) + mat by the sofa',
+    desc: 'The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.',
+    parts: [
+      ...KIDS_NW_PARTS,
+      ['part', 5800, 5875, 0, 1700], ['pdoor', 5800, 5875, 1700, 2400, { head: 2.1 }], ['part', 5800, 5875, 2400, 2525],
+      ['part', 5080, 5100, 2525, 2600], ['pdoor', 5100, 5800, 2525, 2600, { head: 2.1 }], ['part', 5800, 6775, 2525, 2600],
+      ['part', 6700, 6775, 2600, 4525]
+    ],
+    leaves: [],
+    rooms: [
+      KIDS_NW_ROOM,
+      { id: 'master', name: 'Master suite', rects: [[5875, 7965, 0, 2525], [6775, 7965, 2525, 4525]], at: [6920, 1250], win: 'East, whole window', sea: true, only: ['eastN', 'eastS'], role: 'master' },
+      { id: 'helper', name: "Helper's room", rects: [[5080, 6700, 2600, 4525]], at: [5890, 3560], win: 'Small south window', only: ['south'], role: 'helper' },
+      { id: 'living', name: 'Living & dining', rects: [[2525, 5800, 0, 2440], [2525, 3440, 2440, 2525], [5080, 5800, 2440, 2525]], at: [4300, 1750], win: 'None of its own', role: 'living' },
+      { id: 'play', name: 'Playroom', rects: [[2750, 4900, -2250, -250], [3650, 4800, -250, 0]], at: [3825, -1350], win: 'Bay, sea', sea: true, role: 'play' },
+      KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
+    ],
+    furn: C_FURN, chairs: [[2950, 280, 'N'], [3450, 280, 'N'], [2950, 1420, 'S'], [3450, 1420, 'S']], pend: [3200, 850], plant: null,
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'play', 'kids', 'master', 'dress', 'helper', 'doll'],
+    over: {
+      dining: { X: 4600, Y: 2050, yaw: 290, pitch: -10,
+        text: 'The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.' },
+      living: { sub: 'Sofa and play mat', X: 3300, Y: 1900, yaw: 55, pitch: -10,
+        text: 'The sofa backs onto the master suite wall, with a play mat in front that runs into the bay playroom. The living room has no window of its own in this plan: its daylight and its sea view come through the playroom.' },
+      kids: { name: 'Kids’ room', sub: '2.45 × 2.5 m', X: 2150, Y: 2200, yaw: 318, pitch: -10,
+        text: 'Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.' },
+      master: { name: 'Master suite', sub: '2.1 × 2.5 m + dressing', X: 6000, Y: 2350, yaw: 40, pitch: -10,
+        text: 'The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.' },
+      helper: { sub: '1.6 × 1.9 m', X: 5400, Y: 2850, yaw: 150, pitch: -20,
+        text: 'A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.' }
+    },
+    wins: [
+      ['Master suite', 'whole east window', 6465, 2300, ['eastN', 'eastS'], 'master'],
+      ['Playroom', 'bay, faces east', 4037, -1250, ['bay'], 'play'],
+      ['Living & dining', 'through the playroom', 4200, 1300, ['bay'], 'living'],
+      ['Kids’ room', 'north', 1125, 1375, ['north'], 'kids'],
+      ["Helper's room", 'small south window', 6250, 3025, ['south'], 'helper'],
+      KITCHEN_ROW
+    ]
+  },
+  bare: {
+    name: 'Bare', sub: 'As handed over', furnished: false,
+    desc: 'The flat as the HA hands it over: one open L-shaped space, with only the kitchen and bathroom enclosed.',
+    parts: [], leaves: [],
+    rooms: [
+      { id: 'open', name: 'Open-plan living', rects: [[0, 7965, 0, 2525], [5080, 7965, 2525, 4525], [0, 3440, 2525, 3835], [0, 1600, 3835, 5555], [2750, 4900, -2250, -250], [3650, 4800, -250, 0]], at: [4600, 1280], sea: true, role: 'living' },
+      { id: 'kitchen', name: 'Kitchen', rects: [[1800, 3440, 3920, 5935]], at: [2620, 4950] },
+      { id: 'bath', name: 'Bathroom', rects: [[3525, 4995, 2525, 4525]], at: [4260, 3420], only: ['bathW'] }
+    ],
+    furn: [], chairs: [], pend: null, plant: null,
+    stops: ['door', 'hall', 'kitchen', 'bath', 'dining', 'living', 'window', 'kids', 'master', 'helper', 'doll'],
+    over: {
+      door: { text: 'Inside the front door. As handed over, the flat is one open L-shaped space; only the kitchen and bathroom are enclosed.' },
+      hall: { text: 'The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.' },
+      kitchen: { text: 'The HA hands over the sink and the gas and washing-machine connections. The window looks east down the gap between flats 2 and 3.' },
+      dining: { name: 'Middle of the room', sub: 'Open plan', text: 'The middle of the open plan. The bay is straight ahead and the east window to the right.' },
+      living: { sub: 'Main room', text: 'The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.' },
+      kids: { name: 'South-east corner', sub: '2.9 × 2.0 m', text: 'The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.' },
+      master: { name: 'North-west corner', sub: '2.45 × 2.5 m', text: 'The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.' },
+      helper: { name: 'The bay', sub: '2.15 × 2.0 m', text: 'A 2.15 × 2.0 m bay off the main room, with its own east window.' },
+      doll: { text: 'The whole flat as handed over, with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
+    },
+    wins: [
+      ['Main room', 'east window', 6465, 2262, ['eastN', 'eastS']],
+      ['The bay', 'faces east', 4037, -1250, ['bay']],
+      ['North-west corner', 'north', 1125, 1375, ['north']],
+      KITCHEN_ROW
+    ]
+  }
+};
+
+
+// ---------------- tour stops (plan A positions; plans override) ----------------
+const STOPDEF_A = {
+  door: { name: 'Front door', sub: 'Foyer', X: 700, Y: 5330, yaw: 18, pitch: -6,
+    text: 'Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.' },
+  hall: { name: 'Hall', sub: 'Kitchen, bath, living', X: 1050, Y: 3250, yaw: 90, pitch: -8,
+    text: 'The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.' },
+  kitchen: { name: 'Kitchen', sub: '1.6 × 2.0 m', X: 2650, Y: 3980, yaw: 165, pitch: -22,
+    text: 'Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.' },
+  bath: { name: 'Bathroom', sub: '1.5 × 2.0 m', X: 3680, Y: 2780, yaw: 140, pitch: -18,
+    text: 'Shower on the right, toilet under a small south window, basin and mirror by the door.' },
+  dining: { name: 'Dining', sub: 'Table for four', X: 2950, Y: 2250, yaw: 50, pitch: -6,
+    text: 'The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.' },
+  living: { name: 'Living room', sub: 'Sofa and TV', X: 5300, Y: 1250, yaw: 90, pitch: -4,
+    text: 'About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.' },
+  window: { name: 'Living-room window', sub: 'Best view', X: 7250, Y: 750, yaw: 92, pitch: -7,
+    text: 'Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.' },
+  kids: { name: 'Kids & office', sub: '2.9 × 1.9 m', X: 6650, Y: 3200, yaw: 95, pitch: -7,
+    text: 'Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.' },
+  master: { name: 'Master bedroom', sub: '2.45 × 2.5 m', X: 1650, Y: 2150, yaw: 335, pitch: -8,
+    text: 'A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.' },
+  helper: { name: "Helper's room", sub: '2.15 × 2.0 m', X: 3750, Y: -1000, yaw: 85, pitch: -10,
+    text: 'The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.' },
+  nook: { name: 'Window seat', sub: 'Front of the bay', X: 4250, Y: -300, yaw: 62, pitch: -14,
+    text: 'The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.' },
+  play: { name: 'Playroom', sub: 'The whole bay', X: 3200, Y: -500, yaw: 60, pitch: -12,
+    text: 'With the helper moved out, the whole bay becomes an open playroom off the living room: play mat, toy shelves and a kids’ table, plus the bay window’s slice of sea.' },
+  dress: { name: 'Dressing area', sub: 'South half of the window', X: 7600, Y: 2250, yaw: 160, pitch: -12,
+    text: 'The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.' },
+  doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
+    text: 'The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
+};
+
+// ---------------- flats 9 and 10 (type B) ----------------
+// One long room with a bay on the outer side, the kitchen and bathroom on the corridor side, a big east window and
+// three smaller ones: at the west end, beside the living area and onto the gap between the two flats.
+const PIECES_B = [
+  ['wall', -250, 0, -250, 4450],
+  ['wall', 0, 380, -250, 0],
+  ['win', 380, 1140, -250, 0, { sill: .9, head: 2.3, id: 'sideW' }],
+  ['wall', 1140, 2690, -250, 0],
+  ['open', 2690, 4830, -250, 0, { head: 2.3 }],
+  ['wall', 4830, 5770, -250, 0],
+  ['win', 5770, 6730, -250, 0, { sill: .9, head: 2.3, id: 'sideE' }],
+  ['wall', 6730, 8115, -250, 0],
+  ['wall', 2440, 2690, -2610, -250],
+  ['wall', 2440, 5080, -2610, -2360],
+  ['wall', 4830, 5080, -2360, -2200],
+  ['win', 4830, 5080, -2200, -400, { sill: .9, head: 2.3, id: 'bay' }],
+  ['wall', 4830, 5080, -400, -250],
+  ['win', 7965, 8115, 0, 2240, { sill: .55, head: 2.3, id: 'east' }],
+  ['mull', 7965, 8115, 2240, 2300, { sill: .55, head: 2.3 }],
+  ['win', 7965, 8115, 2300, 4525, { sill: .55, head: 2.3, id: 'east' }],
+  ['wall', 7965, 8115, 4525, 4775],
+  ['wall', 5065, 6500, 4525, 4775],
+  ['win', 6500, 7450, 4525, 4775, { sill: .9, head: 2.3, id: 'gapW' }],
+  ['wall', 7450, 7965, 4525, 4775],
+  ['wall', 3425, 3510, 2440, 2525], ['door', 3510, 4260, 2440, 2525, { head: 2.05 }], ['wall', 4260, 5065, 2440, 2525],
+  ['wall', 3425, 3510, 2525, 3765], ['wall', 4980, 5065, 2525, 4525], ['wall', 3425, 5065, 4525, 4775],
+  ['wall', 1615, 2600, 3765, 3850], ['door', 2600, 3350, 3765, 3850, { head: 2.05 }], ['wall', 3350, 3510, 3765, 4525],
+  ['wall', 3350, 3435, 4525, 4775], ['win', 3350, 3435, 4775, 5700, { sill: 1.05, head: 2.2, id: 'kitW' }], ['wall', 3350, 3435, 5700, 6165],
+  ['wall', 1615, 1700, 3850, 5915], ['wall', 1615, 3435, 5915, 6165],
+  ['wall', 0, 530, 4200, 4450], ['door', 530, 1420, 4200, 4450, { head: 2.1 }], ['wall', 1420, 1615, 4200, 4450]
+];
+const WIN_NAMES_B = { east: 'east window', bay: 'bay window', sideW: 'small side window', sideE: 'side window', gapW: 'window onto the gap', kitW: 'kitchen window' };
+const FLOORS_B = [
+  ['main', -250, 1700, -250, 4450], ['main', 1700, 3435, -250, 3765], ['main', 3435, 5065, -250, 2440], ['main', 5065, 8115, -250, 4775],
+  ['main', 2440, 5080, -2610, -250], ['kit', 1700, 3435, 3765, 6165], ['bath', 3425, 5065, 2440, 4775]
+];
+const FURN_ALL_B = [
+  // kitchen: counters on the outer wall and under the window, sink, hob, wall cabinets
+  [1700, 3350, 5315, 5915, 0, .85, 'white', 1], [1700, 3350, 5315, 5915, .85, .89, 'worktop'],
+  [2750, 3350, 4550, 5315, 0, .85, 'white', 1], [2750, 3350, 4550, 5315, .85, .89, 'worktop'],
+  [2840, 3290, 4800, 5250, .89, .895, 'steel'], [1950, 2550, 5400, 5830, .89, .9, 'black'],
+  [1700, 3350, 5565, 5915, 1.5, 2.2, 'white'],
+  // bathroom: shower by the door, toilet and basin on the far wall
+  [3510, 4300, 3700, 4525, 0, .04, 'white', 1], [4285, 4300, 3700, 4525, .04, 2.0, 'glass'], [3510, 4000, 3700, 3715, .04, 2.0, 'glass'],
+  [3550, 3650, 4440, 4525, 1.95, 2.0, 'steel'],
+  [4600, 4900, 3950, 4350, 0, .4, 'white', 1], [4570, 4930, 3900, 4400, .4, .43, 'white'], [4830, 4980, 3880, 4420, .4, .8, 'white'],
+  [4530, 4980, 2700, 3200, 0, .8, 'white', 1], [4530, 4980, 2700, 3200, .8, .85, 'white'], [4970, 4980, 2750, 3150, 1.1, 1.8, 'mirror']
+];
+const FURN_COMMON_B = [
+  [1720, 2330, 3870, 4480, 0, 1.75, 'steel', 1], [1720, 2320, 5302, 5315, .05, .82, 'white'],   // fridge, washing machine
+  [0, 380, 3500, 4150, 0, 1.0, 'oak', 1]                                                          // shoe cabinet
+];
+const B_OPEN_FURN = [
+  // queen bed at the west end, under the small side window, with a bedside table, wardrobe and a low shelf
+  [0, 2030, 300, 1820, 0, .3, 'oak', 1], [20, 2010, 320, 1800, .3, .5, 'linen'], [600, 2020, 310, 1810, .5, .56, 'sage'],
+  [80, 520, 380, 1020, .5, .62, 'linen'], [80, 520, 1100, 1740, .5, .62, 'linen'], [0, 60, 300, 1820, .3, 1.05, 'fabric'],
+  [0, 450, 1900, 2350, 0, .5, 'oak'], [0, 520, 2450, 3400, 0, 2.2, 'white', 1], [515, 520, 2880, 2970, .9, 1.3, 'steel'],
+  [2250, 2350, 300, 1800, 0, 1.2, 'oak', 1],
+  // dining table in the middle of the room
+  [3000, 3900, 1100, 1800, .72, .76, 'oak', 1],
+  [3030, 3080, 1130, 1180, 0, .72, 'oak'], [3820, 3870, 1130, 1180, 0, .72, 'oak'], [3030, 3080, 1720, 1770, 0, .72, 'oak'], [3820, 3870, 1720, 1770, 0, .72, 'oak'],
+  // a small study in the bay: shelves, a desk under the window and a chair
+  [2690, 3000, -2360, -300, 0, 1.8, 'white', 1],
+  [4230, 4830, -2100, -500, .72, .76, 'oak', 1], [4250, 4280, -2080, -2050, 0, .72, 'oak'], [4250, 4280, -550, -520, 0, .72, 'oak'],
+  [3800, 4150, -1500, -1100, .44, .5, 'charcoal', 1], [3800, 3840, -1500, -1100, .5, .95, 'charcoal'], [3950, 4010, -1330, -1270, 0, .44, 'steel'],
+  // living: sofa facing the sea window, coffee table, rug
+  [5100, 5950, 2650, 4400, .12, .42, 'fabric', 1], [5100, 5330, 2650, 4400, .42, .86, 'fabric'],
+  [5100, 5950, 2650, 2810, .42, .62, 'fabric'], [5100, 5950, 4240, 4400, .42, .62, 'fabric'],
+  [5330, 5930, 2820, 3510, .42, .52, 'fabric2'], [5330, 5930, 3540, 4230, .42, .52, 'fabric2'],
+  [5340, 5470, 2900, 3270, .52, .84, 'terracotta'], [5340, 5470, 3800, 4170, .52, .84, 'sage'],
+  [6200, 6800, 3100, 3950, .36, .4, 'oak', 1], [6300, 6700, 3200, 3850, 0, .36, 'charcoal'],
+  [6000, 7500, 2700, 4300, 0, .008, 'rug']
+];
+const B_ROOMS = {
+  kitchen: { id: 'kitchen', name: 'Kitchen', rects: [[1700, 3350, 3850, 5915]], at: [2525, 4900], win: 'Into the gap' },
+  bath: { id: 'bath', name: 'Bathroom', rects: [[3510, 4980, 2525, 4525]], at: [4245, 3500], win: 'None', only: [] },
+  bay: { id: 'bay', name: 'Bay', rects: [[2690, 4830, -2360, 0]], at: [3760, -1150], win: 'East (bay)', sea: true, role: 'play' }
+};
+const B_OPEN_RECTS = [[0, 1615, 0, 4200], [1615, 3425, 0, 3765], [3425, 5065, 0, 2440], [5065, 7965, 0, 4525]];
+const B_WINS = name => [
+  ['Living area', 'east window', 6465, 2262, ['east'], 'living'],
+  ['Living area', 'side window', 6250, 1150, ['sideE'], 'living'],
+  ['Bay', 'faces east', 3760, -1250, ['bay'], 'play'],
+  [name, 'small side window', 760, 1250, ['sideW'], 'master'],
+  ['Living area', 'window onto the gap', 6975, 3500, ['gapW'], 'living'],
+  ['Kitchen', 'onto the gap', 2900, 5000, ['kitW']]
+];
+const B_STOPS = ['door', 'kitchen', 'bath', 'bed', 'dining', 'living', 'window', 'bay', 'doll'];
+const LAYOUTS_B = {
+  open: {
+    name: 'Furnished', sub: 'One open room', furnished: true,
+    desc: 'A furnished example: a queen bed at the west end behind a low shelf, a dining table in the middle, a sofa facing the sea window and a small study in the bay.',
+    parts: [], leaves: [],
+    rooms: [{ id: 'open', name: 'Living & sleeping', rects: B_OPEN_RECTS, at: [5900, 1500], win: 'East, sea', sea: true, role: 'living' }, B_ROOMS.bay, B_ROOMS.kitchen, B_ROOMS.bath],
+    furn: B_OPEN_FURN, chairs: [[3200, 950, 'N'], [3700, 950, 'N'], [3200, 1950, 'S'], [3700, 1950, 'S']], pend: [3450, 1450], plant: [7800, 4300],
+    stops: B_STOPS, over: {}, wins: B_WINS('Sleeping area')
+  },
+  bare: {
+    name: 'Bare', sub: 'As handed over', furnished: false,
+    desc: 'The flat as the HA hands it over: one long open room with a bay, with only the kitchen and bathroom enclosed.',
+    parts: [], leaves: [],
+    rooms: [{ id: 'open', name: 'Open-plan living', rects: B_OPEN_RECTS, at: [5900, 1500], win: 'East, sea', sea: true, role: 'living' }, B_ROOMS.bay, B_ROOMS.kitchen, B_ROOMS.bath],
+    furn: [], chairs: [], pend: null, plant: null,
+    stops: B_STOPS,
+    over: {
+      door: { text: 'Inside the front door. As handed over, the flat is one long open room with a bay; only the kitchen and bathroom are enclosed.' },
+      bed: { name: 'West end', sub: 'By the front door', text: 'The west end of the room, about 3.4 × 4 m, with a small side window. Many owners put the bed here.' },
+      dining: { name: 'Middle of the room', sub: 'Open plan', text: 'The middle of the room, with the bay straight ahead.' },
+      living: { sub: 'Main room', text: 'The east end of the room with the full-width sea window, before any furniture.' },
+      bay: { text: 'A deep bay off the middle of the room with its own east-facing window.' }
+    },
+    wins: B_WINS('West end')
+  }
+};
+const STOPDEF_B = {
+  door: { name: 'Front door', sub: 'West end', X: 900, Y: 3500, yaw: 60, pitch: -6,
+    text: 'Inside the front door, at the west end of the flat. It is one long room: the sleeping area is around you, the kitchen and bathroom open off the corridor side, the bay is off the far side, and the big sea window is at the east end.' },
+  kitchen: { name: 'Kitchen', sub: '1.65 × 2.07 m', X: 2500, Y: 4200, yaw: 160, pitch: -22,
+    text: 'Counters along two walls, with the sink under a small window that looks into the gap between flats 9 and 10. The fridge stands by the door and the washing machine goes under the counter.' },
+  bath: { name: 'Bathroom', sub: '1.47 × 2.0 m', X: 4300, Y: 2850, yaw: 150, pitch: -20,
+    text: 'Shower, toilet and basin. The plan shows no window, so the bathroom relies on an extractor fan.' },
+  bed: { name: 'Sleeping area', sub: 'West end', X: 2550, Y: 2250, yaw: 300, pitch: -10,
+    text: 'The west end of the room, about 3.4 × 4 m with a small side window. Here it holds a queen bed and a wardrobe behind a low shelf; a curtain or partition could close it off as a bedroom.' },
+  dining: { name: 'Dining', sub: 'By the bay', X: 3000, Y: 2350, yaw: 20, pitch: -8,
+    text: 'The dining table sits in the middle of the room, with the bay straight ahead and the living area and sea window to one side.' },
+  living: { name: 'Living area', sub: 'Sofa facing the sea', X: 5300, Y: 2300, yaw: 85, pitch: -6,
+    text: 'The east end of the room, about 2.9 × 4.5 m, with the full-width sea window. The sofa faces the view, and two smaller side windows add light from either side.' },
+  window: { name: 'East window', sub: 'Best view', X: 7300, Y: 1300, yaw: 95, pitch: -7,
+    text: 'Close to the glass of the 4.5 m east window. There is no acoustic fin beside flats 9 and 10, so only the window frame limits the view.' },
+  bay: { name: 'The bay', sub: '2.1 × 2.4 m', X: 3500, Y: -800, yaw: 80, pitch: -12,
+    text: 'A deep bay off the middle of the room with its own east-facing window. Here it is a small study, with a desk under the window and shelves.' },
+  doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
+    text: 'The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.' }
+};
+
+// ---------------- flat 3: flat 2's wording with north and south (and left and right inside) swapped ----------------
+const MIRROR_A = {"Master on the hill side": "Master by the south window", "The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "The first layout. The master bedroom takes the corner with the south window, the kids get the sea-view corner, and the helper gets the whole bay with its own window.", "North, hillside": "South, towards Block B", "South, into the gap": "North, into the gap", "east, north half": "east, south half", "east, south half": "east, north half", "north": "south", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the south-facing room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.", "east, south half + 0.9 m": "east, north half + 0.9 m", "east, north part": "east, south part", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.": "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the left.", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.": "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your left.", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.": "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, and the master bedroom’s wall meets the window on your left. The fin cuts the view to the south-east.", "Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.": "Bunk beds along the west wall, a desk under the south window and a wardrobe by the door, with a rug to play on. The window faces south over the podium towards Block B rather than the hillside.", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.": "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the north half of the sea window plus 0.9 m of the south half. The new wall has to meet a window frame post.", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.": "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your left. It has no window, so it needs an extractor fan or air-con.", "The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "The master takes the whole east window and wraps round into a dressing area. The kids get the south-facing room, the helper gets a small room with the little north window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.", "Small south window": "Small north window", "small south window": "small north window", "The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.": "The dining table sits by the kids’ room door. The playroom opens to the left, and the doors to the master suite and the helper’s room are behind you.", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the south wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.", "A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.": "A small room off the living room, with a single bed under the little north window. That window faces flat 2 across the gap between the flats: light and air, but no sea.", "The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.": "The end of the foyer. The kitchen door is on your left, the bathroom straight ahead, and the open main room on your right.", "The middle of the open plan. The bay is straight ahead and the east window to the right.": "The middle of the open plan. The bay is straight ahead and the east window to the left.", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.": "The full 4.5 m east window, before any partitions. The acoustic fin is outside its right (south) edge.", "South-east corner": "North-east corner", "The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "The north half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.", "North-west corner": "South-west corner", "The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "The south window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.": "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the right and the kitchen wall on the left. At the end it turns left into a short hall.", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.": "The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The living and dining room opens on the right, and the south-west bedroom door is just round that corner.", "Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "Counter and sink along the east wall under the window, hob and washing machine on the north counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.", "Shower on the right, toilet under a small south window, basin and mirror by the door.": "Shower on the left, toilet under a small north window, basin and mirror by the door.", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.": "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the left.", "About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.": "About 5.4 × 2.5 m including the dining area. The living room gets the south half of the big east window. The acoustic fin is just outside its right edge.", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.": "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the south-east.", "Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.": "Bunk bed along the north wall, desk at the north half of the east window, wardrobe by the door. It sees as much sea as the living room. There is no fin on this side.", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.": "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the south window. It faces south over the podium towards Block B rather than the hillside.", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.": "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the south-east.", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.": "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your right, with a sliding door off this nook.", "South half of the window": "North half of the window", "The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "The north half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.", "north window": "south window", "east window (north half)": "east window (south half)", "east window (south half)": "east window (north half)"};
+
+const TYPES = {
+  A: { pieces: PIECES_A, floors: FLOORS_A, fin: [8115, 9615, -250, 0], layouts: LAYOUTS_A, keys: ['A', 'B', 'C', 'bare'], def: 'B',
+    stops: STOPDEF_A, winNames: WIN_NAMES_A, furnAll: FURN_ALL_A, furnCommon: FURN_COMMON_A, ctr: [4000, 1900], mirrorTxt: MIRROR_A,
+    leaves: [[600, 1500, 5555, 5600, 0, 2.1, 'door'], [1900, 2650, 3790, 3830, 0, 2.05, 'white'], [3525, 4225, 2600, 2640, 0, 2.05, 'white']] },
+  B: { pieces: PIECES_B, floors: FLOORS_B, fin: null, layouts: LAYOUTS_B, keys: ['open', 'bare'], def: 'open',
+    stops: STOPDEF_B, winNames: WIN_NAMES_B, furnAll: FURN_ALL_B, furnCommon: FURN_COMMON_B, ctr: [4000, 1600], mirrorTxt: {},
+    leaves: [[530, 1420, 4155, 4200, 0, 2.1, 'door'], [1850, 2600, 3720, 3765, 0, 2.05, 'white'], [3510, 3550, 2525, 3275, 0, 2.05, 'white']] }
+};
+// the data of the flat on show; switching flat or floor reassigns these
+let TY, PIECES, FLOORS, FIN, LAYOUTS, LAYOUT_KEYS, STOPDEF, WIN_NAMES, FURN_ALL, FURN_COMMON;
+function setFlatData(id, F) {
+  FLAT = FLATS[id]; TY = TYPES[FLAT.type];
+  FLOOR = Math.max(FLAT.F0, Math.min(FLAT.F1, F));
+  FL = floorLevel(FLOOR); EYE_H = FL + EYE;
+  ({ pieces: PIECES, floors: FLOORS, layouts: LAYOUTS, keys: LAYOUT_KEYS, stops: STOPDEF, winNames: WIN_NAMES, furnAll: FURN_ALL, furnCommon: FURN_COMMON } = TY);
+  FIN = TY.fin && finHere() ? TY.fin : null;
+}
+setFlatData('A2', 36);
+{ const m = /^#(A2|A3|B9|B10)-(\d{1,2})$/.exec(location.hash || ''); if (m) setFlatData(m[1], +m[2]); }
+
+// ---------------- language ----------------
+const ZH = {"Plan A": "方案A", "Master on the hill side": "主人房向山", "The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "最初的方案：主人房設在寧靜的向山角落，兒童房取海景角落，工人房佔用整個凸位，有自己的窗。", "Rug by the sofa": "梳化旁的地氈", "Master bedroom": "主人房", "North, hillside": "北窗，山景", "Kids & office": "兒童房兼書房", "East, sea": "東窗，海景", "Helper's room": "工人房", "East (bay), sea slice": "東窗（凸位），少量海景", "Living & dining": "客飯廳", "Kitchen": "廚房", "East, into the gap": "東窗，望向單位之間的空隙", "Bathroom": "浴室", "South, into the gap": "南窗，望向單位之間的空隙", "Foyer": "玄關", "Living room": "客廳", "east, north half": "東窗北半", "east, south half": "東窗南半", "bay, faces east": "凸位窗，向東", "north": "北窗", "east, down the gap": "東窗，望向空隙", "Plan B": "方案B", "Sea-view master": "海景主人房", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "主人房搬到海景一邊，再從客廳多取0.9米，面積更大。兒童房改為向山的房間。工人房縮小成凸位後方一間無窗小房，騰出凸位窗做兒童窗邊座位，而沿海景窗的一列空間就成為遊戲區。", "Sea-window strip (about 3.6 m² clear) + window seat": "海景窗前空間（約3.6平方米）＋窗邊座位", "Kids’ room": "兒童房", "None": "沒有", "Living & play": "客廳及遊戲區", "East + bay seat": "東窗＋凸位座位", "east, south half + 0.9 m": "東窗南半＋0.9米", "east, north part": "東窗北段", "Window seat": "窗邊座位", "none": "沒有", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.": "四人餐桌放在兒童房門旁，近廚房。主人房門就在你身後，右方是設有窗邊座位的凸位。", "Sofa facing the sea": "梳化面向海景", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.": "站在梳化後面。梳化面向海景，不是電視。沿窗約2.9 × 1.6米的空間是兒童遊戲區，鋪了地墊，放了矮玩具櫃。右邊是主人房的牆。", "Play zone": "遊戲區", "At the sea window": "海景窗前", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.": "在海景窗前的遊戲區。銀線灣在山脊後面，隔音鰭擋住東北面的景觀，右邊是主人房與窗相接的牆。", "2.45 × 2.5 m": "2.45 × 2.5米", "Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.": "碌架床靠西牆，北窗下放書桌，門邊有衣櫃，中間鋪地氈給小朋友玩。窗外是樹木茂密的山坡：看不到海，但最寧靜。", "2.9 × 2.8 m": "2.9 × 2.8米", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.": "5呎雙人床床頭靠浴室牆，新間牆前放1.7米衣櫃，窗前放書桌。房間取得海景窗的南半，再加北半的0.9米。新間牆要對正窗框直料。", "1.3 × 2.0 m, no window": "1.3 × 2.0米，無窗", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.": "凸位後方的一間小房：單人床上有高層架，配窄衣櫃，右邊的趟門通往窗邊座位。房間沒有窗，需要抽氣扇或冷氣。", "Plan C": "方案C", "Master suite": "主人套房", "The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "主人房佔用整扇東窗，再繞過去延伸成衣帽間。兒童房改為向山的房間，工人房是一間有細南窗的小房，整個凸位變成開放式遊戲室。代價是客廳沒有自己的窗。", "Bay playroom (4.6 m²) + mat by the sofa": "凸位遊戲室（4.6平方米）＋梳化前地墊", "East, whole window": "整扇東窗", "Small south window": "細南窗", "None of its own": "沒有自己的窗", "Playroom": "遊戲室", "Bay, sea": "凸位窗，海景", "whole east window": "整扇東窗", "through the playroom": "經遊戲室", "small south window": "細南窗", "The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.": "餐桌放在兒童房門旁。右邊是遊戲室，主人套房和工人房的門在你身後。", "Sofa and play mat": "梳化及遊戲地墊", "The sofa backs onto the master suite wall, with a play mat in front that runs into the bay playroom. The living room has no window of its own in this plan: its daylight and its sea view come through the playroom.": "梳化背靠主人套房的牆，前面的遊戲地墊一直伸延到凸位遊戲室。這個方案的客廳沒有自己的窗：日光和海景都要經遊戲室進來。", "2.1 × 2.5 m + dressing": "2.1 × 2.5米＋衣帽間", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "主人房佔用整扇4.5米闊的東窗。4呎6雙人床靠北牆，兩邊各有床頭櫃，房間再繞過工人房延伸成衣帽間。", "1.6 × 1.9 m": "1.6 × 1.9米", "A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.": "客廳旁的一間小房，單人床放在細南窗下。這扇窗望向單位之間的空隙和遠處的山：有光有風，但看不到海。", "Bare": "吉屋", "As handed over": "交樓原貌", "The flat as the HA hands it over: one open L-shaped space, with only the kitchen and bathroom enclosed.": "房委會交樓時的模樣：一個開放的L形空間，只有廚房和浴室是獨立間隔。", "Open-plan living": "開放式空間", "Main room": "主廳", "east window": "東窗", "The bay": "凸位", "faces east": "向東", "North-west corner": "西北角", "Inside the front door. As handed over, the flat is one open L-shaped space; only the kitchen and bathroom are enclosed.": "剛進大門。交樓時全屋是一個開放的L形空間，只有廚房和浴室是獨立間隔。", "The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.": "玄關盡頭。廚房門在你右邊，浴室在正前方，左邊是開放式主廳。", "The HA hands over the sink and the gas and washing-machine connections. The window looks east down the gap between flats 2 and 3.": "交樓時已有洗滌盆，並預留煤氣和洗衣機接駁位。窗口向東，望向2室與3室之間的空隙。", "Middle of the room": "房間中央", "Open plan": "開放式", "The middle of the open plan. The bay is straight ahead and the east window to the right.": "開放空間的中央。凸位在正前方，東窗在右邊。", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.": "未加任何間隔的整扇4.5米東窗。隔音鰭在窗的左（北）邊外面。", "South-east corner": "東南角", "2.9 × 2.0 m": "2.9 × 2.0米", "The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "東窗的南半。方案A把這裡做兒童房，方案B和C就撥給主人房。", "The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "北窗所在的角落。方案A把這裡做主人房，方案B和C改做兒童房。", "2.15 × 2.0 m": "2.15 × 2.0米", "A 2.15 × 2.0 m bay off the main room, with its own east window.": "主廳旁一個2.15 × 2.0米的凸位，有自己的東窗。", "The whole flat as handed over, with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "交樓原貌的全屋，牆身在胸口高度剖開。拖動可以旋轉，點一下房間就可以走進去。", "Front door": "大門", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.": "剛進大門。前面是1.6米闊的玄關，左邊是鞋櫃，右邊是廚房牆。走到盡頭右轉就是一段短走廊。", "Hall": "走廊", "Kitchen, bath, living": "廚房、浴室、客廳", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.": "玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊通往客飯廳，西北角睡房的門就在轉角。", "1.6 × 2.0 m": "1.6 × 2.0米", "Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "東牆窗下是工作枱和洗滌盆，南面工作枱有煮食爐和洗衣機，雪櫃在門邊。廚房窗向東，望向2室與3室之間的空隙。", "1.5 × 2.0 m": "1.5 × 2.0米", "Shower on the right, toilet under a small south window, basin and mirror by the door.": "右邊是企缸，座廁在細南窗下，洗手盆和鏡在門邊。", "Dining": "飯廳", "Table for four": "四人餐桌", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.": "餐桌放在通道盡頭。工人房門在正前方，右邊是客廳和客廳窗。", "Sofa and TV": "梳化及電視", "About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.": "連飯廳約5.4 × 2.5米。客廳取得大東窗的北半，隔音鰭就在窗的左邊外面。", "Living-room window": "客廳窗", "Best view": "最佳景觀", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.": "貼近玻璃。銀線灣在前方山脊後面，牛尾海在它左邊展開。隔音鰭擋住東北面的景觀。", "2.9 × 1.9 m": "2.9 × 1.9米", "Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.": "碌架床靠南牆，東窗南半前放書桌，門邊有衣櫃。這裡看到的海景與客廳一樣多，而且這一邊沒有隔音鰭。", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.": "4呎6雙人床，床頭上方有儲物櫃，配1.5米衣櫃和北窗。窗外是屋苑後面樹木茂密的山坡，看不到海，但最寧靜。", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.": "凸位變成一間46平方呎的房：單人床上有層架，配窄衣櫃，還有自己的東窗，可以看到東北面少量海景。", "Front of the bay": "凸位前段", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.": "凸位前段做成兒童窗邊座位，下面可以儲物，保留凸位窗的少量海景。工人房在你左邊的牆後，從這裡的趟門出入。", "The whole bay": "整個凸位", "With the helper moved out, the whole bay becomes an open playroom off the living room: play mat, toy shelves and a kids’ table, plus the bay window’s slice of sea.": "工人房搬走後，整個凸位變成客廳旁的開放式遊戲室：遊戲地墊、玩具櫃和兒童枱，加上凸位窗的少量海景。", "Dressing area": "衣帽間", "South half of the window": "東窗南半", "The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "東窗南半照亮衣帽間，沿工人房的牆有1.8米衣櫃。方案A裡這個角落是兒童房。", "Dollhouse": "鳥瞰全屋", "Whole flat from above": "從上面看全屋", "The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "牆身在胸口高度剖開的全屋。拖動可以旋轉，點一下房間就可以走進去。", "north window": "北窗", "bay window": "凸位窗", "east window (north half)": "東窗（北半）", "east window (south half)": "東窗（南半）", "bathroom window": "浴室窗", "kitchen window": "廚房窗", "Silverstrand Bay": "銀線灣", "Port Shelter": "牛尾海", "Kau Sai Chau": "滘西洲", "Clear Water Bay hills": "清水灣山嶺", "Hillside behind the estate": "屋苑後山", "Acoustic fin": "隔音鰭", "Block A": "A座", "Block B": "B座", "Helper": "工人房", "Living": "客廳", "Master": "主人房", "Kids": "兒童房", "Master by the south window": "主人房向南", "The first layout. The master bedroom takes the corner with the south window, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "最初的方案：主人房設在有南窗的角落，兒童房取海景角落，工人房佔用整個凸位，有自己的窗。", "South, towards Block B": "南窗，望向B座", "North, into the gap": "北窗，望向單位之間的空隙", "south": "南窗", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the south-facing room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "主人房搬到海景一邊，再從客廳多取0.9米，面積更大。兒童房改為向南的房間。工人房縮小成凸位後方一間無窗小房，騰出凸位窗做兒童窗邊座位，而沿海景窗的一列空間就成為遊戲區。", "east, north half + 0.9 m": "東窗北半＋0.9米", "east, south part": "東窗南段", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the left.": "四人餐桌放在兒童房門旁，近廚房。主人房門就在你身後，左方是設有窗邊座位的凸位。", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your left.": "站在梳化後面。梳化面向海景，不是電視。沿窗約2.9 × 1.6米的空間是兒童遊戲區，鋪了地墊，放了矮玩具櫃。左邊是主人房的牆。", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, and the master bedroom’s wall meets the window on your left. The fin cuts the view to the south-east.": "在海景窗前的遊戲區。銀線灣在山脊後面，左邊是主人房與窗相接的牆。隔音鰭擋住東南面的景觀。", "Bunk beds along the west wall, a desk under the south window and a wardrobe by the door, with a rug to play on. The window faces south over the podium towards Block B rather than the hillside.": "碌架床靠西牆，南窗下放書桌，門邊有衣櫃，中間鋪地氈給小朋友玩。窗口向南，望向平台和B座，而不是山坡。", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the north half of the sea window plus 0.9 m of the south half. The new wall has to meet a window frame post.": "5呎雙人床床頭靠浴室牆，新間牆前放1.7米衣櫃，窗前放書桌。房間取得海景窗的北半，再加南半的0.9米。新間牆要對正窗框直料。", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your left. It has no window, so it needs an extractor fan or air-con.": "凸位後方的一間小房：單人床上有高層架，配窄衣櫃，左邊的趟門通往窗邊座位。房間沒有窗，需要抽氣扇或冷氣。", "The master takes the whole east window and wraps round into a dressing area. The kids get the south-facing room, the helper gets a small room with the little north window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "主人房佔用整扇東窗，再繞過去延伸成衣帽間。兒童房改為向南的房間，工人房是一間有細北窗的小房，整個凸位變成開放式遊戲室。代價是客廳沒有自己的窗。", "Small north window": "細北窗", "small north window": "細北窗", "The dining table sits by the kids’ room door. The playroom opens to the left, and the doors to the master suite and the helper’s room are behind you.": "餐桌放在兒童房門旁。左邊是遊戲室，主人套房和工人房的門在你身後。", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the south wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "主人房佔用整扇4.5米闊的東窗。4呎6雙人床靠南牆，兩邊各有床頭櫃，房間再繞過工人房延伸成衣帽間。", "A small room off the living room, with a single bed under the little north window. That window faces flat 2 across the gap between the flats: light and air, but no sea.": "客廳旁的一間小房，單人床放在細北窗下。這扇窗隔著單位之間的空隙望向2室：有光有風，但看不到海。", "The end of the foyer. The kitchen door is on your left, the bathroom straight ahead, and the open main room on your right.": "玄關盡頭。廚房門在你左邊，浴室在正前方，右邊是開放式主廳。", "The middle of the open plan. The bay is straight ahead and the east window to the left.": "開放空間的中央。凸位在正前方，東窗在左邊。", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its right (south) edge.": "未加任何間隔的整扇4.5米東窗。隔音鰭在窗的右（南）邊外面。", "North-east corner": "東北角", "The north half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "東窗的北半。方案A把這裡做兒童房，方案B和C就撥給主人房。", "South-west corner": "西南角", "The south window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "南窗所在的角落。方案A把這裡做主人房，方案B和C改做兒童房。", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the right and the kitchen wall on the left. At the end it turns left into a short hall.": "剛進大門。前面是1.6米闊的玄關，右邊是鞋櫃，左邊是廚房牆。走到盡頭左轉就是一段短走廊。", "The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The living and dining room opens on the right, and the south-west bedroom door is just round that corner.": "玄關盡頭的走廊。廚房門在你左邊，浴室在正前方。右邊通往客飯廳，西南角睡房的門就在轉角。", "Counter and sink along the east wall under the window, hob and washing machine on the north counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "東牆窗下是工作枱和洗滌盆，北面工作枱有煮食爐和洗衣機，雪櫃在門邊。廚房窗向東，望向2室與3室之間的空隙。", "Shower on the left, toilet under a small north window, basin and mirror by the door.": "左邊是企缸，座廁在細北窗下，洗手盆和鏡在門邊。", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the left.": "餐桌放在通道盡頭。工人房門在正前方，左邊是客廳和客廳窗。", "About 5.4 × 2.5 m including the dining area. The living room gets the south half of the big east window. The acoustic fin is just outside its right edge.": "連飯廳約5.4 × 2.5米。客廳取得大東窗的南半。隔音鰭就在窗的右邊外面。", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the south-east.": "貼近玻璃。銀線灣在前方山脊後面，牛尾海在它左邊展開。隔音鰭擋住東南面的景觀。", "Bunk bed along the north wall, desk at the north half of the east window, wardrobe by the door. It sees as much sea as the living room. There is no fin on this side.": "碌架床靠北牆，東窗北半前放書桌，門邊有衣櫃。這裡看到的海景與客廳一樣多。這一邊沒有隔音鰭。", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the south window. It faces south over the podium towards Block B rather than the hillside.": "4呎6雙人床，床頭上方有儲物櫃，配1.5米衣櫃和南窗。窗口向南，望向平台和B座，而不是山坡。", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the south-east.": "凸位變成一間46平方呎的房：單人床上有層架，配窄衣櫃，還有自己的東窗，可以看到東南面少量海景。", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your right, with a sliding door off this nook.": "凸位前段做成兒童窗邊座位，下面可以儲物，保留凸位窗的少量海景。工人房在你右邊的牆後，從這裡的趟門出入。", "North half of the window": "東窗北半", "The north half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "東窗北半照亮衣帽間，沿工人房的牆有1.8米衣櫃。方案A裡這個角落是兒童房。", "south window": "南窗", "Furnished": "連家具", "One open room": "一個開放式空間", "A furnished example: a queen bed at the west end behind a low shelf, a dining table in the middle, a sofa facing the sea window and a small study in the bay.": "連家具的例子：西端低櫃後放一張雙人床，中間放餐桌，梳化面向海景窗，凸位做成小書房。", "The flat as the HA hands it over: one long open room with a bay, with only the kitchen and bathroom enclosed.": "房委會交樓時的模樣：一個連凸位的長形開放空間，只有廚房和浴室是獨立間隔。", "Living & sleeping": "客廳及睡眠區", "Bay": "凸位", "East (bay)": "東窗（凸位）", "Into the gap": "望向單位之間的空隙", "Living area": "客廳區", "Sleeping area": "睡眠區", "West end": "西端", "side window": "側窗", "small side window": "細側窗", "window onto the gap": "望向空隙的窗", "onto the gap": "望向空隙", "By the front door": "大門旁", "By the bay": "凸位旁", "Inside the front door, at the west end of the flat. It is one long room: the sleeping area is around you, the kitchen and bathroom open off the corridor side, the bay is off the far side, and the big sea window is at the east end.": "剛進大門，位於單位西端。全屋是一個長形空間：睡眠區就在你身邊，廚房和浴室在走廊一邊，凸位在另一邊，大海景窗在東端。", "1.65 × 2.07 m": "1.65 × 2.07米", "Counters along two walls, with the sink under a small window that looks into the gap between flats 9 and 10. The fridge stands by the door and the washing machine goes under the counter.": "兩邊牆都有工作枱，洗滌盆在小窗下，窗外是9室與10室之間的空隙。雪櫃在門邊，洗衣機放在工作枱下。", "1.47 × 2.0 m": "1.47 × 2.0米", "Shower, toilet and basin. The plan shows no window, so the bathroom relies on an extractor fan.": "有企缸、座廁和洗手盆。平面圖上浴室沒有窗，要靠抽氣扇通風。", "The west end of the room, about 3.4 × 4 m with a small side window. Here it holds a queen bed and a wardrobe behind a low shelf; a curtain or partition could close it off as a bedroom.": "房間西端，約3.4 × 4米，有一扇細側窗。這裡放了雙人床和衣櫃，前面有矮櫃分隔；加簾或間牆就可以變成睡房。", "The dining table sits in the middle of the room, with the bay straight ahead and the living area and sea window to one side.": "餐桌放在房間中間，凸位在正前方，客廳區和海景窗在一旁。", "The east end of the room, about 2.9 × 4.5 m, with the full-width sea window. The sofa faces the view, and two smaller side windows add light from either side.": "房間東端，約2.9 × 4.5米，有整幅海景窗。梳化面向景觀，兩邊各有一扇較細的側窗透光。", "East window": "東窗", "Close to the glass of the 4.5 m east window. There is no acoustic fin beside flats 9 and 10, so only the window frame limits the view.": "貼近4.5米闊的東窗玻璃。9室和10室旁邊沒有隔音鰭，只有窗框限制視野。", "2.1 × 2.4 m": "2.1 × 2.4米", "A deep bay off the middle of the room with its own east-facing window. Here it is a small study, with a desk under the window and shelves.": "房間中部旁一個深凸位，有自己向東的窗。這裡做成小書房，窗下放書桌，旁邊有書架。", "Inside the front door. As handed over, the flat is one long open room with a bay; only the kitchen and bathroom are enclosed.": "剛進大門。交樓時全屋是一個連凸位的長形開放空間，只有廚房和浴室是獨立間隔。", "The west end of the room, about 3.4 × 4 m, with a small side window. Many owners put the bed here.": "房間西端，約3.4 × 4米，有一扇細側窗。不少業主會把床放在這裡。", "The middle of the room, with the bay straight ahead.": "房間中央，凸位在正前方。", "The east end of the room with the full-width sea window, before any furniture.": "房間東端，有整幅海景窗，未放家具。", "A deep bay off the middle of the room with its own east-facing window.": "房間中部旁一個深凸位，有自己向東的窗。", "Lifts": "升降機", "Refuse room": "垃圾房"};
+const T = YF.t;
+// text for the flat on show: flat 3 takes flat 2's wording mirrored, and flat 3 above 25/F has no fin to mention
+const dropFin = s => YF.lang === 'zh' ? s.replace(/[^。]*隔音鰭[^。]*。/g, '') : s.replace(/(^|\s+)[^.]*\bfin\b[^.]*\./g, '').trim();
+const tr = s => {
+  if (s == null) return s;
+  const e = FLAT.mirror && TY.mirrorTxt[s] ? TY.mirrorTxt[s] : s;
+  const out = YF.lang === 'zh' && ZH[e] != null ? ZH[e] : e;
+  return FLAT.type === 'A' && !FIN && /[.。]/.test(out) && /\bfin\b|隔音鰭/.test(out) ? dropFin(out) : out;
+};
+const sqm = a => T(`${a.toFixed(1)} m² · ${Math.round(a * 10.764)} sq ft`, `${a.toFixed(1)}平方米 · ${Math.round(a * 10.764)}平方呎`);
+
+function stopFor(id, layout) {
+  const L = LAYOUTS[layout || st.layout];
+  if (!L.stops.includes(id)) return null;
+  const s = Object.assign({ id }, STOPDEF[id], L.over[id] || {});
+  if (FLAT.mirror && s.yaw != null) s.yaw = (540 - s.yaw) % 360;   // mirrored flats face mirrored directions
+  return s;
+}
+
+// ---------------- state ----------------
+const st = { layout: TY.def, furn: true, trees: false, mode: 'doll', stop: 'doll' };
+const cs = { x: wx(1050), y: wy(5250), yaw: 90, pitch: -6 };   // walking eye
+
+// ---------------- sight from the window: hills and sea ----------------
+function ray(ox, oy, H, canopy, az) {
+  const a = az * Math.PI / 180, sa = Math.sin(a), ca = Math.cos(a);
+  let maxT = -1e9, first = 0;
+  for (let d = 30; d <= 9000; d += (d < 1500 ? 10 : 25)) {
+    const r = elev(ox + sa * d, oy + ca * d); if (!r) break;
+    const w = r[1];
+    const e = (w ? 0 : r[0] + (d > 60 ? canopy : 0)) - d * d / (2 * R) * 0.87;
+    const t = (e - H) / d;
+    if (w && t >= maxT && !first) first = d;
+    if (t > maxT) maxT = t;
+  }
+  return first;
+}
+let SEA = null;   // first visible sea distance per 1° of azimuth, from the flat and floor on show
+function seaTable() {
+  const t = new Float32Array(360), can = st.trees ? 10 : 0;
+  for (let az = 0; az < 360; az++) t[az] = ray(FLAT.sea[0], FLAT.sea[1], EYE_H, can, az + .5);
+  SEA = t;
+}
+
+// ---------------- 2D sight lines inside the flat ----------------
+function obbFromPlan(X0, X1, Y0, Y1) { const xa = wx(X0), xb = wx(X1), ya = wy(Y0), yb = wy(Y1); return { cx: (xa + xb) / 2, cy: (ya + yb) / 2, hx: Math.abs(xb - xa) / 2, hy: Math.abs(yb - ya) / 2, c: 1, s: 0 }; }
+// distance along a ray to a wall segment [x1, y1, x2, y2] of a tower outline
+function segT(g, ox, oy, dx, dy) {
+  const ex = g[2] - g[0], ey = g[3] - g[1], den = dx * ey - dy * ex;
+  if (Math.abs(den) < 1e-12) return Infinity;
+  const qx = g[0] - ox, qy = g[1] - oy, t = (qx * ey - qy * ex) / den, u = (qx * dy - qy * dx) / den;
+  return t >= 0 && u >= 0 && u <= 1 ? t : Infinity;
+}
+function obb(cx, cy, sx, sy, rot) { return { cx, cy, hx: sx / 2, hy: sy / 2, c: Math.cos(rot), s: Math.sin(rot) }; }
+function hitT(b, ox, oy, dx, dy) {
+  const rx = ox - b.cx, ry = oy - b.cy;
+  const lx = b.c * rx + b.s * ry, ly = -b.s * rx + b.c * ry;
+  const ldx = b.c * dx + b.s * dy, ldy = -b.s * dx + b.c * dy;
+  let tmin = -Infinity, tmax = Infinity;
+  if (Math.abs(ldx) < 1e-12) { if (Math.abs(lx) > b.hx) return Infinity; }
+  else { let t1 = (-b.hx - lx) / ldx, t2 = (b.hx - lx) / ldx; if (t1 > t2) [t1, t2] = [t2, t1]; tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2); }
+  if (Math.abs(ldy) < 1e-12) { if (Math.abs(ly) > b.hy) return Infinity; }
+  else { let t1 = (-b.hy - ly) / ldy, t2 = (b.hy - ly) / ldy; if (t1 > t2) [t1, t2] = [t2, t1]; tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2); }
+  if (tmax < Math.max(tmin, 0)) return Infinity;
+  return Math.max(tmin, 0);
+}
+let SIGHT = [], WALK = [], WINBOX = [], SEGS = [];
+function buildBlockers(layout) {
+  SIGHT = []; WALK = []; WINBOX = [];
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES.concat(LAYOUTS[layout || st.layout].parts)) {
+    const b = obbFromPlan(X0, X1, Y0, Y1);
+    if (k === 'wall' || k === 'mull' || k === 'part' || k === 'jamb') { SIGHT.push(b); WALK.push(b); }
+    if (k === 'pdoor') SIGHT.push(b);   // bedroom doors count as shut for sight lines, but you can walk through
+    if (k === 'win') { WALK.push(b); WINBOX.push(Object.assign(b, { id: o.id })); }
+  }
+  if (FIN) { const b = obbFromPlan(FIN[0], FIN[1], FIN[2], FIN[3]); SIGHT.push(b); WALK.push(b); }
+  // both towers, traced from the HA plans; on this flat's own floor its part of the outline is its own walls
+  SEGS = YF.towerSegments(FLAT.id);
+}
+// per degree: 0 wall, 1 hills/sky, 2 sea; plus the window each ray leaves through
+function sightFrom(x, y) {
+  const bins = new Uint8Array(360), via = new Array(360).fill(null), dist = new Float32Array(360);
+  for (let az = 0; az < 360; az++) {
+    const a = (az + .5) * Math.PI / 180, dx = Math.sin(a), dy = Math.cos(a);
+    let near = Infinity;
+    for (const b of SIGHT) { const t = hitT(b, x, y, dx, dy); if (t < near) near = t; }
+    for (const g of SEGS) { const t = segT(g, x, y, dx, dy); if (t < near) near = t; }
+    if (near < 150) continue;
+    let wt = Infinity, wid = null;
+    for (const b of WINBOX) { const t = hitT(b, x, y, dx, dy); if (t < wt) { wt = t; wid = b.id; } }
+    via[az] = wid;
+    if (SEA[az] > 0) { bins[az] = 2; dist[az] = SEA[az]; } else bins[az] = 1;
+  }
+  return { bins, via, dist };
+}
+const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+const dirName = az => YF.dir16(az);
+function seaSegments(bins) {
+  const segs = []; let s = -1;
+  for (let az = 0; az <= 360; az++) {
+    const on = az < 360 && bins[az] === 2;
+    if (on && s < 0) s = az;
+    if (!on && s >= 0) { segs.push([s, az - 1]); s = -1; }
+  }
+  if (segs.length > 1 && segs[0][0] === 0 && segs[segs.length - 1][1] === 359) { const last = segs.pop(); segs[0][0] = last[0] - 360; }
+  return segs;
+}
+function summarise(sight, only, exclude) {
+  let deg = 0, out = 0, near = 0; const wins = new Set(), bins = new Uint8Array(360);
+  for (let az = 0; az < 360; az++) {
+    if (only && !only.includes(sight.via[az])) continue;
+    if (exclude && exclude.includes(sight.via[az])) continue;
+    bins[az] = sight.bins[az];
+    if (sight.bins[az]) { out++; if (sight.via[az]) wins.add(sight.via[az]); }
+    if (sight.bins[az] === 2) { deg++; if (!near || sight.dist[az] < near) near = sight.dist[az]; }
+  }
+  return { deg, out, near, wins: [...wins], segs: seaSegments(bins), bins, dist: sight.dist };
+}
+
+// ---------------- three.js scene ----------------
+const $ = id => document.getElementById(id);
+const canvas = $('gl'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.localClippingEnabled = true;
+const scene = new THREE.Scene();
+const HORIZON = new THREE.Color('#dbe6ea');
+scene.background = HORIZON;
+scene.fog = new THREE.Fog(HORIZON, 3500, 32000);
+const cam = new THREE.PerspectiveCamera(70, 1, 0.05, 60000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xa59a88, 0.72));
+scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+const sun = new THREE.DirectionalLight(0xfff3e0, 0.5); sun.position.copy(P(400, 150, 700)); scene.add(sun);
+
+// sky dome
+(() => {
+  const g = new THREE.SphereGeometry(40000, 32, 16), col = [], top = new THREE.Color('#8fb3cf');
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const t = Math.max(0, pos.getY(i) / 40000); const c = HORIZON.clone().lerp(top, Math.pow(t, .6)); col.push(c.r, c.g, c.b); }
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false })));
+})();
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(90000, 90000), new THREE.MeshLambertMaterial({ color: 0x3d7ea3 }));
+sea.rotation.x = -Math.PI / 2; scene.add(sea);
+
+// terrain
+function colorFor(h, out) {
+  const stops = [[-1, [0.78, 0.74, 0.60]], [6, [0.78, 0.74, 0.60]], [14, [0.47, 0.58, 0.38]], [80, [0.34, 0.48, 0.28]], [200, [0.40, 0.46, 0.30]], [330, [0.55, 0.52, 0.42]]];
+  for (let i = 1; i < stops.length; i++) {
+    if (h <= stops[i][0] || i === stops.length - 1) {
+      const [h0, c0] = stops[i - 1], [h1, c1] = stops[i]; const t = Math.max(0, Math.min(1, (h - h0) / (h1 - h0)));
+      out[0] = c0[0] + (c1[0] - c0[0]) * t; out[1] = c0[1] + (c1[1] - c0[1]) * t; out[2] = c0[2] + (c1[2] - c0[2]) * t; return;
+    }
+  }
+}
+function inNearInterior(x, y) { return x > NEAR.x0 + NEAR.s && x < NEAR.x0 + (NEAR.nx - 2) * NEAR.s && y < NEAR.y1 - NEAR.s && y > NEAR.y1 - (NEAR.ny - 2) * NEAR.s; }
+function buildMesh(g, isFar, canopy) {
+  const n = g.nx * g.ny, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = [0, 0, 0];
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s;
+    let h = g.z[k];
+    if (isFar && inNearInterior(x, y)) { const r = samp(NEAR, x, y); if (r) h = r[0]; h -= 4; }
+    let hv = h === 0 ? -4 : h;
+    if (canopy && h > 0 && Math.hypot(x + 30, y + 30) > 110) hv += canopy;
+    pos[k * 3] = x; pos[k * 3 + 1] = isFar ? hv : YF.siteClamp(x, y, hv); pos[k * 3 + 2] = -y;
+    colorFor(h === 0 ? -1 : h, c); col[k * 3] = c[0]; col[k * 3 + 1] = c[1]; col[k * 3 + 2] = c[2];
+  }
+  const idx = [];
+  for (let j = 0; j < g.ny - 1; j++) for (let i = 0; i < g.nx - 1; i++) { const a = j * g.nx + i, b = a + 1, d = a + g.nx, e = d + 1; idx.push(a, d, b, b, d, e); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  return geo;
+}
+const terrMat = new THREE.MeshLambertMaterial({ vertexColors: true });
+const farMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat), nearMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat);
+scene.add(farMesh, nearMesh);
+let builtCanopy = -1;
+function rebuildTerrain() {
+  const c = st.trees ? 10 : 0; if (c === builtCanopy) return; builtCanopy = c;
+  farMesh.geometry.dispose(); nearMesh.geometry.dispose();
+  farMesh.geometry = buildMesh(FAR, true, c); nearMesh.geometry = buildMesh(NEAR, false, c);
+}
+// main roads (shared with the other pages): true width and asphalt grey when you look out, map style from the dollhouse
+const surfH = YF.surfaceH(NEAR, FAR, samp, inNearInterior);
+const roads = YF.makeRoads(THREE, P, surfH), roadGroup = roads.group; scene.add(roadGroup);
+function buildRoads() { roads.build(st.trees ? 10 : 0, st.mode === 'walk' ? 'real' : 'map'); roadGroup.visible = YF.roadsOn; blds.build(st.trees ? 10 : 0); blds.group.visible = YF.bldgOn; }
+// nearby buildings (shared), simple blocks for context; not part of the sight lines
+const blds = YF.makeBuildings(THREE, P, surfH); scene.add(blds.group);
+
+// materials (interior ones are clipped in the dollhouse)
+const CLIP = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e7);
+const mat = (color, extra) => new THREE.MeshLambertMaterial(Object.assign({ color, clippingPlanes: [CLIP] }, extra || {}));
+const M = {
+  wall: mat(0xeeeae2), part: mat(0xe6e2d8), ceil: mat(0xf7f6f2), frame: mat(0xb7bcc0), door: mat(0xa77d57),
+  glass: new THREE.MeshBasicMaterial({ color: 0xa9cbdc, transparent: true, opacity: .14, depthWrite: false, clippingPlanes: [CLIP] }),
+  screed: mat(0xb9b5ac), wood: mat(0xc9a47c), bath: mat(0xd9dad6), kit: mat(0xd2cdc3),
+  white: mat(0xf3f1ec), worktop: mat(0x8d9094), steel: mat(0xaeb3b7), black: mat(0x1f2326), oak: mat(0xc49a6c),
+  linen: mat(0xf4f2ec), navy: mat(0x3f5573), terracotta: mat(0xc46e4f), sage: mat(0x9aab92), fabric: mat(0x7f8b86), fabric2: mat(0x8c9893),
+  charcoal: mat(0x4f565e), rug: mat(0xd8cdbb), mat: mat(0x9fc4b4), mirror: mat(0xc9d6dc), plant: mat(0x5f8550), pot: mat(0xb98a63),
+  facade: mat(0xe6e1d5), fin: mat(0xd5cdbf)
+};
+// Ying Fai Court itself (shared with the other pages): both towers traced from the HA plans, their lobbies, crowns and
+// the podium deck. On the floor on show the tower is left open where the flat is, so its own walls and windows show;
+// in the dollhouse everything is clipped at chest height like the flat.
+const est = YF.makeEstate(THREE, P, { clip: [CLIP], fins: true }); scene.add(est.group);
+function box(g, X0, X1, Y0, Y1, z0, z1, m, abs) {
+  const sx = (X1 - X0) / 1000, sy = (Y1 - Y0) / 1000, sz = z1 - z0;
+  if (sx <= 0 || sy <= 0 || sz <= 0) return null;
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sz, sy), m);
+  mesh.position.copy(P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), (abs ? 0 : FL) + (z0 + z1) / 2));
+  g.add(mesh); return mesh;
+}
+const shell = new THREE.Group(), ceilGrp = new THREE.Group(), outside = new THREE.Group(), above = new THREE.Group();
+const capGrp = new THREE.Group(), commonFurn = new THREE.Group(), capCommon = new THREE.Group();
+scene.add(shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon);
+// per plan: partitions, furniture, and their dollhouse caps
+const LG = {};
+function clearGroup(g) { while (g.children.length) { const c = g.children.pop(); c.traverse(n => { if (n.geometry) n.geometry.dispose(); }); } }
+const CUT = 1.3;
+const CAP = {
+  wall: new THREE.MeshBasicMaterial({ color: 0x2a363d }), part: new THREE.MeshBasicMaterial({ color: 0x66737a }),
+  glass: new THREE.MeshBasicMaterial({ color: 0x7fb0c8 }), next: new THREE.MeshBasicMaterial({ color: 0xa8a397 }),
+  fin: new THREE.MeshBasicMaterial({ color: 0x8c8273 })
+};
+const floorMeshes = [], mainFloors = [];
+// (re)build everything that belongs to the flat and floor on show
+function rebuildFlat() {
+  for (const g of [shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon]) clearGroup(g);
+  for (const k of Object.keys(LG)) { for (const g of Object.values(LG[k])) { clearGroup(g); scene.remove(g); } delete LG[k]; }
+  for (const k of LAYOUT_KEYS) {
+    LG[k] = { parts: new THREE.Group(), furn: new THREE.Group(), capP: new THREE.Group(), capF: new THREE.Group() };
+    scene.add(LG[k].parts, LG[k].furn, LG[k].capP, LG[k].capF);
+  }
+  floorMeshes.length = 0; mainFloors.length = 0;
+  buildShell(); buildFurniture();
+}
+
+function addWindow(g, X0, X1, Y0, Y1, o, wallMat) {
+  box(g, X0, X1, Y0, Y1, 0, o.sill, wallMat);
+  box(g, X0, X1, Y0, Y1, o.head, CEIL, wallMat);
+  const alongY = (X1 - X0) < (Y1 - Y0);
+  const a0 = alongY ? Y0 : X0, a1 = alongY ? Y1 : X1, len = a1 - a0, mid = alongY ? (X0 + X1) / 2 : (Y0 + Y1) / 2;
+  const seg = (b0, b1, z0, z1, m) => alongY ? box(g, mid - 35, mid + 35, b0, b1, z0, z1, m) : box(g, b0, b1, mid - 35, mid + 35, z0, z1, m);
+  seg(a0, a1, o.sill, o.sill + .05, M.frame); seg(a0, a1, o.head - .05, o.head, M.frame);
+  seg(a0, a0 + 50, o.sill, o.head, M.frame); seg(a1 - 50, a1, o.sill, o.head, M.frame);
+  const n = Math.max(1, Math.round(len / 1250));
+  for (let i = 1; i < n; i++) { const a = a0 + len * i / n; seg(a - 25, a + 25, o.sill, o.head, M.frame); }
+  if (o.head - o.sill > 1.4) seg(a0, a1, o.head - .45, o.head - .4, M.frame);
+  alongY ? box(g, mid - 3, mid + 3, a0, a1, o.sill, o.head, M.glass) : box(g, a0, a1, mid - 3, mid + 3, o.sill, o.head, M.glass);
+}
+function buildShell() {
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
+    const g = shell, wm = M.wall;
+    if (k === 'wall') box(g, X0, X1, Y0, Y1, 0, CEIL, wm);
+    else if (k === 'win') addWindow(g, X0, X1, Y0, Y1, o, wm);
+    else if (k === 'mull') { box(g, X0, X1, Y0, Y1, 0, o.sill, wm); box(g, X0, X1, Y0, Y1, o.sill, o.head, M.frame); box(g, X0, X1, Y0, Y1, o.head, CEIL, wm); }
+    else box(g, X0, X1, Y0, Y1, o.head, CEIL, wm);   // door, open: lintel
+  }
+  // door leaves: the front door shut behind you, the kitchen door parked, the bathroom door open
+  for (const [X0, X1, Y0, Y1, z0, z1, mk] of TY.leaves) box(shell, X0, X1, Y0, Y1, z0, z1, M[mk]);
+  // floors and ceilings
+  for (const [k, X0, X1, Y0, Y1] of FLOORS) {
+    const f = box(shell, X0, X1, Y0, Y1, -.15, 0, k === 'bath' ? M.bath : k === 'kit' ? M.kit : M.screed);
+    floorMeshes.push(f); if (k === 'main') mainFloors.push(f);
+    box(ceilGrp, X0, X1, Y0, Y1, CEIL, CEIL + .15, M.ceil);
+  }
+  // the towers around the flat: open on this floor where the flat is
+  est.cut({ block: FLAT.block, lo: FL - .15, hi: FL + 2.75, box: YF.FLATKEY[FLAT.id].box });
+  // dollhouse section caps: solid tops where the walls are cut at 1.3 m
+  const c0 = CUT - .03, c1 = CUT - .001;
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
+    if (k === 'wall' || (k === 'win' && o.sill > CUT)) box(capGrp, X0, X1, Y0, Y1, c0, c1, CAP.wall);
+    else if (k === 'win' || k === 'mull') box(capGrp, X0, X1, Y0, Y1, c0, c1, CAP.glass);
+  }
+  if (FIN) box(capGrp, FIN[0], FIN[1], FIN[2], FIN[3], c0, c1, CAP.fin);
+  // the rest of the floor: corridors, the other flats, the lift banks, lift lobby and refuse room
+  capGrp.add(est.capGroup(FLAT.id, FL, FL + CUT));
+  // each plan's partitions, door lintels, frame posts and open door leaves
+  for (const k of LAYOUT_KEYS) {
+    const g = LG[k].parts, cg = LG[k].capP;
+    for (const [kind, X0, X1, Y0, Y1, o] of LAYOUTS[k].parts) {
+      if (kind === 'part') { box(g, X0, X1, Y0, Y1, 0, CEIL, M.part); box(cg, X0, X1, Y0, Y1, c0, c1, CAP.part); }
+      else if (kind === 'pdoor') box(g, X0, X1, Y0, Y1, o.head, CEIL, M.part);
+      else if (kind === 'jamb') { box(g, X0 + 40, X1 - 40, Y0, Y1, o.sill, o.head, M.frame); box(cg, X0 + 40, X1 - 40, Y0, Y1, c0, c1, CAP.part); }
+    }
+    for (const [X0, X1, Y0, Y1, z0, z1, mk] of LAYOUTS[k].leaves) box(g, X0, X1, Y0, Y1, z0, z1, M[mk]);
+  }
+}
+function buildFurniture() {
+  const cut = (g, X0, X1, Y0, Y1, z0, z1, mk) => { if (z0 < CUT && z1 > CUT) box(g, X0, X1, Y0, Y1, CUT - .02, CUT - .001, M[mk]); };
+  for (const [X0, X1, Y0, Y1, z0, z1, mk] of FURN_ALL) { box(shell, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(capGrp, X0, X1, Y0, Y1, z0, z1, mk); }
+  for (const [X0, X1, Y0, Y1, z0, z1, mk] of FURN_COMMON) { box(commonFurn, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(capCommon, X0, X1, Y0, Y1, z0, z1, mk); }
+  for (const k of LAYOUT_KEYS) {
+    const L = LAYOUTS[k], g = LG[k].furn, cg = LG[k].capF;
+    for (const [X0, X1, Y0, Y1, z0, z1, mk] of L.furn) { box(g, X0, X1, Y0, Y1, z0, z1, M[mk]); cut(cg, X0, X1, Y0, Y1, z0, z1, mk); }
+    for (const [cx, cy, side] of L.chairs) {
+      box(g, cx - 210, cx + 210, cy - 210, cy + 210, .44, .48, M.charcoal);
+      box(g, cx - 30, cx + 30, cy - 30, cy + 30, 0, .44, M.steel);
+      const by = side === 'N' ? [cy - 210, cy - 170] : [cy + 170, cy + 210];
+      box(g, cx - 210, cx + 210, by[0], by[1], .48, .88, M.charcoal);
+    }
+    // pendant over the table, and a plant
+    if (L.pend) {
+      const [X, Y] = L.pend;
+      const pend = new THREE.Mesh(new THREE.CylinderGeometry(.06, .2, .16, 20), M.charcoal); pend.position.copy(P(wx(X), wy(Y), FL + 1.9)); g.add(pend);
+      box(g, X - 5, X + 5, Y - 5, Y + 5, 1.98, CEIL, M.black);
+    }
+    if (L.plant) {
+      const [X, Y] = L.plant;
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(.14, .11, .34, 18), M.pot); pot.position.copy(P(wx(X), wy(Y), FL + .17)); g.add(pot);
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(.3, 14, 10), M.plant); leaf.position.copy(P(wx(X), wy(Y), FL + .72)); leaf.scale.set(1, 1.3, 1); g.add(leaf);
+    }
+  }
+}
+
+// labels
+const XLABELS = [
+  { t: 'Silverstrand Bay', x: 1900, y: -170, h: 2, sea: true },
+  { t: 'Port Shelter', x: 2900, y: 2700, h: 2, sea: true },
+  { t: 'Kau Sai Chau', x: 4530, y: 5040, h: 60 },
+  { t: 'Clear Water Bay hills', x: 1650, y: -1650, h: 240 },
+  { t: 'Hillside behind the estate', x: 0, y: 395, h: 178 },
+  { t: 'Acoustic fin', x: .9, y: 5.46, h: 0, fin: true },
+  { t: 'Block A', x: YF.BLOCKS.A.label[0], y: YF.BLOCKS.A.label[1], h: YF.BLOCKS.A.roof + 14, blk: true, area: true },
+  { t: 'Block B', x: YF.BLOCKS.B.label[0], y: YF.BLOCKS.B.label[1], h: YF.BLOCKS.B.roof + 14, blk: true, area: true }
+];
+const labelHost = $('labels');
+function mkLabel(cls, html) { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = html; labelHost.appendChild(el); return el; }
+XLABELS.forEach(L => { L.el = mkLabel(L.sea ? 'sea' : L.blk ? 'blk' : '', L.t); L.v = P(L.x, L.y, L.h); });
+// nearby places (shared list): a label on a pin 30 m above the ground
+const POI_L = YF.POIS.map(p => {
+  const g = elev(p.x, p.y), ground = g && !g[1] ? g[0] : 2, h = ground + (p.lift || 30);
+  const el = mkLabel(YF.isEst(p) ? 'poi est' : 'poi', ''); el.style.setProperty('--c', YF.CATS[p.cat].color);
+  return { p, x: p.x, y: p.y, h, ground, el, v: P(p.x, p.y, h) };
+});
+const poiPins = new THREE.Group(), estPins = new THREE.Group(); scene.add(poiPins, estPins);
+{
+  const byCat = {};
+  for (const L of POI_L) (byCat[L.p.cat] = byCat[L.p.cat] || []).push(P(L.x, L.y, L.ground), P(L.x, L.y, L.h));
+  for (const k in byCat) (YF.isEst({ cat: k }) ? estPins : poiPins).add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(byCat[k]), new THREE.LineBasicMaterial({ color: YF.CATS[k].color })));
+}
+// road names, a little above the road
+const ROAD_L = YF.ROADS.labels.map(([n, x, y]) => {
+  const h = Math.max(0, surfH(x, y, 0)) + 12;
+  return { road: n, x, y, h, el: mkLabel('road', ''), v: P(x, y, h) };
+});
+// the estate's site boundary, as a see-through fence round the ground, labelled at its south-west corner
+const siteGroup = YF.buildSite(THREE, P, elev, 14); scene.add(siteGroup); siteGroup.visible = YF.siteOn;
+const SITE_L = (() => {
+  const [x, y] = YF.SITE.label, e = elev(x, y), h = (e ? e[0] : 40) + 24;
+  return { site: true, area: true, x, y, h, el: mkLabel('site', ''), v: P(x, y, h) };
+})();
+const OUT_L = XLABELS.concat(POI_L, ROAD_L, [SITE_L]);
+// the lift lobby and refuse room on the floor on show, labelled in the dollhouse
+const CORE_L = [{ t: 'Lifts', core: 'lift' }, { t: 'Refuse room', core: 'rs' }].map(L => Object.assign(L, { el: mkLabel('core ' + L.core, '') }));
+function placeFlatLabels() {
+  const B = YF.BLOCKS[FLAT.block], fin = XLABELS.find(L => L.fin);
+  fin.x = wx(8865); fin.y = wy(-125); fin.h = FL + 2; fin.v = P(fin.x, fin.y, fin.h);
+  CORE_L[0].v = P(B.lobby[0], B.lobby[1], FL + CUT + .5); CORE_L[1].v = P(B.rs[0], B.rs[1], FL + CUT + .5);
+  CORE_L.forEach(L => { L.el.textContent = tr(L.t); });
+}
+const labelName = L => (L.site ? T(`Ying Fai Court site · ${YF.SITE.ha} ha`, `影輝苑範圍 · 約${YF.SITE.ha}公頃`) : L.road != null ? YF.roadName(L.road) : L.p ? YF.poiName(L.p) : tr(L.t));
+let roomLabels = [];
+function buildRoomLabels() {
+  roomLabels.forEach(r => r.el.remove());
+  roomLabels = LAYOUTS[st.layout].rooms.map(r => {
+    const area = r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
+    const el = mkLabel('room', `${tr(r.name)}<small>${sqm(area)}</small>`);
+    return { el, v: P(wx(r.at[0]), wy(r.at[1]), FL + 1.45) };
+  });
+}
+function terrainHides(L) {
+  const can = st.trees ? 10 : 0, ex = cs.x, ey = cs.y, H = EYE_H;
+  const D = Math.hypot(L.x - ex, L.y - ey);
+  for (let k = 1; k < 120; k++) {
+    const f = k / 120, x = ex + (L.x - ex) * f, y = ey + (L.y - ey) * f, d = D * f;
+    if (d < 40) continue;
+    const r = elev(x, y); if (!r || r[1]) continue;
+    if (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * 0.87 > H + (L.h - H) * f + 1) return true;
+  }
+  return false;
+}
+// outside labels: from inside, the ones you can see through a window (greyed when a hill is in the way);
+// from the dollhouse, all of them once you zoom out a little
+function updateLabelVisibility() {
+  const area = showPlaces();
+  for (const L of OUT_L) {
+    L.hidden = true; L.behind = false;
+    if (L.fin && !FIN) continue;
+    if ((L.p && !YF.poiShown(L.p)) || (L.road != null && !YF.roadsOn) || (L.site && !YF.siteOn)) continue;
+    if (st.mode !== 'walk') {
+      if (!area || L.fin) continue;
+      L.hidden = false; L.el.classList.remove('hid'); L.el.textContent = labelName(L);
+      continue;
+    }
+    if (L.area) continue;
+    const D = Math.hypot(L.x - cs.x, L.y - cs.y), dx = (L.x - cs.x) / D, dy = (L.y - cs.y) / D;
+    let near = Infinity;
+    for (const b of SIGHT) { const t = hitT(b, cs.x, cs.y, dx, dy); if (t < near) near = t; }
+    for (const g of SEGS) { const t = segT(g, cs.x, cs.y, dx, dy); if (t < near) near = t; }
+    if (near < D - .4) continue;
+    L.hidden = false;
+    if (!L.fin) L.behind = terrainHides(L);
+    L.el.classList.toggle('hid', L.behind);
+    L.el.textContent = labelName(L) + (L.behind ? T(' · behind the hill', ' · 被山遮擋') : '');
+  }
+  poiPins.visible = YF.poiOn && (st.mode === 'walk' || area); estPins.visible = YF.estOn && (st.mode === 'walk' || area);
+}
+function placeLabels() {
+  const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
+  const put = (el, vec, show) => {
+    if (!show) { el.hidden = true; return; }
+    v.copy(vec).project(cam);
+    const ok = v.z < 1 && v.z > -1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02;
+    el.hidden = !ok;
+    if (ok) { el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
+  };
+  for (const L of OUT_L) put(L.el, L.v, !L.hidden);
+  for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll' && !inArea());
+  for (const L of CORE_L) put(L.el, L.v, st.mode === 'doll' && !inArea() && camDist() > 9);
+}
+
+// ---------------- cameras ----------------
+const controls = new THREE.OrbitControls(cam, canvas);
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 4000; controls.zoomSpeed = 2;
+// the dollhouse looks at the flat from above its inner corner, on the side of the gap
+function dollStartPose() {
+  const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]);
+  return { pos: P(cx - 6.8, cy + 8 * FLAT.sy, FL + 10.1), tgt: P(cx, cy, FL + .3) };
+}
+let DOLL_START = dollStartPose(), FLAT_C = DOLL_START.tgt.clone();
+controls.target.copy(FLAT_C);
+let lastWalk = null;
+let dollPose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() };
+// the dollhouse zoomed out to show the estate, Block B, the roads and nearby places (same angle as the Block pages' overview)
+const AREA_START = (() => { const e = elev(300, 0), h = e && !e[1] ? e[0] : 40; return { pos: new THREE.Vector3(-800, 780 + h, 1100), tgt: new THREE.Vector3(300, h, 0) }; })();
+// zooming out of the dollhouse: nearby places, roads and blocks are labelled once you pull back a little (the start
+// view is about 14 m away); further out the room labels drop away and it counts as the area view
+const PLACES_DIST = 20, AREA_DIST = 60;
+const camDist = () => cam.position.distanceTo(controls.target);
+function showPlaces() { return st.mode === 'doll' && camDist() > PLACES_DIST; }
+function inArea() { return st.mode === 'doll' && camDist() > AREA_DIST; }
+let closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }, areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
+// fly the dollhouse camera: distance changes on a log scale; when zooming out the camera pulls back before it pans,
+// when zooming in it pans before it closes in, and it never dips below 25 m above the ground
+let dollGlide = null;
+function flyDoll(to, ms) {
+  const o0 = cam.position.clone().sub(controls.target), o1 = to.pos.clone().sub(to.tgt);
+  dollGlide = { t0: performance.now(), ms: ms || 1100, a: controls.target.clone(), b: to.tgt.clone(), d0: o0.clone().normalize(), d1: o1.clone().normalize(), l0: Math.log(o0.length()), l1: Math.log(o1.length()) };
+}
+controls.addEventListener('start', () => { dollGlide = null; });
+// two zoom levels in the dollhouse: zooming out a few steps from the flat glides out to the area view (turned to face the
+// way you were facing), and zooming back in on the estate from the area view glides back to the flat. Zooming is paused
+// while the camera is flying so a long scroll or pinch doesn't cut the flight short.
+const SNAP_OUT = 24, SNAP_IN = 500, ESTATE_R = 350, AREA_D = AREA_START.pos.distanceTo(AREA_START.tgt);
+let zoomRef = null, pickedPlace = false;
+function areaFacing(theta) {
+  const Y = new THREE.Vector3(0, 1, 0), off = areaPose.pos.clone().sub(areaPose.tgt), turn = theta - Math.atan2(off.x, off.z);
+  const rel = areaPose.tgt.clone().sub(FLAT_C); rel.y = 0; rel.applyAxisAngle(Y, turn);
+  const tgt = new THREE.Vector3(FLAT_C.x + rel.x, areaPose.tgt.y, FLAT_C.z + rel.z);
+  return { tgt, pos: tgt.clone().add(off.applyAxisAngle(Y, turn)) };
+}
+function zoomSnap() {
+  if (st.mode !== 'doll' || dollGlide) { zoomRef = null; return; }
+  const d = camDist(), prev = zoomRef; zoomRef = d;
+  if (prev == null || Math.abs(d - prev) < 1e-4) return;
+  const tg = controls.target, off = cam.position.clone().sub(tg), fromFlat = Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z);
+  if (d > prev && prev <= SNAP_OUT && d > SNAP_OUT && fromFlat < 40 && Math.abs(tg.y - FLAT_C.y) < 40) {
+    closePose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(Math.min(prev, 18))) };
+    pickedPlace = false;
+    flyDoll(areaFacing(Math.atan2(off.x, off.z)));
+  } else if (d < prev && d < SNAP_IN && prev >= SNAP_IN && fromFlat < ESTATE_R && !pickedPlace) {
+    areaPose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(Math.max(prev, AREA_D))) };
+    flyDoll(closePose);
+  }
+}
+let dirty = true;
+controls.addEventListener('change', () => { dirty = true; });
+function applyWalkCam() {
+  cam.position.copy(P(cs.x, cs.y, FL + EYE));
+  const a = cs.yaw * Math.PI / 180, p = cs.pitch * Math.PI / 180;
+  cam.lookAt(cam.position.clone().add(new THREE.Vector3(Math.sin(a) * Math.cos(p), Math.sin(p), -Math.cos(a) * Math.cos(p))));
+}
+function setHint() {
+  $('hint').textContent = st.mode === 'doll'
+    ? T('Drag to turn · zoom out a little for nearby places · tap a room to step inside', '拖動旋轉 · 稍為拉遠可見附近地點 · 點房間走進去')
+    : T('Drag to look around · tap the floor to walk · arrow keys or WASD to move', '拖動環顧 · 點地面行過去 · 方向鍵或 WASD 移動');
+}
+function setMode(m) {
+  if (st.mode === 'doll' && m !== 'doll') { dollGlide = null; const now = { pos: cam.position.clone(), tgt: controls.target.clone() }; if (inArea()) areaPose = now; else closePose = now; }
+  st.mode = m;
+  buildRoads();
+  const doll = m === 'doll';
+  controls.enabled = doll;
+  setVis();
+  cam.fov = doll ? 45 : 70; cam.near = doll ? .5 : .05; cam.updateProjectionMatrix();
+  setHint();
+  updateSight(); updateLabelVisibility(); updateCompassMarker();
+  dirty = true;
+}
+
+// glide between viewpoints
+let glide = null;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function glideTo(x, y, yaw, pitch, ms) {
+  const dyaw = ((yaw - cs.yaw + 540) % 360) - 180;
+  glide = { t0: performance.now(), ms: ms || 900, from: { x: cs.x, y: cs.y, yaw: cs.yaw, pitch: cs.pitch }, to: { x, y, yaw: cs.yaw + dyaw, pitch } };
+}
+function goStop(id) {
+  const s = stopFor(id); if (!s) return;
+  st.stop = id;
+  if (!s.doll) lastWalk = id;
+  else if (st.mode === 'doll' && inArea()) { areaPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; flyDoll(closePose); }
+  if (s.doll) {
+    if (st.mode !== 'doll') { setMode('doll'); zoomRef = null; cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update(); }
+  } else {
+    if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }
+    else glideTo(wx(s.X), wy(s.Y), s.yaw, s.pitch);
+  }
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+}
+
+// pointer: drag to look (walk) or orbit (doll); tap to walk
+let drag = null;
+const ray3 = new THREE.Raycaster(), ndc = new THREE.Vector2();
+canvas.addEventListener('pointerdown', e => { stage.focus({ preventScroll: true }); drag = { x: e.clientX, y: e.clientY, yaw: cs.yaw, pitch: cs.pitch, moved: false }; if (st.mode === 'walk') canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) drag.moved = true;
+  if (st.mode === 'walk' && drag.moved) {
+    const k = 80 / canvas.clientWidth;
+    cs.yaw = drag.yaw - (e.clientX - drag.x) * k;
+    cs.pitch = Math.max(-60, Math.min(45, drag.pitch + (e.clientY - drag.y) * k));
+    glide = null; applyWalkCam(); dirty = true; updateCompassMarker();
+  }
+});
+window.addEventListener('pointerup', e => {
+  if (!drag) return; const d = drag; drag = null;
+  if (d.moved) return;
+  const r = canvas.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray3.setFromCamera(ndc, cam);
+  const hit = ray3.intersectObjects(floorMeshes, false)[0];
+  if (!hit) return;
+  const x = hit.point.x, y = -hit.point.z;
+  if (!walkable(x, y)) return;
+  st.stop = null;
+  if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = x; cs.y = y; cs.pitch = -6; applyWalkCam(); }
+  else glideTo(x, y, cs.yaw, cs.pitch, 600);
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+});
+canvas.addEventListener('wheel', e => { if (st.mode !== 'walk') return; e.preventDefault(); cam.fov = Math.max(35, Math.min(80, cam.fov + Math.sign(e.deltaY) * 4)); cam.updateProjectionMatrix(); dirty = true; }, { passive: false });
+
+function walkable(x, y) {
+  const X = pX(x), Y = pY(y);
+  const onFloor = FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1);
+  if (!onFloor) return false;
+  const r = .18;
+  for (const b of WALK) {
+    const rx = x - b.cx, ry = y - b.cy, lx = b.c * rx + b.s * ry, ly = -b.s * rx + b.c * ry;
+    if (Math.abs(lx) < b.hx + r && Math.abs(ly) < b.hy + r) return false;
+  }
+  return true;
+}
+const keys = new Set();
+stage.addEventListener('keydown', e => {
+  if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); setFloor(FLOOR + (e.key === 'PageUp' ? 1 : -1)); return; }
+  const k = e.key.toLowerCase();
+  if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k) && st.mode === 'walk') { keys.add(k); e.preventDefault(); }
+});
+stage.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+stage.addEventListener('blur', () => keys.clear());
+
+// ---------------- panel ----------------
+function drawStops() {
+  $('stops').innerHTML = LAYOUTS[st.layout].stops.map(id => stopFor(id)).map(s => `<button data-id="${s.id}" class="${s.doll ? 'wide' : ''}" aria-pressed="${st.stop === s.id}">${tr(s.name)}<small>${tr(s.sub)}</small></button>`).join('');
+  $('stops').querySelectorAll('button').forEach(b => b.onclick = () => goStop(b.dataset.id));
+}
+function refreshPanel() {
+  const s = st.stop ? stopFor(st.stop) : null;
+  $('stops').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === st.stop)));
+  $('stopTitle').textContent = s ? tr(s.name) : T('Your own spot', '你自選的位置');
+  $('stopDesc').textContent = s ? tr(s.text) : T('Drag to look around. The panel below updates for wherever you stand.', '拖動四處看看。下面的資料會按你所站的位置更新。');
+}
+let lastSightKey = '', lastSight = null;
+function updateSight() {
+  if (st.mode === 'doll') {
+    $('verdict').textContent = T('Step inside to check the view', '走進室內查看景觀');
+    $('facts').innerHTML = T('<dt>Tip</dt><dd>Pick a tour stop or tap a room</dd>', '<dt>提示</dt><dd>揀一個導覽點，或點一下房間</dd>');
+    $('compass').innerHTML = compassSVG(null);
+    return;
+  }
+  const key = FLAT.id + FLOOR + ',' + cs.x.toFixed(2) + ',' + cs.y.toFixed(2) + st.layout + st.trees;
+  if (key !== lastSightKey) {
+    lastSightKey = key;
+    const raw = sightFrom(cs.x, cs.y), room = roomAt(cs.x, cs.y);
+    lastSight = summarise(raw, room ? room.only : null, room && room.id === 'bath' ? null : ['bathW']);
+    lastSight.room = room;
+  }
+  const S = lastSight;
+  const fmt = sg => sg.length ? sg.map(([a, b]) => a === b ? `${(a + 360) % 360}° ${dirName(a)}` : T(`${(a + 360) % 360}–${b}° (${dirName(a)} to ${dirName(b)})`, `${(a + 360) % 360}–${b}°（${dirName(a)}至${dirName(b)}）`)).join(T(', ', '、')) : T('none', '沒有');
+  if (!S.out) $('verdict').textContent = T('No view out from here, only walls or the next flat.', '這裡望出去只有牆或鄰座單位。');
+  else if (!S.deg) $('verdict').textContent = T('No sea from here, only hills and sky.', '這裡看不到海，只見山和天空。');
+  else $('verdict').innerHTML = T(`<b>${S.deg}°</b> of sea in view from here`, `這裡可見 <b>${S.deg}°</b> 海景`);
+  $('facts').innerHTML = `<dt>${T('Sea directions', '海景方向')}</dt><dd>${fmt(S.segs)}</dd>`
+    + `<dt>${T('Nearest sea', '最近海面')}</dt><dd>${S.near ? (S.near / 1000).toFixed(2) + T(' km', ' 公里') : '–'}</dd>`
+    + `<dt>${T('Through', '經由')}</dt><dd>${S.wins.length ? S.wins.map(w => tr(WIN_NAMES[w])).join(T(', ', '、')) : '–'}</dd>`
+    + (S.room ? `<dt>${T('Counting', '計算方法')}</dt><dd>${T("This room's own window, door shut", '只計這房間的窗（房門關上）')}</dd>` : LAYOUTS[st.layout].parts.some(p => p[0] === 'pdoor') ? `<dt>${T('Counting', '計算方法')}</dt><dd>${T('Bedroom doors shut', '睡房門關上')}</dd>` : '');
+  $('compass').innerHTML = compassSVG(S);
+}
+// bedrooms and bathroom: inside one, only its own window counts (door shut); elsewhere the bathroom door is shut
+function roomAt(x, y) {
+  const X = pX(x), Y = pY(y), e = 80;
+  return LAYOUTS[st.layout].rooms.find(r => r.only && r.rects.some(([X0, X1, Y0, Y1]) => X >= X0 - e && X <= X1 + e && Y >= Y0 - e && Y <= Y1 + e)) || null;
+}
+function compassSVG(sight) {
+  const W = 360, H = 46, x = az => 10 + az / 360 * (W - 20);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${T('What you can see in each compass direction', '各方向看到的景物')}">`;
+  s += `<rect x="10" y="10" width="${W - 20}" height="14" fill="var(--chip)"/>`;
+  if (sight) for (let az = 0; az < 360; az++) {
+    const b = sight.bins[az]; if (!b) continue;
+    const c = b === 1 ? 'var(--land)' : sight.dist[az] < 1500 ? 'var(--bay)' : 'var(--sea-soft)';
+    s += `<rect x="${x(az) - .3}" y="10" width="${(W - 20) / 360 + .6}" height="14" fill="${c}"/>`;
+  }
+  [[0, T('N', '北')], [90, T('E', '東')], [180, T('S', '南')], [270, T('W', '西')], [360, T('N', '北')]].forEach(([a, l]) => { s += `<line x1="${x(a)}" x2="${x(a)}" y1="24" y2="29" stroke="var(--ink-2)"/><text x="${x(a)}" y="41" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--ink-2)">${l}</text>`; });
+  s += `<path id="cmark" d="" fill="var(--mark)"/>`;
+  return s + '</svg>';
+}
+function updateCompassMarker() {
+  const m = document.getElementById('cmark'); if (!m) return;
+  if (st.mode !== 'walk') { m.setAttribute('d', ''); return; }
+  const az = ((cs.yaw % 360) + 360) % 360, x = 10 + az / 360 * 340;
+  m.setAttribute('d', `M${x - 5} 2 L${x + 5} 2 L${x} 9 Z`);
+  // plan marker
+  const X = cs.x * 1000, Y = -cs.y * 1000, L = 2600;
+  const half = Math.min(60, Math.atan(Math.tan(cam.fov * Math.PI / 360) * cam.aspect) * 180 / Math.PI);
+  const pt = a => `${X + L * Math.sin(a * Math.PI / 180)} ${Y - L * Math.cos(a * Math.PI / 180)}`;
+  const cone = document.getElementById('cone'), dot = document.getElementById('dot');
+  if (cone) cone.setAttribute('d', `M${X} ${Y} L${pt(az - half)} L${pt(az + half)} Z`);
+  if (dot) { dot.setAttribute('cx', X); dot.setAttribute('cy', Y); }
+}
+const SHORT = { "Helper's room": 'Helper', 'Living & dining': 'Living', 'Living & play': 'Living', 'Master bedroom': 'Master', 'Master suite': 'Master', 'Kids’ room': 'Kids', 'Kids & office': 'Kids', 'Open-plan living': 'Open plan', 'Living & sleeping': 'Living' };
+// the plan is drawn north up in world millimetres, so flats 3 and 10 come out as the mirror images they are
+const PX = X => Math.round(wx(X) * 1000), PY = Y => Math.round(-wy(Y) * 1000);
+function rectS(cls, X0, X1, Y0, Y1) {
+  const a = PX(X0), b = PX(X1), c = PY(Y0), d = PY(Y1);
+  return `<rect class="${cls}" x="${Math.min(a, b)}" y="${Math.min(c, d)}" width="${Math.abs(b - a)}" height="${Math.abs(d - c)}"/>`;
+}
+function drawPlan() {
+  const L = LAYOUTS[st.layout], furn = L.furnished && st.furn;
+  let s = '';
+  for (const r of L.rooms) for (const [X0, X1, Y0, Y1] of r.rects) s += rectS('rm' + (r.sea ? ' sea' : ''), X0, X1, Y0, Y1);
+  if (furn) for (const f of L.furn.concat(FURN_COMMON)) if (f[7]) s += rectS('fu', f[0], f[1], f[2], f[3]);
+  for (const f of FURN_ALL) if (f[7]) s += rectS('fu', f[0], f[1], f[2], f[3]);
+  for (const [k, X0, X1, Y0, Y1] of PIECES.concat(L.parts)) {
+    const cls = k === 'wall' || k === 'mull' ? 'wl' : k === 'part' || k === 'jamb' ? 'pt' : k === 'win' ? 'wn' : null;
+    if (cls) s += rectS(cls, X0, X1, Y0, Y1);
+  }
+  if (FIN) s += rectS('fn', FIN[0], FIN[1], FIN[2], FIN[3]);
+  for (const r of L.rooms) if (r.id !== 'foyer') s += `<text class="rl" x="${PX(r.at[0])}" y="${PY(r.at[1]) + 120}">${tr(SHORT[r.name] || r.name)}</text>`;
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (const [, X0, X1, Y0, Y1] of FLOORS.concat(TY.fin ? [[''].concat(TY.fin)] : [])) {
+    for (const X of [X0, X1]) { x0 = Math.min(x0, PX(X)); x1 = Math.max(x1, PX(X)); }
+    for (const Y of [Y0, Y1]) { y0 = Math.min(y0, PY(Y)); y1 = Math.max(y1, PY(Y)); }
+  }
+  x0 -= 350; y0 -= 400; x1 += 1100; y1 += 350;
+  const nx = x1 - 550, ny = y0 + 350;
+  s += `<text class="na" x="${nx}" y="${ny + 700}">${T('N', '北')}</text><path d="M${nx} ${ny} L${nx - 180} ${ny + 350} L${nx + 180} ${ny + 350} Z" fill="var(--ink-2)"/>`;
+  s += `<path id="cone" class="cone" d=""/><circle id="dot" class="dot" r="170" cx="-99999" cy="-99999"/>`;
+  const svg = $('plan'); svg.setAttribute('viewBox', `${x0} ${y0} ${x1 - x0} ${y1 - y0}`); svg.innerHTML = s;
+  svg.setAttribute('aria-label', T(`Floor plan of flat ${FLAT.no} with your position`, `${FLAT.no}室平面圖及你的位置`));
+  updateCompassMarker();
+}
+$('plan').addEventListener('click', e => {
+  const svg = $('plan'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse()), x = p.x / 1000, y = -p.y / 1000;
+  if (!walkable(x, y)) return;
+  st.stop = null;
+  if (st.mode === 'doll') { dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; setMode('walk'); cs.x = x; cs.y = y; cs.pitch = -6; applyWalkCam(); }
+  else glideTo(x, y, cs.yaw, cs.pitch, 700);
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+});
+// sea through each window, per plan (cached; trees change it)
+const winCache = {};
+function winRows(layout) {
+  const key = FLAT.id + FLOOR + layout + st.trees;
+  if (winCache[key]) return winCache[key];
+  buildBlockers(layout);
+  const rows = LAYOUTS[layout].wins.map(([n, w, X, Y, only, role]) => ({ n, w, role, north: (only || []).includes('north'), deg: X == null ? null : summarise(sightFrom(wx(X), wy(Y)), only).deg }));
+  buildBlockers();
+  return (winCache[key] = rows);
+}
+function windowTable() {
+  const rows = winRows(st.layout).map(r => `<tr><td>${tr(r.n)}</td><td>${tr(r.w)}</td><td class="s">${r.deg == null ? '–' : r.deg ? r.deg + '°' : T('none', '沒有')}</td></tr>`);
+  $('winsT').textContent = `${T('Sea from each window', '各窗海景')} · ${tr(LAYOUTS[st.layout].name)}`;
+  $('wins').innerHTML = `<tr><th>${T('Room', '房間')}</th><th>${T('Window', '窗')}</th><th style="text-align:right">${T('Sea', '海景')}</th></tr>` + rows.join('');
+}
+const rectArea = r => r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
+function roomTable() {
+  const L = LAYOUTS[st.layout];
+  const rows = L.rooms.filter(r => r.win || r.role).map(r => {
+    const area = rectArea(r), [X0, X1, Y0, Y1] = r.rects[0];
+    const dims = r.rects.length === 1 ? `${((X1 - X0) / 1000).toFixed(2)} × ${((Y1 - Y0) / 1000).toFixed(2)}${T(' m', '米')}<br>` : '';
+    return `<tr><td>${tr(r.name)}</td><td class="n">${dims}${sqm(area)}</td><td>${tr(r.win) || '–'}</td></tr>`;
+  });
+  $('roomsT').textContent = `${T('Rooms', '房間')} · ${tr(L.name)}`;
+  $('rooms').innerHTML = `<tr><th>${T('Room', '房間')}</th><th>${T('Size', '面積')}</th><th>${T('Window', '窗')}</th></tr>` + rows.join('');
+}
+function compareTable() {
+  $('cmpCard').hidden = FLAT.type !== 'A';
+  if (FLAT.type !== 'A') return;
+  const keys = ['A', 'B', 'C'];
+  const cell = (k, roles) => {
+    const L = LAYOUTS[k], area = L.rooms.filter(r => roles.includes(r.role)).reduce((s, r) => s + rectArea(r), 0);
+    const rows = winRows(k).filter(r => roles.includes(r.role));
+    let view;
+    if (roles.includes('living')) {
+      const liv = rows.find(r => r.role === 'living'), play = rows.find(r => r.role === 'play');
+      view = [liv ? (liv.deg ? T(`${liv.deg}° sea`, `海景 ${liv.deg}°`) : T('no window', '沒有窗')) : '', play ? T(`${play.n.toLowerCase()} ${play.deg}°`, `${tr(play.n)} ${play.deg}°`) : ''].filter(Boolean).join(' · ');
+    } else {
+      const r = rows[0];
+      view = !r || r.deg == null ? T('no window', '沒有窗') : r.deg ? T(`${r.deg}° sea`, `海景 ${r.deg}°`) : r.north ? (FLAT.mirror ? T('south side', '向南') : T('hillside', '山景')) : T('window, no sea', '有窗，沒有海景');
+    }
+    return `<td class="${k === st.layout ? 'on' : ''}"><b>${area.toFixed(1)}${T(' m²', '平方米')}</b><br>${view}</td>`;
+  };
+  const head = `<tr><th></th>${keys.map(k => `<th class="${k === st.layout ? 'on' : ''}">${tr(LAYOUTS[k].name)}</th>`).join('')}</tr>`;
+  const rows = [['Master', ['master']], ['Kids', ['kids']], ['Helper', ['helper']], ['Living & play', ['living', 'play']]]
+    .map(([n, roles]) => `<tr><td>${tr(n)}</td>${keys.map(k => cell(k, roles)).join('')}</tr>`);
+  rows.push(`<tr><td>${T('Play space', '遊戲空間')}</td>${keys.map(k => `<td class="${k === st.layout ? 'on' : ''}">${tr(LAYOUTS[k].play)}</td>`).join('')}</tr>`);
+  $('cmp').innerHTML = head + rows.join('');
+}
+
+let visCut = null;   // whether the dollhouse cut is on (it is off once you zoom out to the area)
+function setVis() {
+  const doll = st.mode === 'doll', cutOn = doll && !inArea(), furn = LAYOUTS[st.layout].furnished && st.furn;
+  visCut = cutOn;
+  CLIP.constant = cutOn ? FL + CUT : 1e7;
+  for (const k of LAYOUT_KEYS) {
+    const on = k === st.layout;
+    LG[k].parts.visible = on; LG[k].furn.visible = on && furn;
+    LG[k].capP.visible = on && cutOn; LG[k].capF.visible = on && cutOn && furn;
+  }
+  commonFurn.visible = furn; capCommon.visible = furn && cutOn; capGrp.visible = cutOn;
+  ceilGrp.visible = !doll; above.visible = !doll;
+  for (const f of mainFloors) f.material = furn ? M.wood : M.screed;
+}
+function drawLayoutButtons() {
+  $('lays').innerHTML = LAYOUT_KEYS.map(k => `<button data-l="${k}" aria-pressed="${k === st.layout}">${tr(LAYOUTS[k].name)}<small>${tr(LAYOUTS[k].sub)}</small></button>`).join('');
+  $('lays').querySelectorAll('button').forEach(b => b.onclick = () => setLayout(b.dataset.l));
+  $('ldesc').textContent = tr(LAYOUTS[st.layout].desc);
+}
+function applyLayout() {
+  setVis();
+  if (st.stop && !stopFor(st.stop)) st.stop = null;
+  buildBlockers(); buildRoomLabels(); drawLayoutButtons(); drawStops(); refreshPanel(); drawPlan();
+  windowTable(); roomTable(); compareTable();
+  lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true;
+}
+function setLayout(k) {
+  st.layout = k; applyLayout();
+  // stay on the same tour stop if the new plan has it (it may have moved)
+  if (st.stop && st.stop !== 'doll' && st.mode === 'walk') goStop(st.stop);
+}
+$('furn').addEventListener('change', e => { st.furn = e.target.checked; applyLayout(); });
+
+// reset to the starting dollhouse view (keeps the chosen plan)
+function resetView() {
+  glide = null; dollGlide = null; zoomRef = null; pickedPlace = false; keys.clear();
+  closePose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() }; areaPose = { pos: AREA_START.pos.clone(), tgt: AREA_START.tgt.clone() };
+  dollPose = { pos: DOLL_START.pos.clone(), tgt: DOLL_START.tgt.clone() };
+  if (st.mode !== 'doll') setMode('doll');
+  st.stop = 'doll';
+  cam.position.copy(DOLL_START.pos); controls.target.copy(DOLL_START.tgt); controls.update();
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
+}
+$('resetBtn').addEventListener('click', resetView);
+// hide or show the side panel; the 3D view resizes to fill the space
+function setPanel(open) {
+  $('app').classList.toggle('collapsed', !open);
+  const b = $('panelBtn');
+  b.setAttribute('aria-expanded', String(open));
+  b.title = open ? T('Hide the side panel', '隱藏側面板') : T('Show the side panel', '顯示側面板');
+  b.querySelector('span').textContent = open ? T('Hide panel', '隱藏面板') : T('Show panel', '顯示面板');
+  try { localStorage.setItem('yf-tour-panel', open ? '1' : '0'); } catch (e) {}
+}
+$('panelBtn').addEventListener('click', () => setPanel($('app').classList.contains('collapsed')));
+{ let open = true; try { open = localStorage.getItem('yf-tour-panel') !== '0'; } catch (e) {} setPanel(open); }
+$('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuildTerrain(); buildRoads(); seaTable(); windowTable(); compareTable(); lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true; });
+
+function hud() {
+  const where = T(`Flat ${FLAT.no} · ${FLOOR}/F`, `${FLAT.no}室 · ${FLOOR}樓`);
+  if (st.mode === 'walk') {
+    const az = ((cs.yaw % 360) + 360) % 360;
+    $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T(`eye +${EYE_H.toFixed(1)} mPD`, `視線 +${EYE_H.toFixed(1)} mPD`)}</span><span>${T('Facing', '面向')} ${Math.round(az)}° ${dirName(az)}</span>`;
+  } else $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>`;
+}
+
+// ---------------- flat and floor ----------------
+function drawHeader() {
+  $('eyebrow').textContent = T(`Ying Fai Court · Block ${FLAT.block} · ${FLOOR}/F`, `影輝苑 · ${FLAT.block}座 · ${FLOOR}樓`);
+  $('ttl').textContent = T(`Flat ${FLAT.no} walk-through`, `${FLAT.no}室室內導覽`);
+  $('sub').textContent = FLAT.type === 'A'
+    ? T(`560 sq ft, laid out from the HA floor plan. Compare three ways to split it into rooms, walk through each one, and look out of every window at the real hills and sea from ${FLOOR}/F.`,
+      `面積約560平方呎，按房委會平面圖繪畫。比較三種間隔方案，逐一走進每個房間，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`)
+    : T(`One long room with a bay, laid out from the HA floor plan. Walk through it and look out of every window at the real hills and sea from ${FLOOR}/F.`,
+      `一個連凸位的長形單位，按房委會平面圖繪畫。逐處走一遍，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`);
+  $('floorVal').innerHTML = `${FLOOR}<small>${T('/F', '樓')}</small>`;
+  $('mpd').textContent = T(`floor +${FL.toFixed(2)} mPD`, `樓面 +${FL.toFixed(2)} mPD`);
+  const fi = $('floorIn'); fi.min = FLAT.F0; fi.max = FLAT.F1; fi.value = FLOOR;
+  fi.setAttribute('aria-valuetext', T(`${FLOOR}/F`, `${FLOOR}樓`));
+  $('flats').innerHTML = FLAT_IDS.map(id => {
+    const f = FLATS[id], side = f.side === 'north' ? T('north', '北側') : T('south', '南側');
+    return `<button data-f="${id}" aria-pressed="${id === FLAT.id}">${T(`Flat ${f.no}`, `${f.no}室`)}<small>${T(`Block ${f.block} · ${side}`, `${f.block}座 · ${side}`)}</small></button>`;
+  }).join('');
+  $('flats').querySelectorAll('button').forEach(b => { b.onclick = () => setFlat(b.dataset.f); });
+  const kp = YF.keyPlan(FLAT.id, FLOOR); $('keyPlan').innerHTML = kp.svg; $('kpNote').innerHTML = kp.note;
+}
+// switch flat or floor: rebuild the flat, its sea table and the tower cut, and keep the camera where it makes sense
+function applyFlat(id, F) {
+  const same = id === FLAT.id, prevFL = FL;
+  setFlatData(id, F);
+  if (!TY.keys.includes(st.layout)) st.layout = TY.def;
+  rebuildFlat(); seaTable(); placeFlatLabels(); drawHeader();
+  const ds = dollStartPose(); DOLL_START = ds; FLAT_C = ds.tgt.clone();
+  if (same) {
+    const d = new THREE.Vector3(0, FL - prevFL, 0);
+    for (const p of [dollPose, closePose]) { p.pos.add(d); p.tgt.add(d); }
+    if (st.mode === 'doll' && !inArea()) { cam.position.add(d); controls.target.add(d); controls.update(); }
+    if (dollGlide) { dollGlide.a.add(d); dollGlide.b.add(d); }
+  } else {
+    dollPose = { pos: ds.pos.clone(), tgt: ds.tgt.clone() }; closePose = { pos: ds.pos.clone(), tgt: ds.tgt.clone() };
+    if (st.mode === 'doll' && !inArea()) { dollGlide = null; cam.position.copy(ds.pos); controls.target.copy(ds.tgt); controls.update(); }
+    if (st.mode === 'walk') {
+      const sid = st.stop && st.stop !== 'doll' && stopFor(st.stop) ? st.stop : stopFor('window') ? 'window' : 'living', s = stopFor(sid);
+      glide = null; st.stop = sid; lastWalk = sid; cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch;
+    }
+  }
+  if (lastWalk && !stopFor(lastWalk)) lastWalk = null;
+  if (st.mode === 'walk') applyWalkCam();
+  applyLayout(); updateCompassMarker();
+  dockKey = ''; dirty = true;
+  try { history.replaceState(null, '', '#' + FLAT.id + '-' + FLOOR); } catch (e) {}
+}
+function setFlat(id) { if (id !== FLAT.id) applyFlat(id, FLOOR); }
+function setFloor(F) { F = Math.max(FLAT.F0, Math.min(FLAT.F1, F)); if (F !== FLOOR) applyFlat(FLAT.id, F); return F === FLOOR; }
+let floorRaf = 0;
+$('floorIn').addEventListener('input', e => { const F = +e.target.value; cancelAnimationFrame(floorRaf); floorRaf = requestAnimationFrame(() => setFloor(F)); });
+
+// ---------------- main loop ----------------
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix(); dirty = true; }
+new ResizeObserver(resize).observe(stage);
+let lastT = performance.now(), sightTimer = 0;
+function loop(t) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(.05, (t - lastT) / 1000); lastT = t;
+  if (st.mode === 'walk') {
+    if (glide) {
+      const f = Math.min(1, (t - glide.t0) / glide.ms), e = ease(f), a = glide.from, b = glide.to;
+      cs.x = a.x + (b.x - a.x) * e; cs.y = a.y + (b.y - a.y) * e; cs.yaw = a.yaw + (b.yaw - a.yaw) * e; cs.pitch = a.pitch + (b.pitch - a.pitch) * e;
+      if (f >= 1) { glide = null; updateSight(); updateLabelVisibility(); }
+      applyWalkCam(); dirty = true; updateCompassMarker();
+    }
+    if (keys.size) {
+      let fwd = 0, side = 0, turn = 0;
+      if (keys.has('w') || keys.has('arrowup')) fwd += 1;
+      if (keys.has('s') || keys.has('arrowdown')) fwd -= 1;
+      if (keys.has('a')) side -= 1; if (keys.has('d')) side += 1;
+      if (keys.has('arrowleft')) turn -= 1; if (keys.has('arrowright')) turn += 1;
+      cs.yaw += turn * 75 * dt;
+      const a = cs.yaw * Math.PI / 180, sp = 1.5 * dt;
+      const nx = cs.x + (Math.sin(a) * fwd + Math.cos(a) * side) * sp, ny = cs.y + (Math.cos(a) * fwd - Math.sin(a) * side) * sp;
+      if (walkable(nx, ny)) { cs.x = nx; cs.y = ny; } else if (walkable(nx, cs.y)) cs.x = nx; else if (walkable(cs.x, ny)) cs.y = ny;
+      glide = null; st.stop = null; applyWalkCam(); dirty = true; updateCompassMarker();
+      if ((sightTimer += dt) > .15) { sightTimer = 0; updateSight(); updateLabelVisibility(); refreshPanel(); }
+    }
+  }
+  controls.enableZoom = !dollGlide;
+  if (dollGlide && st.mode === 'doll') {
+    const g = dollGlide, f = Math.min(1, (t - g.t0) / g.ms), e = ease(f);
+    const dir = g.d0.clone().lerp(g.d1, e); if (dir.lengthSq() < 1e-6) dir.copy(g.d1);
+    controls.target.copy(g.a).lerp(g.b, g.l1 > g.l0 ? e * e : 1 - (1 - e) * (1 - e));
+    cam.position.copy(controls.target).addScaledVector(dir.normalize(), Math.exp(g.l0 + (g.l1 - g.l0) * e));
+    if (f < 1) { const gr = elev(cam.position.x, -cam.position.z), floor = (gr && !gr[1] ? gr[0] : 0) + 25; if (cam.position.y < floor) cam.position.y = floor; }
+    controls.update();
+    if (f >= 1) dollGlide = null;
+    dirty = true;
+  }
+  if (dirty) {
+    dirty = false;
+    zoomSnap();
+    if ((st.mode === 'doll' && !inArea()) !== visCut) setVis();
+    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
+    syncDock(); renderer.render(scene, cam); placeLabels(); hud();
+  }
+}
+
+YF.onLang(() => { applyLayout(); drawHeader(); placeFlatLabels(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dockKey = ''; dirty = true; });
+YF.onPoi(() => { updateLabelVisibility(); dirty = true; });
+YF.onEst(() => { updateLabelVisibility(); dirty = true; });
+YF.onSite(() => { siteGroup.visible = YF.siteOn; updateLabelVisibility(); dirty = true; });
+YF.onRoads(() => { roadGroup.visible = YF.roadsOn; updateLabelVisibility(); dirty = true; });
+YF.onBldg(() => { blds.group.visible = YF.bldgOn; dirty = true; });
+
+// ---------------- Inside / Dollhouse / Area switch over the 3D view ----------------
+let lastArea = '', dockKey = '';
+function syncDock() {
+  const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang + FLAT.id + FLOOR + st.layout + st.trees;
+  if (key === dockKey) return; dockKey = key;
+  const best = Math.max(0, ...winRows(st.layout).map(r => r.deg || 0));
+  $('dFl').innerHTML = `<b>${FLOOR}${T('/F', '樓')}</b><small>${best ? T(`up to ${best}° sea`, `最多海景${best}°`) : T('no sea', '無海景')}</small>`;
+  $('dDn').disabled = FLOOR <= FLAT.F0; $('dUp').disabled = FLOOR >= FLAT.F1;
+  $('dDn').setAttribute('aria-label', T('One floor down', '下一層')); $('dUp').setAttribute('aria-label', T('One floor up', '上一層'));
+  $('dDn').title = T('One floor down (Page Down)', '下一層（Page Down 鍵）'); $('dUp').title = T('One floor up (Page Up)', '上一層（Page Up 鍵）');
+  FLAT_IDS.forEach(id => { const b = $('d' + id); b.setAttribute('aria-pressed', String(id === FLAT.id)); b.title = T(`Flat ${FLATS[id].no}, Block ${FLATS[id].block}`, `${FLATS[id].block}座${FLATS[id].no}室`); });
+  $('dFloorGrp').setAttribute('aria-label', T('Floor', '樓層')); $('dFlatGrp').setAttribute('aria-label', T('Flat', '單位'));
+  [['dWalk', 'Inside', '室內', 'Walk around inside the flat', '在單位內四處走'],
+   ['dDoll', 'Dollhouse', '鳥瞰全屋', 'The whole flat from above', '從上面看整個單位'],
+   ['dArea', 'Area', '周邊', 'Zoom out to the estate, Block B, roads and nearby places', '拉遠看屋苑、B座、道路和附近地點']].forEach(([id, en, zh, ten, tzh]) => {
+    const b = $(id); b.textContent = T(en, zh); b.title = T(ten, tzh); b.setAttribute('aria-pressed', String(id === on));
+  });
+  $('dModeGrp').setAttribute('aria-label', T('View', '視角'));
+}
+function showDoll(area) {
+  pickedPlace = false;
+  if (st.mode !== 'doll') goStop('doll');
+  else { const now = { pos: cam.position.clone(), tgt: controls.target.clone() }; if (inArea()) areaPose = now; else closePose = now; }
+  st.stop = 'doll'; refreshPanel();
+  flyDoll(area ? areaPose : closePose);
+}
+$('dWalk').onclick = () => { if (st.mode !== 'walk') goStop(lastWalk && stopFor(lastWalk) ? lastWalk : stopFor('window') ? 'window' : 'living'); };
+$('dDoll').onclick = () => showDoll(false);
+$('dArea').onclick = () => showDoll(true);
+FLAT_IDS.forEach(id => { $('d' + id).onclick = () => setFlat(id); });
+// press and hold the floor stepper to keep going
+let holdTimer = null;
+const stopHold = () => { clearTimeout(holdTimer); holdTimer = null; };
+[['dDn', -1], ['dUp', 1]].forEach(([id, d]) => {
+  const b = $(id);
+  b.addEventListener('pointerdown', e => {
+    if (e.button) return; e.preventDefault(); stopHold();
+    if (!setFloor(FLOOR + d)) return;
+    const again = ms => { holdTimer = setTimeout(() => { if (setFloor(FLOOR + d)) again(110); else stopHold(); }, ms); };
+    again(450);
+  });
+  b.addEventListener('click', e => { if (e.detail === 0) setFloor(FLOOR + d); });
+  b.addEventListener('pointerleave', stopHold);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
+addEventListener('pointerup', stopHold); addEventListener('pointercancel', stopHold); addEventListener('blur', stopHold);
+// tapping a place in the list zooms out and flies there
+YF.onPick(p => {
+  if (st.mode !== 'doll') goStop('doll');
+  const e = elev(p.x, p.y), tgt = new THREE.Vector3(p.x, e && !e[1] ? e[0] : 10, -p.y);
+  const dir = (inArea() ? cam.position.clone().sub(controls.target) : AREA_START.pos.clone().sub(AREA_START.tgt)).normalize();
+  st.stop = 'doll'; refreshPanel(); pickedPlace = !p.site;
+  flyDoll({ tgt, pos: tgt.clone().addScaledVector(dir, p.site ? 420 : 1400) });
+  const r = stage.getBoundingClientRect(); if (r.bottom < 80 || r.top > innerHeight - 80) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// ---------------- start ----------------
+seaTable();
+rebuildTerrain();
+rebuildFlat();
+placeFlatLabels(); drawHeader();
+applyLayout();
+setMode('doll');
+cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update();
+goStop('doll');
+resize();
+$('loading').hidden = true;
+requestAnimationFrame(loop);
+window.__tour = { st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; } };
+})();
+</script>
+
+</body>
+</html>
