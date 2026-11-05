@@ -1525,7 +1525,7 @@ let lastWalk = null;
 let dollPose = { pos: P(wx(4000) - 6.8, wy(1900) - 8, FL + 10.1), tgt: FLAT_C.clone() };
 const DOLL_START = { pos: dollPose.pos.clone(), tgt: dollPose.tgt.clone() };
 // the dollhouse zoomed out to show the estate, Block B, the roads and nearby places (same angle as the Block pages' overview)
-const AREA_START = { pos: new THREE.Vector3(-800, 820, 1100), tgt: new THREE.Vector3(300, 40, 0) };
+const AREA_START = (() => { const e = elev(300, 0), h = e && !e[1] ? e[0] : 40; return { pos: new THREE.Vector3(-800, 780 + h, 1100), tgt: new THREE.Vector3(300, h, 0) }; })();
 // zooming out of the dollhouse: nearby places, roads and blocks are labelled once you pull back a little (the start
 // view is about 14 m away); further out the room labels drop away and it counts as the area view
 const PLACES_DIST = 20, AREA_DIST = 60;
@@ -1544,7 +1544,7 @@ controls.addEventListener('start', () => { dollGlide = null; });
 // two zoom levels in the dollhouse: zooming out a few steps from the flat glides out to the area view (turned to face the
 // way you were facing), and zooming back in on the estate from the area view glides back to the flat. Zooming is paused
 // while the camera is flying so a long scroll or pinch doesn't cut the flight short.
-const SNAP_OUT = 24, SNAP_IN = 260, ESTATE_R = 350, AREA_D = AREA_START.pos.distanceTo(AREA_START.tgt);
+const SNAP_OUT = 24, SNAP_IN = 500, ESTATE_R = 350, AREA_D = AREA_START.pos.distanceTo(AREA_START.tgt);
 let zoomRef = null, pickedPlace = false;
 function areaFacing(theta) {
   const Y = new THREE.Vector3(0, 1, 0), off = areaPose.pos.clone().sub(areaPose.tgt), turn = theta - Math.atan2(off.x, off.z);
@@ -1558,7 +1558,7 @@ function zoomSnap() {
   if (prev == null || Math.abs(d - prev) < 1e-4) return;
   const tg = controls.target, off = cam.position.clone().sub(tg), fromFlat = Math.hypot(tg.x - FLAT_C.x, tg.z - FLAT_C.z);
   if (d > prev && prev <= SNAP_OUT && d > SNAP_OUT && fromFlat < 40 && Math.abs(tg.y - FLAT_C.y) < 40) {
-    closePose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(prev)) };
+    closePose = { tgt: tg.clone(), pos: tg.clone().add(off.clone().setLength(Math.min(prev, 18))) };
     pickedPlace = false;
     flyDoll(areaFacing(Math.atan2(off.x, off.z)));
   } else if (d < prev && d < SNAP_IN && prev >= SNAP_IN && fromFlat < ESTATE_R && !pickedPlace) {
