@@ -2,7 +2,7 @@
 
 3D pages for Ying Fai Court (影輝苑), Tseung Kwan O, HOS 2025:
 
-- `index.html`: walk-through of flats 2 and 3 (Block A) and 9 and 10 (Block B) on any floor, with room layouts, the real view from each window, and where the lifts and refuse room are on the floor. Links can pick the flat and floor, e.g. `index.html#A3-24`.
+- `index.html`: walk-through of flats 2 and 3 (Block A) and 9 and 10 (Block B) on any floor, with three furnished layouts taken from [this YouTube video](https://www.youtube.com/watch?v=JGNr_1DD2Xo) (drawn there for flats 9 and 10, adapted for flats 2 and 3) plus the bare flat, the real view from each window, and where the lifts and refuse room are on the floor. Links can pick the flat and floor, e.g. `index.html#A3-24`.
 - `block-a.html`: what Block A flats 2 and 3 can see from every floor, including the acoustic fins.
 - `block-b.html`: what Block B flats 9 and 10 can see from every floor.
 
