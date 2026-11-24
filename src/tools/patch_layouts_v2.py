@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Replace the furnished layouts of both flat types with the three plans from the YouTube video
-(https://www.youtube.com/watch?v=JGNr_1DD2Xo, 第一/二/三方案), and correct the Block B shell from the
+"""Replace the furnished layouts of both flat types with three plans of three or four bedrooms, and correct the Block B shell from the
 HA sales brochure (bay opening, second side window, east-window pier and stubs, side/gap/bath windows).
 
-The video's plans are drawn for Block B flats 9/10; they are traced into the B frame (mm) and adapted onto
+The plans are drawn for Block B flats 9/10; they are traced into the B frame (mm) and adapted onto
 the Block A flat 2/3 shell. Run from src/: python3 tools/patch_layouts_v2.py
 """
 import json, re, sys, os
@@ -219,7 +218,7 @@ sub('const FURN_COMMON_B = [', '\n];', '''const FURN_COMMON_B = [
   [1720, 2320, 5302, 5315, .05, .82, 'white']   // washing machine (the fridge and shoe cabinet move with each plan)
 ];''')
 
-# ================================================================ Block B layouts (traced from the video)
+# ================================================================ Block B layouts (traced from the three plans)
 BAY_B = wardrobe(2690, 3290, -1100, -250, 'X1') + bed(2700, 4650, -2350, -1130, 'X0', 'terracotta')
 # plan A: the two sea-view bedrooms side by side, living by the entrance
 A_B = (cab(0, 350, 2550, 4180) + tv([0, 400, 250, 2350], [20, 60, 650, 1950]) + sofa(1900, 2700, 150, 1950, 'X1')
@@ -259,7 +258,7 @@ const B_OPEN_RECTS = [[0, 1615, 0, 4200], [1615, 3425, 0, 3765], [3425, 5065, 0,
 const LAYOUTS_B = {
   A: {
     name: 'Plan A', sub: 'Three bedrooms · sea-view bedrooms', furnished: true,
-    desc: 'The video’s first plan (第一方案). Three bedrooms: the two by the big east window split the sea view between them, divided by a wardrobe wall, and the bay becomes the third. The living room stays by the front door, with the TV on the end wall and only the two small side windows, so it has no sea view.',
+    desc: 'Three bedrooms: the two by the big east window split the sea view between them, divided by a wardrobe wall, and the bay becomes the third. The living room stays by the front door, with the TV on the end wall and only the two small side windows, so it has no sea view.',
     parts: [
       ['pdoor', 5065, 5780, 2475, 2550, { head: 2.1 }], ['part', 5780, 7965, 2475, 2550],
       ['part', 5700, 5775, 0, 1300], ['pdoor', 5700, 5775, 1300, 2000, { head: 2.1 }], ['part', 5700, 5775, 2000, 2475],
@@ -295,7 +294,7 @@ const LAYOUTS_B = {
   },
   B: {
     name: 'Plan B', sub: 'Three bedrooms · sea-view living room', furnished: true,
-    desc: 'The video’s second plan (第二方案). The living room moves to the big east window, with the sofa against the side wall and the TV on the master bedroom wall. A bedroom goes in the corner by the front door, under the two small side windows, and the bay is the third bedroom.',
+    desc: 'Three bedrooms. The living room moves to the big east window, with the sofa against the side wall and the TV on the master bedroom wall. A bedroom goes in the corner by the front door, under the two small side windows, and the bay is the third bedroom.',
     parts: [
       ['part', 0, 1950, 2350, 2425], ['part', 1950, 2025, 0, 1400], ['pdoor', 1950, 2025, 1400, 2100, { head: 2.1 }], ['part', 1950, 2025, 2100, 2425],
       ...MASTER_BC_PARTS_B, ...BAY_PARTS_B
@@ -315,7 +314,7 @@ const LAYOUTS_B = {
   },
   C: {
     name: 'Plan C', sub: 'Four bedrooms', furnished: true,
-    desc: 'The video’s third plan (第三方案): four bedrooms. As in plan B, but the corner by the front door is split into two small bedrooms, one under each small side window, each just big enough for a 4′ bed and with a sliding door.',
+    desc: 'Four bedrooms. As in plan B, but the corner by the front door is split into two small bedrooms, one under each small side window, each just big enough for a 4′ bed and with a sliding door.',
     parts: [
       ['part', 0, 480, 2460, 2535], ['pdoor', 480, 1240, 2460, 2535, { head: 2.1 }], ['part', 1240, 1315, 0, 2535],
       ['part', 1315, 2605, 2460, 2535], ['part', 2530, 2605, 0, 1170], ['pdoor', 2530, 2605, 1170, 1975, { head: 2.1 }], ['part', 2530, 2605, 1975, 2460],
@@ -377,7 +376,7 @@ const STOPDEF_B = {
   bath: { name: 'Bathroom', sub: '1.47 × 2.0 m', X: 4300, Y: 2850, yaw: 150, pitch: -20,
     text: 'Shower, toilet and basin, with a small high window into the gap between flats 9 and 10.' },
   dining: { name: 'Dining', sub: 'Table for six', X: 3000, Y: 3050, yaw: 45, pitch: -8,
-    text: 'The table for six sits between the bathroom and the bay, as in the video. Its end runs right up to the bathroom door, so in practice a shorter table would be needed to get into the bathroom. The bay bedroom door is straight ahead.' },
+    text: 'The table for six sits between the bathroom and the bay. Its end runs right up to the bathroom door, so in practice a shorter table would be needed to get into the bathroom. The bay bedroom door is straight ahead.' },
   living: { name: 'Living room', sub: 'At the sea window', X: 5300, Y: 1350, yaw: 90, pitch: -6,
     text: 'The living room takes the wider, bay-side pane of the east window and is about 2.9 × 2.4 m. The sofa sits against the side wall under the side window, and the TV faces it from the master bedroom wall, with a rug between.' },
   window: { name: 'East window', sub: 'Best view', X: 7300, Y: 1300, yaw: 95, pitch: -7,
@@ -387,7 +386,7 @@ const STOPDEF_B = {
   bed3: { name: 'Corner bedroom', sub: '1.95 × 2.35 m', X: 1650, Y: 1800, yaw: 320, pitch: -12,
     text: 'A 4′ bed along the side wall under both small side windows, with a wardrobe at the far end. It sits by the front door, away from the living room.' },
   bed4: { name: 'Small bedroom 2', sub: '1.2 × 2.45 m', X: 2850, Y: 1550, yaw: 270, pitch: -16,
-    text: 'The second small room, the same size: a 4′ bed under the other small side window and a wardrobe at its foot, with a sliding door onto the dining area. The video cuts the room’s outer corner at 45° to ease the way past; the model keeps it square.' },
+    text: 'The second small room, the same size: a 4′ bed under the other small side window and a wardrobe at its foot, with a sliding door onto the dining area.' },
   bay: { name: 'Bay bedroom', sub: '2.1 × 2.1 m', X: 4250, Y: -550, yaw: 330, pitch: -14,
     text: 'The bay becomes a bedroom about 2.1 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.' },
   doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
@@ -402,12 +401,12 @@ for en, cn in [
     ('Three bedrooms · sea-view bedrooms', '三房 · 睡房向海'),
     ('Three bedrooms · sea-view living room', '三房 · 客廳向海'),
     ('Four bedrooms', '四房'),
-    ('The video’s first plan (第一方案). Three bedrooms: the two by the big east window split the sea view between them, divided by a wardrobe wall, and the bay becomes the third. The living room stays by the front door, with the TV on the end wall and only the two small side windows, so it has no sea view.',
-     '影片的第一方案。三房：大東窗旁的兩間睡房以一幅衣櫃牆分隔，平分海景，凸位就成為第三間睡房。客廳留在大門旁，電視靠尾牆，只有兩扇細側窗，看不到海。'),
-    ('The video’s second plan (第二方案). The living room moves to the big east window, with the sofa against the side wall and the TV on the master bedroom wall. A bedroom goes in the corner by the front door, under the two small side windows, and the bay is the third bedroom.',
-     '影片的第二方案。客廳搬到大東窗前，梳化靠側牆，電視掛在主人房的牆上。大門旁的角落間出一間睡房，有兩扇細側窗，凸位就是第三間睡房。'),
-    ('The video’s third plan (第三方案): four bedrooms. As in plan B, but the corner by the front door is split into two small bedrooms, one under each small side window, each just big enough for a 4′ bed and with a sliding door.',
-     '影片的第三方案：四房。與方案B相同，但大門旁的角落再分成兩間細睡房，每間各有一扇細側窗，剛好放得下一張4呎床，用趟門出入。'),
+    ('Three bedrooms: the two by the big east window split the sea view between them, divided by a wardrobe wall, and the bay becomes the third. The living room stays by the front door, with the TV on the end wall and only the two small side windows, so it has no sea view.',
+     '三房：大東窗旁的兩間睡房以一幅衣櫃牆分隔，平分海景，凸位就成為第三間睡房。客廳留在大門旁，電視靠尾牆，只有兩扇細側窗，看不到海。'),
+    ('Three bedrooms. The living room moves to the big east window, with the sofa against the side wall and the TV on the master bedroom wall. A bedroom goes in the corner by the front door, under the two small side windows, and the bay is the third bedroom.',
+     '三房。客廳搬到大東窗前，梳化靠側牆，電視掛在主人房的牆上。大門旁的角落間出一間睡房，有兩扇細側窗，凸位就是第三間睡房。'),
+    ('Four bedrooms. As in plan B, but the corner by the front door is split into two small bedrooms, one under each small side window, each just big enough for a 4′ bed and with a sliding door.',
+     '四房。與方案B相同，但大門旁的角落再分成兩間細睡房，每間各有一扇細側窗，剛好放得下一張4呎床，用趟門出入。'),
     ('Bay bedroom', '凸位睡房'), ('Sea-view bedroom', '海景睡房'), ('Corner bedroom', '角落睡房'),
     ('Small bedroom 1', '細睡房一'), ('Small bedroom 2', '細睡房二'), ('Bed 3', '睡房三'), ('Bed 4', '睡房四'),
     ('Small window, into the gap', '細窗，望向單位之間的空隙'), ('Two small side windows', '兩扇細側窗'), ('Small side window', '細側窗'),
@@ -440,8 +439,8 @@ for en, cn in [
      '兩邊牆都有工作枱，雪櫃在門邊，洗滌盆在小窗下，窗外是9室與10室之間的空隙。'),
     ('Shower, toilet and basin, with a small high window into the gap between flats 9 and 10.',
      '有企缸、座廁和洗手盆，另有一扇高位細窗望向9室與10室之間的空隙。'),
-    ('The table for six sits between the bathroom and the bay, as in the video. Its end runs right up to the bathroom door, so in practice a shorter table would be needed to get into the bathroom. The bay bedroom door is straight ahead.',
-     '六人餐桌放在浴室與凸位之間，與影片一樣。桌尾緊貼浴室門，實際上要用短一點的餐桌才進得了浴室。凸位睡房的門在正前方。'),
+    ('The table for six sits between the bathroom and the bay. Its end runs right up to the bathroom door, so in practice a shorter table would be needed to get into the bathroom. The bay bedroom door is straight ahead.',
+     '六人餐桌放在浴室與凸位之間。桌尾緊貼浴室門，實際上要用短一點的餐桌才進得了浴室。凸位睡房的門在正前方。'),
     ('The living room takes the wider, bay-side pane of the east window and is about 2.9 × 2.4 m. The sofa sits against the side wall under the side window, and the TV faces it from the master bedroom wall, with a rug between.',
      '客廳取得東窗較闊、近凸位一邊的一格，約2.9 × 2.4米。梳化靠側牆放在側窗下，電視掛在主人房的牆上與梳化相對，中間鋪地氈。'),
     ('Close to the glass of the wider, bay-side pane of the east window. There is no acoustic fin beside flats 9 and 10; only the window frame and the pier limit the view.',
@@ -450,8 +449,8 @@ for en, cn in [
      '4呎6雙人床床頭靠望向空隙的窗，沿浴室牆放一整排衣櫃。房間取得東窗近空隙一邊的一格；間牆剛好在窗中間的牆柱處與窗相接。'),
     ('A 4′ bed along the side wall under both small side windows, with a wardrobe at the far end. It sits by the front door, away from the living room.',
      '4呎床沿側牆放在兩扇細側窗下，盡頭有衣櫃。房間在大門旁，與客廳分開。'),
-    ('The second small room, the same size: a 4′ bed under the other small side window and a wardrobe at its foot, with a sliding door onto the dining area. The video cuts the room’s outer corner at 45° to ease the way past; the model keeps it square.',
-     '第二間小房，大小一樣：4呎床放在另一扇細側窗下，床尾有衣櫃，趟門開向飯廳。影片把這間房的外角斜切45度，方便經過；模型保留直角。'),
+    ('The second small room, the same size: a 4′ bed under the other small side window and a wardrobe at its foot, with a sliding door onto the dining area.',
+     '第二間小房，大小一樣：4呎床放在另一扇細側窗下，床尾有衣櫃，趟門開向飯廳。'),
     ('The bay becomes a bedroom about 2.1 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.',
      '凸位變成一間約2.1 × 2.1米的睡房：4呎床床頭靠盡頭的牆，門旁有衣櫃，凸位窗就在床尾。'),
 ]:
@@ -473,8 +472,7 @@ C_A = (low(0, 1240, 30, 430) + bed(35, 1205, 450, 2420, 'Y0', 'sage', .85)
        + bed(1340, 2510, 30, 2000, 'Y0', 'terracotta', .85) + wardrobe(1315, 2130, 2075, 2460, 'Y0', 2.1, 'oak') + BC_A)
 
 LAYOUTS_A_JS = '''// ---------------- layouts ----------------
-// The three plans from the YouTube video (第一/二/三方案), drawn there for flats 9 and 10 and adapted here onto
-// flat 2's shell. Each adds light 75 mm partitions: [kind, X0, X1, Y0, Y1, opts]
+// Three plans with three or four bedrooms, drawn first for flats 9 and 10 and adapted here onto flat 2's shell. Each adds light 75 mm partitions: [kind, X0, X1, Y0, Y1, opts]
 //   part = partition, pdoor = door opening in it, jamb = frame post where a partition meets the window
 // furniture rows: [X0, X1, Y0, Y1, z0, z1, material, drawOnPlan]
 const FURN_COMMON_A = [
@@ -502,7 +500,7 @@ const BC_WINS_A = [
 const LAYOUTS_A = {
   A: {
     name: 'Plan A', sub: 'Three bedrooms · sea-view bedrooms', furnished: true,
-    desc: 'Adapted from the video’s first plan, which was drawn for flats 9 and 10. Two bedrooms share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the north window, so it has no sea view.',
+    desc: 'Three bedrooms. Two of them share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the north window, so it has no sea view.',
     parts: [
       ['pdoor', 5080, 5800, 2525, 2600, { head: 2.1 }], ['part', 5800, 7965, 2525, 2600],
       ['part', 5800, 5875, 0, 1300], ['pdoor', 5800, 5875, 1300, 2000, { head: 2.1 }], ['part', 5800, 5875, 2000, 2525],
@@ -538,7 +536,7 @@ const LAYOUTS_A = {
   },
   B: {
     name: 'Plan B', sub: 'Three bedrooms · sea-view living room', furnished: true,
-    desc: 'Adapted from the video’s second plan. The living room takes the north half of the east window, with the sofa against the north wall and the TV on the master bedroom wall. A bedroom goes in the north-west corner under the north window, and the bay is the third bedroom.',
+    desc: 'Three bedrooms. The living room takes the north half of the east window, with the sofa against the north wall and the TV on the master bedroom wall. A bedroom goes in the north-west corner under the north window, and the bay is the third bedroom.',
     parts: [
       ['part', 0, 1950, 2350, 2425], ['part', 1950, 2025, 0, 1400], ['pdoor', 1950, 2025, 1400, 2100, { head: 2.1 }], ['part', 1950, 2025, 2100, 2425],
       ...MASTER_BC_PARTS_A, ...BAY_PARTS_A
@@ -558,7 +556,7 @@ const LAYOUTS_A = {
   },
   C: {
     name: 'Plan C', sub: 'Four bedrooms', furnished: true,
-    desc: 'Adapted from the video’s third plan: four bedrooms. As in plan B, but the north-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the north window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
+    desc: 'Four bedrooms. As in plan B, but the north-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the north window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
     parts: [
       ['part', 0, 480, 2460, 2535], ['pdoor', 480, 1240, 2460, 2535, { head: 2.1 }], ['part', 1240, 1315, 0, 2535], ['jamb', 1240, 1315, -250, 0, { sill: .9, head: 2.3 }],
       ['part', 1315, 2605, 2460, 2535], ['part', 2530, 2605, 0, 1170], ['pdoor', 2530, 2605, 1170, 1975, { head: 2.1 }], ['part', 2530, 2605, 1975, 2460],
@@ -622,7 +620,7 @@ STOPDEF_A = '''const STOPDEF_A = {
   bed3: { name: 'Corner bedroom', sub: '1.95 × 2.35 m', X: 1600, Y: 1800, yaw: 320, pitch: -12,
     text: 'A 4′ bed along the north wall under the north window, with a wardrobe at the far end. The window looks onto the wooded hillside: no sea, but it is the quietest room.' },
   bed4: { name: 'Small bedroom 2', sub: '1.2 × 2.45 m', X: 2850, Y: 1550, yaw: 270, pitch: -16,
-    text: 'The second small room: a 4′ bed under the rest of the north window and a wardrobe at its foot, with a sliding door onto the dining area. The video cuts this room’s outer corner at 45° to ease the way past; the model keeps it square.' },
+    text: 'The second small room: a 4′ bed under the rest of the north window and a wardrobe at its foot, with a sliding door onto the dining area.' },
   bay: { name: 'Bay bedroom', sub: '2.15 × 2.1 m', X: 4250, Y: -550, yaw: 330, pitch: -14,
     text: 'The bay becomes a bedroom about 2.15 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.' },
   doll: { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
@@ -631,18 +629,18 @@ STOPDEF_A = '''const STOPDEF_A = {
 sub('const STOPDEF_A = {', '\n};', STOPDEF_A)
 
 # Block A texts: flat 2 wording, its flat 3 mirror, and both translations
-mir('Adapted from the video’s first plan, which was drawn for flats 9 and 10. Two bedrooms share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the north window, so it has no sea view.',
-    'Adapted from the video’s first plan, which was drawn for flats 9 and 10. Two bedrooms share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the south window, so it has no sea view.',
-    '改編自影片的第一方案（原本為9室及10室設計）。兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有北窗，看不到海。',
-    '改編自影片的第一方案（原本為9室及10室設計）。兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有南窗，看不到海。')
-mir('Adapted from the video’s second plan. The living room takes the north half of the east window, with the sofa against the north wall and the TV on the master bedroom wall. A bedroom goes in the north-west corner under the north window, and the bay is the third bedroom.',
-    'Adapted from the video’s second plan. The living room takes the south half of the east window, with the sofa against the south wall and the TV on the master bedroom wall. A bedroom goes in the south-west corner under the south window, and the bay is the third bedroom.',
-    '改編自影片的第二方案。客廳取得東窗北半，梳化靠北牆，電視掛在主人房的牆上。西北角間出一間睡房，有北窗，凸位就是第三間睡房。',
-    '改編自影片的第二方案。客廳取得東窗南半，梳化靠南牆，電視掛在主人房的牆上。西南角間出一間睡房，有南窗，凸位就是第三間睡房。')
-mir('Adapted from the video’s third plan: four bedrooms. As in plan B, but the north-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the north window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
-    'Adapted from the video’s third plan: four bedrooms. As in plan B, but the south-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the south window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
-    '改編自影片的第三方案：四房。與方案B相同，但西北角再分成兩間細睡房，每間剛好放得下一張4呎床，共用北窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。',
-    '改編自影片的第三方案：四房。與方案B相同，但西南角再分成兩間細睡房，每間剛好放得下一張4呎床，共用南窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。')
+mir('Three bedrooms. Two of them share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the north window, so it has no sea view.',
+    'Three bedrooms. Two of them share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the south window, so it has no sea view.',
+    '三房：兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有北窗，看不到海。',
+    '三房：兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有南窗，看不到海。')
+mir('Three bedrooms. The living room takes the north half of the east window, with the sofa against the north wall and the TV on the master bedroom wall. A bedroom goes in the north-west corner under the north window, and the bay is the third bedroom.',
+    'Three bedrooms. The living room takes the south half of the east window, with the sofa against the south wall and the TV on the master bedroom wall. A bedroom goes in the south-west corner under the south window, and the bay is the third bedroom.',
+    '三房。客廳取得東窗北半，梳化靠北牆，電視掛在主人房的牆上。西北角間出一間睡房，有北窗，凸位就是第三間睡房。',
+    '三房。客廳取得東窗南半，梳化靠南牆，電視掛在主人房的牆上。西南角間出一間睡房，有南窗，凸位就是第三間睡房。')
+mir('Four bedrooms. As in plan B, but the north-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the north window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
+    'Four bedrooms. As in plan B, but the south-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the south window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.',
+    '四房。與方案B相同，但西北角再分成兩間細睡房，每間剛好放得下一張4呎床，共用北窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。',
+    '四房。與方案B相同，但西南角再分成兩間細睡房，每間剛好放得下一張4呎床，共用南窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。')
 mir('The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living room opens on the left, with the TV on the west wall.',
     'The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The living room opens on the right, with the TV on the west wall.',
     '玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊是客廳，電視靠西牆。',
@@ -683,10 +681,10 @@ mir('A small room about 1.25 × 2.45 m, filled by a 4′ bed, with low storage u
     'A small room about 1.25 × 2.45 m, filled by a 4′ bed, with low storage under its part of the south window. A sliding door opens onto the hall.',
     '一間約1.25 × 2.45米的小房，一張4呎床已經放滿，分到的一段北窗下有矮儲物櫃。趟門開向走廊。',
     '一間約1.25 × 2.45米的小房，一張4呎床已經放滿，分到的一段南窗下有矮儲物櫃。趟門開向走廊。')
-mir('The second small room: a 4′ bed under the rest of the north window and a wardrobe at its foot, with a sliding door onto the dining area. The video cuts this room’s outer corner at 45° to ease the way past; the model keeps it square.',
-    'The second small room: a 4′ bed under the rest of the south window and a wardrobe at its foot, with a sliding door onto the dining area. The video cuts this room’s outer corner at 45° to ease the way past; the model keeps it square.',
-    '第二間小房：4呎床放在北窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。影片把這間房的外角斜切45度，方便經過；模型保留直角。',
-    '第二間小房：4呎床放在南窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。影片把這間房的外角斜切45度，方便經過；模型保留直角。')
+mir('The second small room: a 4′ bed under the rest of the north window and a wardrobe at its foot, with a sliding door onto the dining area.',
+    'The second small room: a 4′ bed under the rest of the south window and a wardrobe at its foot, with a sliding door onto the dining area.',
+    '第二間小房：4呎床放在北窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。',
+    '第二間小房：4呎床放在南窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。')
 zh('The bay becomes a bedroom about 2.15 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.',
    '凸位變成一間約2.15 × 2.1米的睡房：4呎床床頭靠盡頭的牆，門旁有衣櫃，凸位窗就在床尾。')
 mir('The south half of the east window. All three plans make this the master bedroom.',
