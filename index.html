@@ -2354,7 +2354,7 @@ let wideCanopy = -1;
 function buildWideMesh(canopy) {
   if (!WIDE.z || canopy === wideCanopy) return; wideCanopy = canopy;
   const g = WIDE, n = g.nx * g.ny, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = [0, 0, 0], hv = new Float32Array(n);
-  const URB = [.86, .85, .82], LAKE = [.55, .72, .82];
+  const URB = [.66, .65, .63], LAKE = [.47, .65, .76];
   for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
     const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s, h = g.z[k], u = wideLand.urban[k];
     let v = h === 0 ? -4 : h + (canopy && h > 0 && u < .3 && !wideLand.lake[k] ? canopy : 0);
