@@ -58,6 +58,7 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.hk.peak { text-transform: none; font-size: 12.5px; letter-spacing: .01em; color: #4a3f2c; }
 .lbl.hk.peak::before { content: "▲"; font-size: 8px; margin-right: 3px; vertical-align: 1px; }
 .lbl.hk.peak small { font-family: var(--f-data); font-size: 10.5px; font-weight: 500; margin-left: 4px; }
+.lbl.hk.tunnel { text-transform: none; font-style: italic; font-size: 11.5px; letter-spacing: 0; color: #7a5410; }
 .lbl.hk.spot { text-transform: none; font-family: var(--f-body); font-size: 12px; letter-spacing: 0; color: #6a3f99; }
 .lbl.sunh { text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #5a3500; background: rgba(255,240,205,.94); border: 1px solid #e8922a; padding: 0 5px; border-radius: 9px; transform: translate(-50%, -135%); }
 .lbl.sunc { text-transform: none; letter-spacing: 0; font-size: 12px; color: #fff; background: rgba(196,108,18,.92); padding: 0 5px; transform: translate(-50%, -50%); }
@@ -1711,7 +1712,7 @@ async function loadImageData(url) {
   const g = c.getContext('2d'); g.drawImage(im, 0, 0); return g.getImageData(0, 0, im.width, im.height).data;
 }
 const wideMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat); wideMesh.visible = false; scene.add(wideMesh);
-let WIDE_ROADS = [], wideLand = null;
+let WIDE_ROADS = [], WIDE_TUNNELS = [], wideLand = null;
 async function loadWide() {
   if (WIDE.state !== 'idle') return; WIDE.state = 'loading'; hud();
   try {
@@ -1737,9 +1738,18 @@ async function loadWide() {
     each('water', (L, F, pr, tl) => { if (pr.brunnel === 'tunnel' || pr.class === 'swimming_pool') return; gw.fillStyle = /ocean|river|dock/.test(pr.class) ? '#f00' : '#0f0'; gw.fill(path(F, tl)); });
     gu.strokeStyle = '#fff'; gu.lineWidth = 2; gu.lineCap = 'round';
     each('transportation', (L, F, pr, tl) => {
-      if (pr.brunnel === 'tunnel' || !/^(motorway|trunk|primary|secondary|tertiary|minor)$/.test(pr.class)) return;
+      // tunnels (the harbour crossings, and the tunnels through the hills such as Tseung Kwan O-Lam Tin) are kept apart and drawn dashed
+      if (pr.brunnel === 'tunnel') { if (/^(motorway|trunk|primary)$/.test(pr.class)) for (const line of mvtLines(F)) WIDE_TUNNELS.push({ c: pr.class, pts: line.map(([u, v]) => tl(u, v)) }); return; }
+      if (!/^(motorway|trunk|primary|secondary|tertiary|minor)$/.test(pr.class)) return;
       gu.stroke(path(F, tl));
       if (/^(motorway|trunk|primary|secondary)$/.test(pr.class)) for (const line of mvtLines(F)) WIDE_ROADS.push({ c: pr.class, pts: line.map(([u, v]) => tl(u, v)) });
+    });
+    const named = {};
+    each('transportation_name', (L, F, pr, tl) => {
+      const en = pr['name:en'] || '', zh = pr['name:zh-Hant'] || pr['name:zh'] || '';
+      if (!/^(motorway|trunk|primary)$/.test(pr.class) || !/Tunnel|Crossing/.test(en)) return;
+      const k = en.replace(/ Road$/, ''), n = named[k] || (named[k] = { en: k, zh: zh.replace(/公路$/, ''), pts: [] });
+      for (const line of mvtLines(F)) for (const [u, v] of line) n.pts.push(tl(u, v));
     });
     gu.fillStyle = '#fff';
     each('landuse', (L, F, pr, tl) => { if (/^(residential|commercial|industrial|retail|railway)$/.test(pr.class)) gu.fill(path(F, tl)); });
@@ -1758,6 +1768,15 @@ async function loadWide() {
     }
     WIDE.z = z; WIDE.state = 'ready'; WIDE.ver++;
     buildWideMesh(st.trees ? 10 : 0);
+    // a label for each named tunnel, at the middle of the tunnel sections that run along its name's line
+    for (const n of Object.values(named)) {
+      const near = [];
+      for (const t of WIDE_TUNNELS) for (const [x, y] of t.pts) if (n.pts.some(([a, b]) => Math.abs(a - x) < 150 && Math.abs(b - y) < 150)) near.push([x, y]);
+      if (near.length < 2) continue;
+      const cx = near.reduce((a, p) => a + p[0], 0) / near.length, cy = near.reduce((a, p) => a + p[1], 0) / near.length;
+      const [x, y] = near.reduce((b, p) => (Math.hypot(p[0] - cx, p[1] - cy) < Math.hypot(b[0] - cx, b[1] - cy) ? p : b));
+      WIDE_L.push({ tier: 2, kind: 'tunnel', en: n.en, zh: n.zh || n.en, x, y, el: mkLabel('hk tunnel', ''), v: new THREE.Vector3(), hidden: true });
+    }
     wideRoadKey = ''; placeWideLabels(); castDirty = shadowDirty = true;
     sunTable(); updateSun(); updateLabelVisibility(); hud(); dirty = true;
   } catch (e) {
@@ -1804,7 +1823,7 @@ function surfAll(x, y, canopy) {
 const LOCAL_ROADS_BOX = (() => { let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity; for (const w of YF.ROADS.ways) for (let i = 3; i + 1 < w.length; i += 2) { a = Math.min(a, w[i]); b = Math.max(b, w[i]); c = Math.min(c, w[i + 1]); d = Math.max(d, w[i + 1]); } return [a, b, c, d]; })();
 const wideRoadGrp = new THREE.Group(); scene.add(wideRoadGrp);
 const wrMat = c => new THREE.MeshBasicMaterial({ color: c, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 });
-const WR_MATS = { edge: wrMat(0x5b584f), major: wrMat(0xf2bd4b), minor: wrMat(0xfbf8f1) };
+const WR_MATS = { edge: wrMat(0x5b584f), major: wrMat(0xf2bd4b), minor: wrMat(0xfbf8f1), tunnel: Object.assign(wrMat(0xc9821c), { transparent: true, opacity: .75 }) };
 const WR_W = { motorway: 20, trunk: 17, primary: 11, secondary: 8 };
 let wideRoadKey = '';
 const wideTier = () => (st.mode === 'doll' && inArea() ? (camDist() > 12000 ? 3 : camDist() > 4000 ? 2 : 1) : 0);
@@ -1817,7 +1836,7 @@ function buildWideRoads() {
   if (!tier) return;
   const scale = [0, 1, 2.2, 5.5][tier], lift = 2 + 3 * scale, [bx0, bx1, by0, by1] = LOCAL_ROADS_BOX;
   const inLocal = (x, y) => tier === 1 && x > bx0 && x < bx1 && y > by0 && y < by1;
-  const out = { edge: [[], []], major: [[], []], minor: [[], []] };
+  const out = { edge: [[], []], major: [[], []], minor: [[], []], tunnel: [[], []] };
   const strip = (key, pts, half, up) => {
     const [pos, idx] = out[key], base = pos.length / 3;
     pts.forEach(([x, y, h], k) => {
@@ -1842,7 +1861,23 @@ function buildWideRoads() {
     }
     flush();
   }
-  for (const k of ['edge', 'major', 'minor']) {
+  // tunnels: dashed and see-through, laid over the hill or the water they pass under (not clipped round the estate:
+  // the local roads leave tunnels out)
+  for (const r of WIDE_TUNNELS) {
+    const dash = 70 * scale, gap = 45 * scale, w = WR_W[r.c] * scale * .6;
+    let run = [], along = 0;
+    const flush = () => { if (run.length > 1) strip('tunnel', run, w / 2, lift + .3 * scale); run = []; };
+    for (let i = 0; i + 1 < r.pts.length; i++) {
+      const [ax, ay] = r.pts[i], [bx, by] = r.pts[i + 1], l = Math.hypot(bx - ax, by - ay), m = Math.max(1, Math.ceil(l / (15 * scale)));
+      for (let q = 0; q <= m; q++) {
+        const x = ax + (bx - ax) * q / m, y = ay + (by - ay) * q / m, ph = (along + l * q / m) % (dash + gap);
+        if (ph < dash) run.push([x, y, Math.max(0, surfAll(x, y, canopy))]); else flush();
+      }
+      along += l;
+    }
+    flush();
+  }
+  for (const k of ['edge', 'major', 'minor', 'tunnel']) {
     const [pos, idx] = out[k]; if (!pos.length) continue;
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
     const m = new THREE.Mesh(geo, WR_MATS[k]); m.renderOrder = k === 'edge' ? 1 : 2; wideRoadGrp.add(m);
@@ -2065,7 +2100,7 @@ const WIDE_L = WIDE_PLACES.map(([tier, kind, en, zh, x, y, ele]) => ({ tier, kin
 function placeWideLabels() {
   for (const L of WIDE_L) {
     const e = elevAll(L.x, L.y), g = e && !e[1] ? e[0] : 0;
-    L.v.copy(P(L.x, L.y, L.kind === 'peak' ? Math.max(g, L.ele) + 12 : L.kind === 'water' ? 15 : g + 45));
+    L.v.copy(P(L.x, L.y, L.kind === 'peak' ? Math.max(g, L.ele) + 12 : L.kind === 'water' ? 15 : L.kind === 'tunnel' ? Math.max(0, g) + 25 : g + 45));
   }
 }
 const wideLabelHtml = L => (L.kind === 'peak' ? `${T(L.en, L.zh)}<small>${L.ele}${T(' m', '米')}</small>` : T(L.en, L.zh));
