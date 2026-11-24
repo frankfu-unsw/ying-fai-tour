@@ -47,6 +47,7 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.room { pointer-events: auto; cursor: pointer; background: #13232c; color: #fff; text-transform: none; letter-spacing: .02em; font-size: 14px; text-align: center; line-height: 1.15; padding: 3px 7px; }
 .lbl.room:hover { background: #24465a; }
 .lbl.room small { display: block; font-family: var(--f-data); font-size: 11px; font-weight: 400; opacity: .8; }
+.lbl.dim { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #13232c; background: rgba(255,255,255,.88); border: 1px solid #13232c; padding: 0 5px; }
 .lbl.hid { opacity: .55; font-weight: 500; }
 .hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; max-width: calc(100% - 290px); display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
@@ -1752,14 +1753,48 @@ function placeFlatLabels() {
 }
 const labelName = L => (L.site ? T(`Ying Fai Court site · ${YF.SITE.ha} ha`, `影輝苑範圍 · 約${YF.SITE.ha}公頃`) : L.road != null ? YF.roadName(L.road) : L.p ? YF.poiName(L.p) : tr(L.t));
 let roomLabels = [];
+// split a room into rectangles, biggest first, so an L-shaped room gets a size for each leg
+// (slivers such as door reveals are dropped)
+function roomParts(rects) {
+  const xs = [...new Set(rects.flatMap(r => [r[0], r[1]]))].sort((a, b) => a - b);
+  const ys = [...new Set(rects.flatMap(r => [r[2], r[3]]))].sort((a, b) => a - b);
+  const nx = xs.length - 1, ny = ys.length - 1;
+  const on = [];
+  for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+    const cx = (xs[i] + xs[i + 1]) / 2, cy = (ys[j] + ys[j + 1]) / 2;
+    on[i * ny + j] = rects.some(([a, b, c, d]) => cx > a && cx < b && cy > c && cy < d);
+  }
+  const full = (i0, i1, j0, j1) => { for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) if (!on[i * ny + j]) return false; return true; };
+  const parts = [];
+  while (parts.length < 5) {
+    let best = null;
+    for (let i0 = 0; i0 < nx; i0++) for (let i1 = i0; i1 < nx; i1++) for (let j0 = 0; j0 < ny; j0++) for (let j1 = j0; j1 < ny; j1++) {
+      const w = xs[i1 + 1] - xs[i0], d = ys[j1 + 1] - ys[j0];
+      if ((!best || w * d > best.w * best.d) && full(i0, i1, j0, j1)) best = { i0, i1, j0, j1, w, d };
+    }
+    if (!best || (parts.length && (best.w * best.d < 1.5e6 || Math.min(best.w, best.d) < 900))) break;
+    for (let i = best.i0; i <= best.i1; i++) for (let j = best.j0; j <= best.j1; j++) on[i * ny + j] = false;
+    parts.push({ X0: xs[best.i0], X1: xs[best.i1 + 1], Y0: ys[best.j0], Y1: ys[best.j1 + 1], w: best.w, d: best.d });
+  }
+  return parts;
+}
+const roomDims = q => { const m = v => (Math.round(v / 100) / 10).toFixed(1); return T(`${m(q.w)} × ${m(q.d)} m`, `${m(q.w)} × ${m(q.d)}米`); };
 function buildRoomLabels() {
   roomLabels.forEach(r => r.el.remove());
-  roomLabels = LAYOUTS[st.layout].rooms.map(r => {
-    const area = r.rects.reduce((s, [a, b, c, d]) => s + (b - a) * (d - c), 0) / 1e6;
-    const el = mkLabel('room', `${tr(r.name)}<small>${sqm(area)}</small>`);
+  roomLabels = [];
+  for (const r of LAYOUTS[st.layout].rooms) {
+    const parts = roomParts(r.rects), [ax, ay] = r.at;
+    // the name label gives the size of the part it sits in; any other part gets its own size tag
+    const home = parts.find(q => ax >= q.X0 && ax <= q.X1 && ay >= q.Y0 && ay <= q.Y1) || parts[0];
+    const el = mkLabel('room', `${tr(r.name)}<small>${roomDims(home)}</small>`);
     el.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
-    return { el, v: P(wx(r.at[0]), wy(r.at[1]), FL + 1.45) };
-  });
+    roomLabels.push({ el, v: P(wx(ax), wy(ay), FL + 1.45) });
+    for (const q of parts) if (q !== home) {
+      const t = mkLabel('dim', roomDims(q));
+      t.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
+      roomLabels.push({ el: t, v: P(wx((q.X0 + q.X1) / 2), wy((q.Y0 + q.Y1) / 2), FL + .9) });
+    }
+  }
 }
 function terrainHides(L) {
   const can = st.trees ? 10 : 0, ex = cs.x, ey = cs.y, H = EYE_H;
