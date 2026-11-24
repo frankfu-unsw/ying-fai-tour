@@ -1615,6 +1615,10 @@ function buildMesh(g, isFar, canopy) {
   for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
     const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s;
     let h = g.z[k];
+    // once the rest of Hong Kong has loaded, its coastline decides what is drawn as sea here too (the sea-view figures keep
+    // to the grids' own sea, so they don't change while you watch)
+    const sea = WIDE.sea ? WIDE.sea(x, y) : null;
+    if (sea === true) h = 0; else if (sea === false && h === 0) h = 1.5;
     if (isFar && inNearInterior(x, y)) { const r = samp(NEAR, x, y); if (r) h = r[0]; h -= 4; }
     let hv = h === 0 ? -4 : h;
     if (canopy && h > 0 && Math.hypot(x + 30, y + 30) > 110) hv += canopy;
@@ -1754,6 +1758,7 @@ async function loadWide() {
     gu.fillStyle = '#fff';
     each('landuse', (L, F, pr, tl) => { if (/^(residential|commercial|industrial|retail|railway)$/.test(pr.class)) gu.fill(path(F, tl)); });
     const wd = gw.getImageData(0, 0, W, H).data, ud = gu.getImageData(0, 0, W, H).data;
+    const seaAt = (x, y) => { const X = Math.round((x - WIDE.x0) / S), Y = Math.round((WIDE.y1 - y) / S); return X < 0 || Y < 0 || X >= W || Y >= H ? null : wd[(Y * W + X) * 4] > 127; };
     // built-up: the share of road and town land within about 250 m
     const R = 10, sat = new Float64Array((W + 1) * (H + 1));
     for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += ud[(y * W + x) * 4] / 255; sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + row; } }
@@ -1767,7 +1772,7 @@ async function loadWide() {
       wideLand.urban[k] = sea ? 0 : Math.min(1, Math.max(0, (dens(X, Y) - .07) / .16)) * (h < 260 ? 1 : 0);
     }
     WIDE.z = z; WIDE.state = 'ready'; WIDE.ver++;
-    buildWideMesh(st.trees ? 10 : 0);
+    WIDE.sea = seaAt; builtCanopy = -1; rebuildTerrain();   // redraws the local terrain with the map's coastline, and the wide terrain
     // a label for each named tunnel, at the middle of the tunnel sections that run along its name's line
     for (const n of Object.values(named)) {
       const near = [];
