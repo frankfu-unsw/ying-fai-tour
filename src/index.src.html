@@ -2672,33 +2672,40 @@ const pathMat = new THREE.LineBasicMaterial({ color: 0xe8922a, fog: false });
 const ringMat = new THREE.LineBasicMaterial({ color: 0xe8922a, transparent: true, opacity: .55, fog: false });
 sunGrp.add(sunDisc);
 let sunObjs = [], sunPathKey = '';
-const DOME = 8;   // radius of the sun-path dome over the dollhouse, metres
+const DOME = 8.5;   // radius of the ring and dome round the dollhouse, metres
 const SUN_L = [], SUN = { now: null, vis: false, rooms: [] };
-// the day's path across the sky with a dot at each hour: far away from inside the flat, as a dome round the flat in the dollhouse
+// From inside, the day's path across the sky with a dot at each hour, far off so it sits on the sky. In the dollhouse, a
+// ring round the flat at the cut with the sun's bearing at each hour marked on it, and the sun itself on a dome over the
+// flat, joined to the ring by a line so you can read how high it is.
+const sunStem = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: 0xe8922a, fog: false }));
+sunGrp.add(sunStem);
 function buildSunPath() {
   for (const o of sunObjs) { sunGrp.remove(o); if (o.geometry) o.geometry.dispose(); }
   sunObjs = []; SUN_L.forEach(L => L.el.remove()); SUN_L.length = 0;
   if (!st.sunOn) return;
-  const walk = st.mode === 'walk', D = sunDay(), r = walk ? 15000 : DOME;
-  const c = walk ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : P(FLAT_C.x, -FLAT_C.z, FL + CUT);
+  const walk = st.mode === 'walk', D = sunDay(), r = walk ? 15000 : DOME, c = sunCentre();
   const at = (s, rr) => c.clone().addScaledVector(sunVec(s), rr || r);
   const add = o => { sunGrp.add(o); sunObjs.push(o); return o; };
-  const pts = [];
-  for (let t = 240; t <= 1260; t += 4) { const s = sunAt(D.ms + (t - 480) * 6e4); if (s.el > 0) pts.push(at(s)); }
-  if (pts.length > 1) add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), pathMat));
-  for (let h = 5; h <= 20; h++) {
-    const s = sunAt(D.ms + (h * 60 - 480) * 6e4); if (s.el < 1) continue;
-    const d = add(new THREE.Sprite(dotMat)); d.position.copy(at(s)); d.scale.setScalar(walk ? 180 : .26);
-    SUN_L.push({ el: mkLabel('sunh', hourName(h)), v: at(s), az: s.az, alt: s.el, hidden: true });
-  }
-  if (!walk) {
-    const ring = []; for (let a = 0; a <= 360; a += 4) ring.push(at({ az: a, el: 0 }));
+  const hours = [];
+  for (let h = 5; h <= 20; h++) { const s = sunAt(D.ms + (h * 60 - 480) * 6e4); if (s.el >= 1) hours.push([h, s]); }
+  if (walk) {
+    const pts = [];
+    for (let t = 240; t <= 1260; t += 4) { const s = sunAt(D.ms + (t - 480) * 6e4); if (s.el > 0) pts.push(at(s)); }
+    if (pts.length > 1) add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), pathMat));
+  } else {
+    const ring = []; for (let a = 0; a <= 360; a += 3) ring.push(at({ az: a, el: 0 }));
     add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring), ringMat));
-    [[0, 'N', '北'], [90, 'E', '東'], [180, 'S', '南'], [270, 'W', '西']].forEach(([a, en, zh]) => SUN_L.push({ el: mkLabel('sunc', T(en, zh)), v: at({ az: a, el: 0 }, r * 1.07), az: a, alt: 0, hidden: true }));
+    [[0, 'N', '北'], [90, 'E', '東'], [180, 'S', '南'], [270, 'W', '西']].forEach(([a, en, zh]) => SUN_L.push({ el: mkLabel('sunc', T(en, zh)), v: at({ az: a, el: 0 }, r * 1.1), az: a, alt: 0, hidden: true }));
   }
-  sunDisc.scale.setScalar(walk ? 1000 : 1.8);
-  for (const o of sunObjs.concat(sunDisc)) o.renderOrder = 5;
+  for (const [h, s] of hours) {
+    const p = walk ? at(s) : at({ az: s.az, el: 0 });
+    const d = add(new THREE.Sprite(dotMat)); d.position.copy(p); d.scale.setScalar(walk ? 180 : .3);
+    SUN_L.push({ el: mkLabel('sunh', hourName(h)), v: p, az: s.az, alt: s.el, hidden: true });
+  }
+  sunDisc.scale.setScalar(walk ? 1000 : 1.6);
+  for (const o of sunObjs.concat(sunDisc, sunStem)) o.renderOrder = 5;
 }
+const sunCentre = () => (st.mode === 'walk' ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : P(FLAT_C.x, -FLAT_C.z, FL + CUT + .02));
 // hour marks are shown from inside only where you could see that bit of sky: not behind a wall, a tower or the hills
 const sunRay = new THREE.Raycaster();
 function sunLabelVis() {
@@ -2731,7 +2738,9 @@ function updateSun() {
     sunGrp.visible = !(st.mode === 'doll' && inArea());
     const walk = st.mode === 'walk';
     sunDisc.visible = s.el > (walk ? -1 : 0);
-    sunDisc.position.copy(walk ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : P(FLAT_C.x, -FLAT_C.z, FL + CUT)).addScaledVector(sunVec(s), walk ? 15000 : DOME);
+    sunDisc.position.copy(sunCentre()).addScaledVector(sunVec(s), walk ? 15000 : DOME);
+    sunStem.visible = !walk && s.el > 0;
+    if (sunStem.visible) { sunStem.geometry.attributes.position.setXYZ(0, ...sunDisc.position.toArray()); sunStem.geometry.attributes.position.setXYZ(1, ...sunCentre().addScaledVector(sunVec({ az: s.az, el: 0 }), DOME).toArray()); sunStem.geometry.attributes.position.needsUpdate = true; sunStem.geometry.computeBoundingSphere(); }
     sunGeometry();
     SUN.rooms = [...new Set(LAYOUTS[st.layout].wins.filter(([, , , , only]) => (only || Object.keys(SUNWIN)).some(id => SUNWIN[id] && winLit(SUNWIN[id], s, hor))).map(r => r[0]))];
   }
