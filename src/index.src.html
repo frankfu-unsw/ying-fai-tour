@@ -47,7 +47,8 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.room { pointer-events: auto; cursor: pointer; background: #13232c; color: #fff; text-transform: none; letter-spacing: .02em; font-size: 14px; text-align: center; line-height: 1.15; padding: 3px 7px; }
 .lbl.room:hover { background: #24465a; }
 .lbl.room small { display: block; font-family: var(--f-data); font-size: 11px; font-weight: 400; opacity: .8; }
-.lbl.dim { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #13232c; background: rgba(255,255,255,.88); border: 1px solid #13232c; padding: 0 5px; }
+.lbl.dim { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); text-transform: none; letter-spacing: 0; font-family: var(--f-display); font-weight: 600; font-size: 11.5px; color: #13232c; background: rgba(255,255,255,.9); border: 1px solid #13232c; padding: 0 5px; }
+.lbl.dim b { font-family: var(--f-data); font-weight: 500; font-size: 11px; margin-left: 3px; }
 .lbl.hid { opacity: .55; font-weight: 500; }
 .hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; max-width: calc(100% - 290px); display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
@@ -1790,7 +1791,7 @@ function buildRoomLabels() {
     el.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
     roomLabels.push({ el, v: P(wx(ax), wy(ay), FL + 1.45) });
     for (const q of parts) if (q !== home) {
-      const t = mkLabel('dim', roomDims(q));
+      const t = mkLabel('dim', `${tr(r.name)} <b>${roomDims(q)}</b>`);
       t.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
       roomLabels.push({ el: t, v: P(wx((q.X0 + q.X1) / 2), wy((q.Y0 + q.Y1) / 2), FL + .9) });
     }
