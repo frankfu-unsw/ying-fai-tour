@@ -50,6 +50,8 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.dim { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); text-transform: none; letter-spacing: 0; font-family: var(--f-display); font-weight: 600; font-size: 11.5px; color: #13232c; background: rgba(255,255,255,.9); border: 1px solid #13232c; padding: 0 5px; }
 .lbl.dim b { font-family: var(--f-data); font-weight: 500; font-size: 11px; margin-left: 3px; }
 .lbl.hid { opacity: .55; font-weight: 500; }
+.lbl.sunh { text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #5a3500; background: rgba(255,240,205,.94); border: 1px solid #e8922a; padding: 0 5px; border-radius: 9px; transform: translate(-50%, -135%); }
+.lbl.sunc { text-transform: none; letter-spacing: 0; font-size: 12px; color: #fff; background: rgba(196,108,18,.92); padding: 0 5px; transform: translate(-50%, -50%); }
 .hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; max-width: calc(100% - 290px); display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .tools { position: absolute; top: 10px; right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; }
 .tools button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; font: 600 13.5px/1 var(--f-body); color: #eef4f6; background: rgba(19,35,44,.84); border: 0; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
@@ -226,6 +228,29 @@ details.poigrp[open] > summary h3::after { content: "−"; }
 .lbl.core { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: #f5d58e; padding: 1px 7px; }
 .lbl.core.lift { background: #13232c; color: #fff; }
 .dock .fl b { font-size: 19px; }
+/* the sun: dock controls, the readout and the window table */
+.dock .sun > button { display: inline-flex; align-items: center; gap: 7px; }
+.dock .sun > button svg { width: 18px; height: 18px; flex: none; }
+.dock .sun > button[aria-pressed="true"] { background: #f5c46a; color: #13232c; }
+.dock .sunx { display: flex; align-items: center; gap: 8px; padding: 0 12px 0 8px; min-width: 0; }
+.dock .sunx[hidden] { display: none; }
+.dock .sunx select { min-height: 32px; max-width: 172px; font: 600 13px/1.2 var(--f-body); color: #eef4f6; background: rgba(255,255,255,.08); border: 1px solid rgba(238,244,246,.3); border-radius: 3px; padding: 0 4px; }
+.dock .sunx select option { color: #13232c; background: #fff; }
+.dock .sunx .sq { width: 34px; min-height: 34px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.dock .sunx .sq svg { width: 15px; height: 15px; }
+.dock .sunx input[type=range] { width: 150px; min-width: 80px; flex: 1 1 150px; accent-color: #f5b041; margin: 0; }
+.dock .sunx output { font: 600 13.5px/1 var(--f-data); color: #ffd58a; min-width: 66px; white-space: nowrap; }
+.hud span.sunhud { background: rgba(110,66,6,.88); color: #ffe9bf; }
+#sunDays { margin: 2px 0 4px; }
+table.sunt td small { display: block; color: var(--ink-2); font-size: 12px; }
+table.sunt td.sunc { font-family: var(--f-data); font-size: 12px; white-space: nowrap; width: 150px; }
+table.sunt .none { color: var(--ink-2); font-family: var(--f-body); font-size: 13px; }
+svg.sbar { display: block; width: 150px; height: 8px; margin-top: 4px; }
+svg.sscale { height: 11px; margin-top: 3px; }
+.sscale text { font: 500 8px var(--f-data); fill: var(--ink-2); text-anchor: middle; }
+.sb-n { fill: var(--chip); } .sb-d { fill: var(--sunday, #f5e6c3); } .sb-s { fill: #e8922a; } .sb-t { fill: var(--ink-2); opacity: .35; } .sb-now { fill: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sunday: #4a3c1f; } }
+:root[data-theme="dark"] { --sunday: #4a3c1f; }
 </style>
 </head>
 <body>
@@ -258,6 +283,15 @@ details.poigrp[open] > summary h3::after { content: "−"; }
       </div>
       <div class="grp" role="group" id="dFlatGrp" aria-label="Flat">
         <button type="button" id="dA2" aria-pressed="true">A2</button><button type="button" id="dA3" aria-pressed="false">A3</button><button type="button" id="dB9" aria-pressed="false">B9</button><button type="button" id="dB10" aria-pressed="false">B10</button>
+      </div>
+      <div class="grp sun" role="group" id="dSunGrp" aria-label="Sun">
+        <button type="button" id="dSun" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><span id="dSunTxt">Sun</span></button>
+        <div class="sunx" id="sunX" hidden>
+          <select id="sunDay"></select>
+          <button type="button" id="sunPlay" class="sq"></button>
+          <input type="range" id="sunT" min="330" max="1170" step="5" value="600">
+          <output id="sunClock" for="sunT"></output>
+        </div>
       </div>
     </div>
     <div class="loading" id="loading" data-zh="正在建立單位模型…">Building the flat…</div>
@@ -332,6 +366,13 @@ details.poigrp[open] > summary h3::after { content: "−"; }
       <table class="rt" id="wins"></table>
     </section>
 
+    <section class="card" id="sunCard">
+      <div class="eyebrow" id="sunHd">Direct sun on each window</div>
+      <div class="seg four" id="sunDays" role="group" aria-label="Day" data-zh-aria="日子"></div>
+      <table class="rt sunt" id="sunTbl"></table>
+      <p class="kpnote" id="sunNote"></p>
+    </section>
+
     <section class="card">
       <div class="eyebrow" id="roomsT">Rooms</div>
       <table class="rt" id="rooms"></table>
@@ -365,6 +406,7 @@ details.poigrp[open] > summary h3::after { content: "−"; }
         <li data-zh="室外地形採用以 SRTM 為基礎的高程數據，屋苑附近解像度約 30 米，較遠處約 100 米。附近建築按 OpenStreetMap 的平面輪廓和樓層數畫成簡單方塊，只作參考；它們、樹木（除非剔選）和 7 公里以外的島嶼都不計入海景數字。">Outside, the terrain is SRTM-based elevation data at about 30 m resolution near the site and 100 m further out. Nearby buildings are simple blocks from OpenStreetMap footprints and floor counts, for context only; they, trees (unless ticked) and islands more than 7 km away do not count in the sea figures.</li>
         <li data-zh="兩座大廈的外形按房委會標準樓層平面圖描畫，並按說明書的位置圖擺放；升降機和垃圾房位置取自同一份平面圖。平台（1樓，約主水平基準上52米）、大堂、天台設施和花槽是按布局圖和房委會模型估算。主要道路取自 OpenStreetMap，鋪在地形上，所以天橋和路塹都以地面高度顯示；隧道沒有畫出。拉遠鏡頭或選「周邊」，就可以連同附近地點一併看到。">Both towers are traced from the HA typical floor plans and placed from the brochure's key plan; the lifts and refuse rooms come from the same plans. The podium deck (1/F, taken at about +52 mPD), the lobbies, the roof features and the planters are estimates from the layout plan and the HA's model. Main roads come from OpenStreetMap and are laid on the terrain, so flyovers and cuttings show at ground level; tunnels are left out. Zoom out, or pick Area, to see them with the nearby places.</li>
         <li data-zh="「海景角度」是指從你所站的位置經窗口看得到海的方位度數，已計及牆、隔音鰭、鄰座單位和山勢。各窗的數字大致在離玻璃1.5米處量度（視乎房間大小）。睡房和浴室門當作關上：在這些房間內只計該房的窗，在其他位置也不能穿過這些門看出去。">"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
+        <li data-zh="太陽位置按屋苑位置（約北緯22.31度、東經114.27度）及香港時間，以標準天文公式計算，誤差不足一度。直射陽光時間把單位本身的牆、隔音鰭和兩座大廈當作由地面到天台的實體，山勢則沿用景觀計算的地形；附近其他建築物、樹木（除非選了加上）、雲和煙霞不計。立體畫面的光和影子來自同一個太陽；在鳥瞰模式下，單位的天花雖然看不見，仍然會遮光。">The sun's position is worked out for the estate (about 22.31°N, 114.27°E) on Hong Kong time with the standard solar formulas, which are good to a fraction of a degree. The direct-sun times treat the flat's own walls, the acoustic fin and both towers as solid from the ground to the roof, and take the hills from the same terrain as the views; nearby buildings, trees (unless you add them), cloud and haze are left out. The light and shadows in the 3D view come from the same sun, and in the dollhouse the flat's ceiling still blocks the light even though you can't see it.</li>
       </ul>
     </details>
   </aside>
@@ -1518,8 +1560,7 @@ const HORIZON = new THREE.Color('#dbe6ea');
 scene.background = HORIZON;
 scene.fog = new THREE.Fog(HORIZON, 3500, 32000);
 const cam = new THREE.PerspectiveCamera(70, 1, 0.05, 60000);
-scene.add(new THREE.HemisphereLight(0xffffff, 0xa59a88, 0.72));
-scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+const hemi = new THREE.HemisphereLight(0xffffff, 0xa59a88, 0.72), amb = new THREE.AmbientLight(0xffffff, 0.22); scene.add(hemi, amb);
 const sun = new THREE.DirectionalLight(0xfff3e0, 0.5); sun.position.copy(P(400, 150, 700)); scene.add(sun);
 
 // sky dome
@@ -1575,7 +1616,7 @@ function rebuildTerrain() {
 // main roads (shared with the other pages): true width and asphalt grey when you look out, map style from the dollhouse
 const surfH = YF.surfaceH(NEAR, FAR, samp, inNearInterior);
 const roads = YF.makeRoads(THREE, P, surfH), roadGroup = roads.group; scene.add(roadGroup);
-function buildRoads() { roads.build(st.trees ? 10 : 0, st.mode === 'walk' ? 'real' : 'map'); roadGroup.visible = YF.roadsOn; blds.build(st.trees ? 10 : 0); blds.group.visible = YF.bldgOn; }
+function buildRoads() { roads.build(st.trees ? 10 : 0, st.mode === 'walk' ? 'real' : 'map'); roadGroup.visible = YF.roadsOn; blds.build(st.trees ? 10 : 0); blds.group.visible = YF.bldgOn; castDirty = true; }
 // nearby buildings (shared), simple blocks for context; not part of the sight lines
 const blds = YF.makeBuildings(THREE, P, surfH); scene.add(blds.group);
 
@@ -1602,9 +1643,11 @@ function box(g, X0, X1, Y0, Y1, z0, z1, m, abs) {
   mesh.position.copy(P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), (abs ? 0 : FL) + (z0 + z1) / 2));
   g.add(mesh); return mesh;
 }
-const shell = new THREE.Group(), ceilGrp = new THREE.Group(), outside = new THREE.Group(), above = new THREE.Group();
+const shell = new THREE.Group(), ceilGrp = new THREE.Group(), outside = new THREE.Group(), above = new THREE.Group(), ceilShadow = new THREE.Group();
+// the ceiling again, drawn nowhere but casting shadows, so sunlight comes in only through the windows even in the dollhouse
+const CASTER = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
 const capGrp = new THREE.Group(), commonFurn = new THREE.Group(), capCommon = new THREE.Group();
-scene.add(shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon);
+scene.add(shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon, ceilShadow);
 // per plan: partitions, furniture, and their dollhouse caps
 const LG = {};
 function clearGroup(g) { while (g.children.length) { const c = g.children.pop(); c.traverse(n => { if (n.geometry) n.geometry.dispose(); }); } }
@@ -1617,7 +1660,7 @@ const CAP = {
 const floorMeshes = [], mainFloors = [];
 // (re)build everything that belongs to the flat and floor on show
 function rebuildFlat() {
-  for (const g of [shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon]) clearGroup(g);
+  for (const g of [shell, ceilGrp, outside, above, capGrp, commonFurn, capCommon, ceilShadow]) clearGroup(g);
   for (const k of Object.keys(LG)) { for (const g of Object.values(LG[k])) { clearGroup(g); scene.remove(g); } delete LG[k]; }
   for (const k of LAYOUT_KEYS) {
     LG[k] = { parts: new THREE.Group(), furn: new THREE.Group(), capP: new THREE.Group(), capF: new THREE.Group() };
@@ -1625,6 +1668,7 @@ function rebuildFlat() {
   }
   floorMeshes.length = 0; mainFloors.length = 0;
   buildShell(); buildFurniture();
+  castDirty = shadowDirty = true;
 }
 
 function addWindow(g, X0, X1, Y0, Y1, o, wallMat) {
@@ -1655,6 +1699,7 @@ function buildShell() {
     const f = box(shell, X0, X1, Y0, Y1, -.15, 0, k === 'bath' ? M.bath : k === 'kit' ? M.kit : M.screed);
     floorMeshes.push(f); if (k === 'main') mainFloors.push(f);
     box(ceilGrp, X0, X1, Y0, Y1, CEIL, CEIL + .15, M.ceil);
+    box(ceilShadow, X0, X1, Y0, Y1, CEIL, CEIL + .15, CASTER);
   }
   // the towers around the flat: open on this floor where the flat is
   est.cut({ block: FLAT.block, lo: FL - .15, hi: FL + 2.75, box: YF.FLATKEY[FLAT.id].box });
@@ -1828,6 +1873,7 @@ function updateLabelVisibility() {
     L.el.textContent = labelName(L) + (L.behind ? T(' · behind the hill', ' · 被山遮擋') : '');
   }
   poiPins.visible = YF.poiOn && (st.mode === 'walk' || area); estPins.visible = YF.estOn && (st.mode === 'walk' || area);
+  sunLabelVis();
 }
 function placeLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight, v = new THREE.Vector3();
@@ -1841,6 +1887,7 @@ function placeLabels() {
   for (const L of OUT_L) put(L.el, L.v, !L.hidden);
   for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll' && !inArea());
   for (const L of CORE_L) put(L.el, L.v, st.mode === 'doll' && !inArea() && camDist() > 9);
+  for (const L of SUN_L) put(L.el, L.v, !L.hidden);
 }
 
 // ---------------- cameras ----------------
@@ -1920,7 +1967,7 @@ function setMode(m) {
   setVis();
   cam.fov = doll ? 45 : 70; cam.near = doll ? .5 : .05; cam.updateProjectionMatrix();
   setHint();
-  updateSight(); updateLabelVisibility(); updateCompassMarker();
+  updateSight(); updateLabelVisibility(); updateCompassMarker(); updateSun();
   dirty = true;
 }
 
@@ -2213,6 +2260,7 @@ function setVis() {
   commonFurn.visible = furn; capCommon.visible = furn && cutOn; capGrp.visible = cutOn;
   ceilGrp.visible = !doll; above.visible = !doll;
   for (const f of mainFloors) f.material = furn ? M.wood : M.screed;
+  shadowDirty = true;
 }
 function drawLayoutButtons() {
   $('lays').innerHTML = LAYOUT_KEYS.map(k => `<button data-l="${k}" aria-pressed="${k === st.layout}">${tr(LAYOUTS[k].name)}<small>${tr(LAYOUTS[k].sub)}</small></button>`).join('');
@@ -2223,7 +2271,7 @@ function applyLayout() {
   setVis();
   if (st.stop && !stopFor(st.stop)) st.stop = null;
   buildBlockers(); buildRoomLabels(); drawLayoutButtons(); drawStops(); refreshPanel(); drawPlan();
-  windowTable(); roomTable(); compareTable();
+  windowTable(); roomTable(); compareTable(); sunTable(); updateSun();
   lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true;
 }
 function setLayout(k) {
@@ -2257,14 +2305,22 @@ $('panelBtn').addEventListener('click', () => setPanel($('app').classList.contai
 { let open = true; try { open = localStorage.getItem('yf-tour-panel') !== '0'; } catch (e) {} setPanel(open); }
 $('snapChk').checked = autoSnap;
 $('snapChk').addEventListener('change', e => { autoSnap = e.target.checked; zoomRef = null; try { localStorage.setItem('yf-tour-snap', autoSnap ? '1' : '0'); } catch (err) {} });
-$('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuildTerrain(); buildRoads(); seaTable(); windowTable(); compareTable(); lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true; });
+$('trees').addEventListener('change', e => { st.trees = e.target.checked; rebuildTerrain(); buildRoads(); seaTable(); windowTable(); compareTable(); sunTable(); updateSun(); lastSightKey = ''; updateSight(); updateLabelVisibility(); dirty = true; });
 
 function hud() {
   const where = T(`Flat ${FLAT.no} · ${FLOOR}/F`, `${FLAT.no}室 · ${FLOOR}樓`);
   if (st.mode === 'walk') {
     const az = ((cs.yaw % 360) + 360) % 360;
-    $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T(`eye +${EYE_H.toFixed(1)} mPD`, `視線 +${EYE_H.toFixed(1)} mPD`)}</span><span>${T('Facing', '面向')} ${Math.round(az)}° ${dirName(az)}</span>`;
-  } else $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>`;
+    $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T(`eye +${EYE_H.toFixed(1)} mPD`, `視線 +${EYE_H.toFixed(1)} mPD`)}</span><span>${T('Facing', '面向')} ${Math.round(az)}° ${dirName(az)}</span>` + sunHud();
+  } else $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>` + sunHud();
+}
+// where the sun is, and which rooms it is shining into
+function sunHud() {
+  if (!st.sunOn || !SUN.now) return '';
+  const s = SUN.now, a = dirName(s.az);
+  const where = s.el <= 0 ? T('below the horizon', '在地平線下') : !SUN.vis ? T(`behind the hills to the ${a}`, `被${a}面的山遮擋`) : T(`${Math.round(s.el)}° up in the ${a}`, `在${a}，仰角${Math.round(s.el)}°`);
+  const rooms = !SUN.vis ? '' : SUN.rooms.length ? T('shining into the ', '照入') + SUN.rooms.map(r => tr(r).toLowerCase()).join(T(', ', '、')) : T('no direct sun inside', '室內沒有直射陽光');
+  return `<span class="sunhud">${T('Sun', '太陽')} ${clock(st.sunT)} · ${where}${rooms ? ' · ' + rooms : ''}</span>`;
 }
 
 // ---------------- flat and floor ----------------
@@ -2324,6 +2380,7 @@ let lastT = performance.now(), sightTimer = 0;
 function loop(t) {
   requestAnimationFrame(loop);
   const dt = Math.min(.05, (t - lastT) / 1000); lastT = t;
+  sunTick(dt, t);
   if (st.mode === 'walk') {
     if (glide) {
       const f = Math.min(1, (t - glide.t0) / glide.ms), e = ease(f), a = glide.from, b = glide.to;
@@ -2371,12 +2428,13 @@ function loop(t) {
     dirty = false;
     zoomSnap();
     if ((st.mode === 'doll' && !inArea()) !== visCut) setVis();
-    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); }
+    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); if (st.sunOn) updateSun(); }
+    if (st.sunOn && shadowDirty) { if (castDirty) shadowFlags(); renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
 }
 
-YF.onLang(() => { applyLayout(); drawHeader(); placeFlatLabels(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dockKey = ''; dirty = true; });
+YF.onLang(() => { sunUI(); applyLayout(); drawHeader(); placeFlatLabels(); setHint(); setPanel(!$('app').classList.contains('collapsed')); hud(); dockKey = ''; dirty = true; });
 YF.onPoi(() => { updateLabelVisibility(); dirty = true; });
 YF.onEst(() => { updateLabelVisibility(); dirty = true; });
 YF.onSite(() => { siteGroup.visible = YF.siteOn; updateLabelVisibility(); dirty = true; });
@@ -2439,6 +2497,306 @@ YF.onPick(p => {
   const r = stage.getBoundingClientRect(); if (r.bottom < 80 || r.top > innerHeight - 80) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
+Object.assign(st, { sunOn: false, sunDay: 'today', sunT: 600 });
+// ---------------- the sun ----------------
+// Where the sun is for the estate (about 22.31°N 114.27°E) on Hong Kong time (UTC+8, no daylight saving), from the
+// standard low-precision solar formulas (good to a small fraction of a degree), with refraction near the horizon.
+const RAD = Math.PI / 180, SUN_LAT = 22.31, SUN_LON = 114.27;
+function sunAt(ms) {
+  const d = ms / 864e5 - 10957.5;   // days from noon on 1 Jan 2000
+  const M = RAD * (357.5291 + 0.98560028 * d);
+  const L = M + RAD * (1.9148 * Math.sin(M) + .02 * Math.sin(2 * M) + .0003 * Math.sin(3 * M) + 102.9372) + Math.PI, e = RAD * 23.4397;
+  const dec = Math.asin(Math.sin(e) * Math.sin(L)), ra = Math.atan2(Math.sin(L) * Math.cos(e), Math.cos(L));
+  const H = RAD * (280.16 + 360.9856235 * d + SUN_LON) - ra, phi = RAD * SUN_LAT;
+  let el = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H)) / RAD;
+  const az = (Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) / RAD + 540) % 360;
+  if (el > -2) el += 1.02 / Math.tan(RAD * (el + 10.3 / (el + 5.11))) / 60;
+  return { az, el };
+}
+const sunVec = s => new THREE.Vector3(Math.sin(s.az * RAD) * Math.cos(s.el * RAD), Math.sin(s.el * RAD), -Math.cos(s.az * RAD) * Math.cos(s.el * RAD));
+// the days you can pick: today, the longest day, the equinoxes and the shortest day
+const SUN_DAYS = ['today', 'jun', 'eq', 'dec'];
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function hkNow() { const n = new Date(Date.now() + 8 * 36e5); return { y: n.getUTCFullYear(), m: n.getUTCMonth() + 1, d: n.getUTCDate(), t: n.getUTCHours() * 60 + n.getUTCMinutes() }; }
+function sunDate(k) {
+  const n = hkNow(), [m, d] = { jun: [6, 21], eq: [3, 20], dec: [12, 21] }[k] || [n.m, n.d];
+  return { m, d, ms: Date.UTC(n.y, m - 1, d) };
+}
+const sunDay = () => sunDate(st.sunDay);
+const sunNowAt = t => sunAt(sunDay().ms + (t - 480) * 6e4);
+function dayName(k) {
+  const D = sunDate(k), en = `${D.d} ${MON[D.m - 1]}`, zh = `${D.m}月${D.d}日`;
+  return {
+    today: T(`Today, ${en}`, `今天（${zh}）`), jun: T('21 Jun, longest day', '夏至（6月21日）'),
+    eq: T('Equinox, Mar and Sep', '春分、秋分'), dec: T('21 Dec, shortest day', '冬至（12月21日）')
+  }[k];
+}
+function dayBtn(k) {
+  const D = sunDate(k);
+  return {
+    today: [T('Today', '今天'), T(`${D.d} ${MON[D.m - 1]}`, `${D.m}月${D.d}日`)], jun: [T('21 Jun', '夏至'), T('longest day', '6月21日')],
+    eq: [T('Equinox', '春分秋分'), T('Mar, Sep', '3月、9月')], dec: [T('21 Dec', '冬至'), T('shortest day', '12月21日')]
+  }[k];
+}
+// minutes after midnight as a clock time, and a range of them
+const hm = t => { t = Math.round(t); const h = Math.floor(t / 60) % 24; return { h, h12: (h + 11) % 12 + 1, mm: String(t % 60).padStart(2, '0'), am: h < 12 }; };
+const zhHalf = c => (c.am ? '上午' : c.h === 12 ? '中午' : '下午');
+function clock(t) { const c = hm(t); return T(`${c.h12}:${c.mm} ${c.am ? 'am' : 'pm'}`, `${zhHalf(c)}${c.h12}:${c.mm}`); }
+function clockRange(a, b) {
+  const x = hm(a), y = hm(b);
+  if (x.am === y.am && zhHalf(x) === zhHalf(y)) return T(`${x.h12}:${x.mm}–${y.h12}:${y.mm} ${y.am ? 'am' : 'pm'}`, `${zhHalf(x)}${x.h12}:${x.mm}至${y.h12}:${y.mm}`);
+  return T(`${clock(a)}–${clock(b)}`, `${clock(a)}至${clock(b)}`);
+}
+const hourName = h => (h === 12 ? T('noon', '正午') : T(`${(h + 11) % 12 + 1} ${h < 12 ? 'am' : 'pm'}`, `${h < 12 ? '上午' : '下午'}${(h + 11) % 12 + 1}時`));
+
+// the skyline of the hills from the flat: for each degree of azimuth, how high (degrees) the ground stands
+let HOR = null, horKey = '';
+function horizon() {
+  const key = FLAT.id + FLOOR + st.trees; if (key === horKey) return HOR; horKey = key;
+  const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]), h0 = FL + 1.5, can = st.trees ? 10 : 0;
+  HOR = new Float32Array(360);
+  for (let a = 0; a < 360; a++) {
+    const dx = Math.sin(a * RAD), dy = Math.cos(a * RAD); let best = -Infinity;
+    for (let d = 40; d < 12000; d *= 1.025) {
+      const r = elev(cx + dx * d, cy + dy * d); if (!r) break; if (r[1]) continue;
+      const v = (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * .87 - h0) / d; if (v > best) best = v;
+    }
+    HOR[a] = best === -Infinity ? -90 : Math.atan(best) / RAD;
+  }
+  return HOR;
+}
+const horAt = (hor, az) => { const a = Math.floor(az) % 360; return Math.max(hor[a], hor[(a + 1) % 360]); };
+// each window as a few points just outside the glass, which way it faces, and what can shade it: the flat's own walls
+// and the acoustic fin (repeated on every floor up to the roof, or to the fin's top), and both towers up to their roofs
+let sunGeoKey = '', SUNWIN = {}, SUNBLK = [];
+function sunGeometry() {
+  const key = FLAT.id + FLOOR; if (key === sunGeoKey) return; sunGeoKey = key;
+  const inside = (X, Y) => FLOORS.some(([, a, b, c, d]) => X > a && X < b && Y > c && Y < d);
+  SUNWIN = {};
+  for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
+    if (k !== 'win') continue;
+    const alongY = X1 - X0 < Y1 - Y0, th = alongY ? X1 - X0 : Y1 - Y0, mx = (X0 + X1) / 2, my = (Y0 + Y1) / 2;
+    const s = alongY ? (inside(mx - th / 2 - 300, my) ? 1 : -1) : (inside(mx, my - th / 2 - 300) ? 1 : -1), off = s * (th / 2 + 10);
+    const pts = [.1, .3, .5, .7, .9].map(f => (alongY ? [wx(mx + off), wy(Y0 + (Y1 - Y0) * f)] : [wx(X0 + (X1 - X0) * f), wy(my + off)]));
+    SUNWIN[o.id] = { pts, nx: alongY ? s : 0, ny: alongY ? 0 : s * FLAT.sy, z: FL + (o.sill + o.head) / 2 };
+  }
+  const roof = k => YF.BLOCKS[k].roof + 1.3, box = YF.FLATKEY[FLAT.id].box;
+  SUNBLK = PIECES.filter(p => p[0] === 'wall' || p[0] === 'mull').map(([, X0, X1, Y0, Y1]) => ({ b: obbFromPlan(X0, X1, Y0, Y1), top: roof(FLAT.block) }));
+  if (FIN) SUNBLK.push({ b: obbFromPlan(FIN[0], FIN[1], FIN[2], FIN[3]), top: floorLevel(FLAT.finTop + 1) });
+  for (const k of ['A', 'B']) {
+    const f = YF.BLOCKS[k].foot;
+    for (let i = 0; i < f.length; i++) {
+      const [x1, y1] = f[i], [x2, y2] = f[(i + 1) % f.length], mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      if (k === FLAT.block && mx > box[0] && mx < box[1] && my > box[2] && my < box[3]) continue;
+      SUNBLK.push({ g: [x1, y1, x2, y2], top: roof(k) });
+    }
+  }
+}
+// does the sun reach any of the window's glass?
+function winLit(w, s, hor) {
+  if (s.el <= 0) return false;
+  const dx = Math.sin(s.az * RAD), dy = Math.cos(s.az * RAD);
+  if (dx * w.nx + dy * w.ny < .02 || s.el < horAt(hor, s.az)) return false;
+  const tn = Math.tan(s.el * RAD);
+  for (const [x, y] of w.pts) {
+    let ok = true;
+    for (const q of SUNBLK) {
+      const t = q.b ? hitT(q.b, x, y, dx, dy) : segT(q.g, x, y, dx, dy);
+      if (t < 3000 && w.z + t * tn < q.top) { ok = false; break; }
+    }
+    if (ok) return true;
+  }
+  return false;
+}
+// every window row of the plan on show, through the chosen day in 3-minute steps
+const SUN_T0 = 300, SUN_T1 = 1200, SUN_DT = 3, sunCache = {};
+function spansOf(on) {
+  const out = []; let a = -1;
+  on.forEach((v, i) => { if (v && a < 0) a = i; if (!v && a >= 0) { out.push([SUN_T0 + a * SUN_DT, SUN_T0 + i * SUN_DT]); a = -1; } });
+  if (a >= 0) out.push([SUN_T0 + a * SUN_DT, SUN_T0 + on.length * SUN_DT]);
+  return out;
+}
+function sunRows() {
+  const D = sunDay(), key = [FLAT.id, FLOOR, st.layout, D.ms, st.trees].join('|');
+  if (sunCache[key]) return sunCache[key];
+  sunGeometry();
+  const hor = horizon(), steps = [];
+  for (let t = SUN_T0; t <= SUN_T1; t += SUN_DT) steps.push(sunAt(D.ms + (t - 480) * 6e4));
+  const rows = LAYOUTS[st.layout].wins.map(([room, w, , , only, role]) => {
+    const ws = (only || Object.keys(SUNWIN)).map(id => SUNWIN[id]).filter(Boolean);
+    const spans = spansOf(steps.map(s => ws.some(x => winLit(x, s, hor)))).filter(([a, b]) => b - a >= 6);
+    return { room, w, role, ws, spans };
+  });
+  return (sunCache[key] = { rows, day: spansOf(steps.map(s => s.el > -.27))[0] || null });
+}
+
+// ---------------- the sun in the 3D view ----------------
+// sunlight with shadows; the flat's ceiling is kept as an invisible shadow caster so the dollhouse lights like the real flat
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
+const SUN0 = P(400, 150, 700), sunTgt = new THREE.Object3D(); scene.add(sunTgt); sun.target = sunTgt;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -.0002; sun.shadow.normalBias = .03;
+for (const m of Object.values(est.M)) m.shadowSide = THREE.DoubleSide;
+let shadowDirty = true, castDirty = true;
+function shadowFlags() {
+  scene.traverse(o => {
+    if (!o.isMesh) return;
+    const m = o.material, lam = m && m.isMeshLambertMaterial && !m.transparent, ground = o === farMesh || o === nearMesh || o === sea;
+    o.castShadow = (lam && !ground) || m === CASTER; o.receiveShadow = lam && !ground;
+  });
+  castDirty = false;
+}
+const sunGrp = new THREE.Group(); sunGrp.visible = false; scene.add(sunGrp);
+const glow = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, 'rgba(255,253,240,1)'); r.addColorStop(.2, 'rgba(255,246,214,1)'); r.addColorStop(.28, 'rgba(255,214,128,.9)');
+  r.addColorStop(.5, 'rgba(255,190,90,.3)'); r.addColorStop(1, 'rgba(255,170,60,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
+})();
+const dotTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(16, 16, 15, 0, 7); g.fill(); g.fillStyle = '#e8922a'; g.beginPath(); g.arc(16, 16, 11, 0, 7); g.fill();
+  return new THREE.CanvasTexture(c);
+})();
+const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, fog: false }));
+const dotMat = new THREE.SpriteMaterial({ map: dotTex, transparent: true, depthWrite: false, fog: false });
+const pathMat = new THREE.LineBasicMaterial({ color: 0xe8922a, fog: false });
+const ringMat = new THREE.LineBasicMaterial({ color: 0xe8922a, transparent: true, opacity: .55, fog: false });
+sunGrp.add(sunDisc);
+let sunObjs = [], sunPathKey = '';
+const SUN_L = [], SUN = { now: null, vis: false, rooms: [] };
+// the day's path across the sky with a dot at each hour: far away from inside the flat, as a dome round the flat in the dollhouse
+function buildSunPath() {
+  for (const o of sunObjs) { sunGrp.remove(o); if (o.geometry) o.geometry.dispose(); }
+  sunObjs = []; SUN_L.forEach(L => L.el.remove()); SUN_L.length = 0;
+  if (!st.sunOn) return;
+  const walk = st.mode === 'walk', D = sunDay(), r = walk ? 15000 : 15;
+  const c = walk ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : P(FLAT_C.x, -FLAT_C.z, FL + CUT);
+  const at = (s, rr) => c.clone().addScaledVector(sunVec(s), rr || r);
+  const add = o => { sunGrp.add(o); sunObjs.push(o); return o; };
+  const pts = [];
+  for (let t = 240; t <= 1260; t += 4) { const s = sunAt(D.ms + (t - 480) * 6e4); if (s.el > 0) pts.push(at(s)); }
+  if (pts.length > 1) add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), pathMat));
+  for (let h = 5; h <= 20; h++) {
+    const s = sunAt(D.ms + (h * 60 - 480) * 6e4); if (s.el < 1) continue;
+    const d = add(new THREE.Sprite(dotMat)); d.position.copy(at(s)); d.scale.setScalar(walk ? 180 : .34);
+    SUN_L.push({ el: mkLabel('sunh', hourName(h)), v: at(s), az: s.az, alt: s.el, hidden: true });
+  }
+  if (!walk) {
+    const ring = []; for (let a = 0; a <= 360; a += 4) ring.push(at({ az: a, el: 0 }));
+    add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring), ringMat));
+    [[0, 'N', '北'], [90, 'E', '東'], [180, 'S', '南'], [270, 'W', '西']].forEach(([a, en, zh]) => SUN_L.push({ el: mkLabel('sunc', T(en, zh)), v: at({ az: a, el: 0 }, r * 1.07), az: a, alt: 0, hidden: true }));
+  }
+  sunDisc.scale.setScalar(walk ? 1000 : 2.6);
+  for (const o of sunObjs.concat(sunDisc)) o.renderOrder = 5;
+}
+// hour marks are shown from inside only where you could see that bit of sky: not behind a wall, a tower or the hills
+const sunRay = new THREE.Raycaster();
+function sunLabelVis() {
+  const walk = st.mode === 'walk', show = st.sunOn && (walk || (st.mode === 'doll' && !inArea()));
+  if (!show || !walk) { SUN_L.forEach(L => { L.hidden = !show; }); return; }
+  const hor = horizon(), o = cam.position, occ = [shell, ceilGrp, LG[st.layout].parts, est.group];
+  for (const L of SUN_L) {
+    if (L.alt < horAt(hor, L.az)) { L.hidden = true; continue; }
+    sunRay.set(o, L.v.clone().sub(o).normalize()); sunRay.far = 5000;
+    L.hidden = sunRay.intersectObjects(occ, true).some(h => h.object.material !== M.glass);
+  }
+}
+function updateSun() {
+  const D = sunDay(), s = sunAt(D.ms + (st.sunT - 480) * 6e4), hor = horizon();
+  const vis = s.el > 0 && s.el >= horAt(hor, s.az), on = st.sunOn;
+  SUN.now = s; SUN.vis = vis;
+  const key = [on, st.mode === 'walk', D.ms, FLAT.id, FLOOR, YF.lang].join('|');
+  if (key !== sunPathKey) { sunPathKey = key; buildSunPath(); }
+  sunTgt.position.copy(FLAT_C);
+  if (!on) {
+    sun.position.copy(FLAT_C).add(SUN0); sun.intensity = .5; sun.color.set(0xfff3e0); sun.castShadow = false;
+    hemi.intensity = .72; amb.intensity = .22; sunGrp.visible = false;
+  } else {
+    sun.position.copy(FLAT_C).addScaledVector(sunVec(s), 400);
+    const k = vis ? Math.min(1, s.el / 6) : 0, w = Math.min(1, Math.max(0, s.el) / 25);
+    sun.intensity = 1.05 * k; sun.color.setRGB(1, .8 + .15 * w, .58 + .34 * w);
+    hemi.intensity = s.el > 0 ? .5 : .36 + .14 * Math.max(0, (s.el + 6) / 6); amb.intensity = .16;
+    const sc = sun.shadow.camera; sc.left = sc.bottom = -16; sc.right = sc.top = 16; sc.near = 1; sc.far = 440; sc.updateProjectionMatrix();
+    sun.castShadow = true;
+    sunGrp.visible = !(st.mode === 'doll' && inArea());
+    const walk = st.mode === 'walk';
+    sunDisc.visible = s.el > (walk ? -1 : 0);
+    sunDisc.position.copy(walk ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : P(FLAT_C.x, -FLAT_C.z, FL + CUT)).addScaledVector(sunVec(s), walk ? 15000 : 15);
+    sunGeometry();
+    SUN.rooms = [...new Set(LAYOUTS[st.layout].wins.filter(([, , , , only]) => (only || Object.keys(SUNWIN)).some(id => SUNWIN[id] && winLit(SUNWIN[id], s, hor))).map(r => r[0]))];
+  }
+  sunLabelVis(); shadowDirty = true; dirty = true;
+}
+
+// ---------------- sun controls ----------------
+function sunUI() {
+  const on = st.sunOn;
+  $('dSun').setAttribute('aria-pressed', String(on));
+  $('dSunTxt').textContent = T('Sun', '陽光');
+  $('dSun').title = on ? T('Hide the sun', '隱藏太陽') : T('Show the sun and its path for any time of day', '顯示太陽及其路徑');
+  $('sunX').hidden = !on;
+  $('sunDay').innerHTML = SUN_DAYS.map(k => `<option value="${k}"${k === st.sunDay ? ' selected' : ''}>${dayName(k)}</option>`).join('');
+  $('sunDay').setAttribute('aria-label', T('Day', '日子'));
+  $('sunT').setAttribute('aria-label', T('Time of day', '時間'));
+  $('sunPlay').setAttribute('aria-label', sunPlaying ? T('Pause', '暫停') : T('Play the day', '播放一整天'));
+  $('sunPlay').innerHTML = sunPlaying
+    ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>';
+  $('dSunGrp').setAttribute('aria-label', T('Sun', '陽光'));
+  sunClock();
+}
+function sunClock() {
+  $('sunT').value = st.sunT; $('sunClock').textContent = clock(st.sunT);
+  $('sunT').setAttribute('aria-valuetext', clock(st.sunT));
+}
+function sunTable() {
+  const S = sunRows(), x = t => ((t - 300) / 900 * 150).toFixed(1);   // the bars run from 5 am to 8 pm
+  $('sunHd').textContent = `${T('Direct sun on each window', '各窗的直射陽光')} · ${tr(LAYOUTS[st.layout].name)}`;
+  $('sunDays').innerHTML = SUN_DAYS.map(k => { const [a, b] = dayBtn(k); return `<button data-k="${k}" aria-pressed="${k === st.sunDay}">${a}<small>${b}</small></button>`; }).join('');
+  $('sunDays').querySelectorAll('button').forEach(b => { b.onclick = () => setSunDay(b.dataset.k); });
+  const bar = r => {
+    let s = `<svg class="sbar" viewBox="0 0 150 8" aria-hidden="true"><rect width="150" height="8" class="sb-n"/>`;
+    if (S.day) s += `<rect x="${x(S.day[0])}" width="${x(S.day[1]) - x(S.day[0])}" height="8" class="sb-d"/>`;
+    for (const [a, b] of r.spans) s += `<rect x="${x(a)}" width="${Math.max(1, x(b) - x(a))}" height="8" class="sb-s"/>`;
+    for (const h of [6, 9, 12, 15, 18]) s += `<rect x="${(+x(h * 60) - .4).toFixed(1)}" width=".8" height="8" class="sb-t"/>`;
+    if (st.sunOn) s += `<rect x="${(+x(st.sunT) - .9).toFixed(1)}" width="1.8" height="8" class="sb-now"/>`;
+    return s + '</svg>';
+  };
+  const scale = `<svg class="sbar sscale" viewBox="0 0 150 9" aria-hidden="true">${[[6, T('6am', '6時')], [9, T('9', '9時')], [12, T('noon', '12時')], [15, T('3', '15時')], [18, T('6pm', '18時')]].map(([h, l]) => `<text x="${x(h * 60)}" y="7.5">${l}</text>`).join('')}</svg>`;
+  const rows = S.rows.map(r => `<tr><td>${tr(r.room)}<small>${tr(r.w)}</small></td><td class="sunc">${r.spans.length ? r.spans.map(([a, b]) => clockRange(a, b)).join('<br>') : `<span class="none">${T('no direct sun', '沒有直射陽光')}</span>`}${bar(r)}</td></tr>`);
+  $('sunTbl').innerHTML = `<tr><th>${T('Room · window', '房間 · 窗')}</th><th>${T('Direct sun', '直射陽光')}${scale}</th></tr>` + rows.join('');
+  $('sunNote').innerHTML = (S.day ? T(`Sunrise ${clock(S.day[0])}, sunset ${clock(S.day[1])}. `, `日出${clock(S.day[0])}，日落${clock(S.day[1])}。`) : '')
+    + T('Times when the sun reaches some of the window’s glass, allowing for the hills, both towers, the acoustic fin and the flat’s own walls; nearby buildings, cloud and haze are left out. Turn on <b>Sun</b> under the view to watch the light move through the flat.',
+      '即陽光照到窗玻璃部分位置的時間，已計算山勢、兩座大廈、隔音鰭和單位本身的牆；附近其他建築物、雲和煙霞不計。按畫面下方的<b>陽光</b>，就可以看到陽光在單位內移動。');
+}
+function setSunDay(k) { st.sunDay = k; sunUI(); sunTable(); updateSun(); }
+function setSunOn(on) {
+  st.sunOn = on; if (!on) sunPlaying = false;
+  sunUI(); updateSun(); sunTable(); hud();
+}
+let sunPlaying = false, sunTableT = 0;
+$('dSun').onclick = () => setSunOn(!st.sunOn);
+$('sunDay').onchange = e => setSunDay(e.target.value);
+$('sunT').oninput = e => { st.sunT = +e.target.value; sunClock(); updateSun(); sunTable(); };
+$('sunPlay').onclick = () => {
+  sunPlaying = !sunPlaying;
+  if (sunPlaying) { const S = sunRows(); if (S.day && (st.sunT >= S.day[1] - 5 || st.sunT < S.day[0] - 30)) st.sunT = Math.max(330, Math.round((S.day[0] - 20) / 5) * 5); }
+  sunUI();
+};
+function sunTick(dt, t) {
+  if (!sunPlaying) return;
+  const S = sunRows(), end = S.day ? Math.min(1170, S.day[1] + 20) : 1170, start = S.day ? Math.max(330, S.day[0] - 20) : 330;
+  st.sunT += dt * 40; if (st.sunT > end) st.sunT = start;
+  sunClock(); updateSun();
+  if (t - sunTableT > 400) { sunTableT = t; sunTable(); }
+}
+// start at the time it is now in Hong Kong if the sun is up, otherwise 10 am
+{
+  const n = hkNow(), S = spansOf((() => { const a = []; for (let t = SUN_T0; t <= SUN_T1; t += SUN_DT) a.push(sunAt(sunDate('today').ms + (t - 480) * 6e4).el > 2); return a; })())[0];
+  st.sunT = S && n.t > S[0] && n.t < S[1] && n.t >= 330 && n.t <= 1170 ? Math.round(n.t / 5) * 5 : 600;
+}
+
 // ---------------- start ----------------
 seaTable();
 rebuildTerrain();
@@ -2448,10 +2806,11 @@ applyLayout();
 setMode('doll');
 cam.position.copy(dollPose.pos); controls.target.copy(dollPose.tgt); controls.update();
 goStop('doll');
+sunUI();
 resize();
 $('loading').hidden = true;
 requestAnimationFrame(loop);
-window.__tour = { st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; } };
+window.__tour = { sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; } };
 })();
 </script>
 
