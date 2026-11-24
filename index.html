@@ -241,6 +241,12 @@ details.poigrp[open] > summary h3::after { content: "−"; }
 .dock .sunx input[type=range] { width: 150px; min-width: 80px; flex: 1 1 150px; accent-color: #f5b041; margin: 0; }
 .dock .sunx output { font: 600 13.5px/1 var(--f-data); color: #ffd58a; min-width: 66px; white-space: nowrap; }
 .hud span.sunhud { background: rgba(110,66,6,.88); color: #ffe9bf; }
+@container (max-width: 560px) {
+  .dock .sun { flex-wrap: wrap; }
+  .dock .sunx { flex: 1 0 100%; padding: 8px 10px; border-top: 1px solid rgba(238,244,246,.16); }
+  .dock .sunx select { max-width: 128px; }
+  .hud span.sunhud.rooms { display: none; }
+}
 #sunDays { margin: 2px 0 4px; }
 table.sunt td small { display: block; color: var(--ink-2); font-size: 12px; }
 table.sunt td.sunc { font-family: var(--f-data); font-size: 12px; white-space: nowrap; width: 150px; }
@@ -2911,8 +2917,8 @@ function sunHud() {
   if (!st.sunOn || !SUN.now) return '';
   const s = SUN.now, a = dirName(s.az);
   const where = s.el <= 0 ? T('below the horizon', '在地平線下') : !SUN.vis ? T(`behind the hills to the ${a}`, `被${a}面的山遮擋`) : T(`${Math.round(s.el)}° up in the ${a}`, `在${a}，仰角${Math.round(s.el)}°`);
-  const rooms = !SUN.vis ? '' : SUN.rooms.length ? T('shining into the ', '照入') + SUN.rooms.map(r => tr(r).toLowerCase()).join(T(', ', '、')) : T('no direct sun inside', '室內沒有直射陽光');
-  return `<span class="sunhud">${T('Sun', '太陽')} ${clock(st.sunT)} · ${where}${rooms ? ' · ' + rooms : ''}</span>`;
+  const rooms = !SUN.vis ? '' : SUN.rooms.length ? T('Shining into the ', '照入') + SUN.rooms.map(r => tr(r).toLowerCase()).join(T(', ', '、')) : T('No direct sun inside', '室內沒有直射陽光');
+  return `<span class="sunhud">${T('Sun', '太陽')} ${clock(st.sunT)} · ${where}</span>` + (rooms ? `<span class="sunhud rooms">${rooms}</span>` : '');
 }
 
 // ---------------- flat and floor ----------------
