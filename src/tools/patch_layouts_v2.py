@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# NOTE: already applied. Plans A and C were swapped afterwards in index.src.html (A is now four bedrooms, C the sea-view bedrooms); edit the page directly.
 """Replace the furnished layouts of both flat types with three plans of three or four bedrooms, and correct the Block B shell from the
 HA sales brochure (bay opening, second side window, east-window pier and stubs, side/gap/bath windows).
 
