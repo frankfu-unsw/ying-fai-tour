@@ -50,6 +50,15 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.dim { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); text-transform: none; letter-spacing: 0; font-family: var(--f-display); font-weight: 600; font-size: 11.5px; color: #13232c; background: rgba(255,255,255,.9); border: 1px solid #13232c; padding: 0 5px; }
 .lbl.dim b { font-family: var(--f-data); font-weight: 500; font-size: 11px; margin-left: 3px; }
 .lbl.hid { opacity: .55; font-weight: 500; }
+/* places across Hong Kong in the area view: map lettering with a white halo */
+.lbl.hk { background: none; padding: 0; color: #24343c; font-size: 12.5px; letter-spacing: .05em; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 1px #fff; }
+.lbl.hk.town { font-size: 15.5px; font-weight: 700; letter-spacing: .09em; color: #1b2a31; }
+.lbl.hk.island { text-transform: none; font-style: italic; font-size: 13px; letter-spacing: .02em; }
+.lbl.hk.water { text-transform: none; font-style: italic; font-size: 13px; letter-spacing: .03em; color: #0b4a68; text-shadow: 0 0 3px rgba(255,255,255,.85), 0 0 1px #fff; }
+.lbl.hk.peak { text-transform: none; font-size: 12.5px; letter-spacing: .01em; color: #4a3f2c; }
+.lbl.hk.peak::before { content: "▲"; font-size: 8px; margin-right: 3px; vertical-align: 1px; }
+.lbl.hk.peak small { font-family: var(--f-data); font-size: 10.5px; font-weight: 500; margin-left: 4px; }
+.lbl.hk.spot { text-transform: none; font-family: var(--f-body); font-size: 12px; letter-spacing: 0; color: #6a3f99; }
 .lbl.sunh { text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #5a3500; background: rgba(255,240,205,.94); border: 1px solid #e8922a; padding: 0 5px; border-radius: 9px; transform: translate(-50%, -135%); }
 .lbl.sunc { text-transform: none; letter-spacing: 0; font-size: 12px; color: #fff; background: rgba(196,108,18,.92); padding: 0 5px; transform: translate(-50%, -50%); }
 .hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; max-width: calc(100% - 290px); display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
@@ -420,6 +429,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
         <li data-zh="兩座大廈的外形按房委會標準樓層平面圖描畫，並按說明書的位置圖擺放；升降機和垃圾房位置取自同一份平面圖。平台（1樓，約主水平基準上52米）、大堂、天台設施和花槽是按布局圖和房委會模型估算。主要道路取自 OpenStreetMap，鋪在地形上，所以天橋和路塹都以地面高度顯示；隧道沒有畫出。拉遠鏡頭或選「周邊」，就可以連同附近地點一併看到。">Both towers are traced from the HA typical floor plans and placed from the brochure's key plan; the lifts and refuse rooms come from the same plans. The podium deck (1/F, taken at about +52 mPD), the lobbies, the roof features and the planters are estimates from the layout plan and the HA's model. Main roads come from OpenStreetMap and are laid on the terrain, so flyovers and cuttings show at ground level; tunnels are left out. Zoom out, or pick Area, to see them with the nearby places.</li>
         <li data-zh="「海景角度」是指從你所站的位置經窗口看得到海的方位度數，已計及牆、隔音鰭、鄰座單位和山勢。各窗的數字大致在離玻璃1.5米處量度（視乎房間大小）。睡房和浴室門當作關上：在這些房間內只計該房的窗，在其他位置也不能穿過這些門看出去。">"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
         <li data-zh="太陽位置按屋苑位置（約北緯22.31度、東經114.27度）及香港時間，以標準天文公式計算，誤差不足一度。直射陽光時間把單位本身的牆、隔音鰭和兩座大廈當作由地面到天台的實體，山勢則沿用景觀計算的地形；附近其他建築物、樹木（除非選了加上）、雲和煙霞不計。立體畫面的光和影子來自同一個太陽；在鳥瞰模式下，單位的天花雖然看不見，仍然會遮光。">The sun's position is worked out for the estate (about 22.31°N, 114.27°E) on Hong Kong time with the standard solar formulas, which are good to a fraction of a degree. The direct-sun times treat the flat's own walls, the acoustic fin and both towers as solid from the ground to the roof, and take the hills from the same terrain as the views; nearby buildings, trees (unless you add them), cloud and haze are left out. The light and shadows in the 3D view come from the same sun, and in the dollhouse the flat's ceiling still blocks the light even though you can't see it.</li>
+        <li data-zh="周邊視角拉遠時見到的香港其他地區，是在打開頁面時由瀏覽器即時載入：地勢取自 AWS Terrain Tiles（Mapzen，主要來自 SRTM，與附近地形同一來源），海岸線、水塘、主要道路和市區範圍取自 OpenStreetMap（經 OpenFreeMap / OpenMapTiles 向量圖塊），地名和山峰高度亦取自 OpenStreetMap。市區範圍按道路密度估算，只作示意。如未能載入，周邊視角只顯示將軍澳一帶。">The rest of Hong Kong in the area view is loaded by your browser when the page opens: the terrain from the AWS Terrain Tiles (Mapzen, mostly SRTM, the same source as the nearby terrain), and the coastline, reservoirs, main roads and built-up areas from OpenStreetMap through OpenFreeMap's OpenMapTiles vector tiles. Place names and peak heights are also from OpenStreetMap. Built-up areas are estimated from how dense the roads are, so treat them as a rough guide. If they can't be loaded, the area view shows only the Tseung Kwan O area.</li>
       </ul>
     </details>
   </aside>
@@ -2211,6 +2221,7 @@ function rebuildTerrain() {
   const c = st.trees ? 10 : 0; if (c === builtCanopy) return; builtCanopy = c;
   farMesh.geometry.dispose(); nearMesh.geometry.dispose();
   farMesh.geometry = buildMesh(FAR, true, c); nearMesh.geometry = buildMesh(NEAR, false, c);
+  buildWideMesh(c);
 }
 // main roads (shared with the other pages): true width and asphalt grey when you look out, map style from the dollhouse
 const surfH = YF.surfaceH(NEAR, FAR, samp, inNearInterior);
@@ -2218,6 +2229,211 @@ const roads = YF.makeRoads(THREE, P, surfH), roadGroup = roads.group; scene.add(
 function buildRoads() { roads.build(st.trees ? 10 : 0, st.mode === 'walk' ? 'real' : 'map'); roadGroup.visible = YF.roadsOn; blds.build(st.trees ? 10 : 0); blds.group.visible = YF.bldgOn; castDirty = true; }
 // nearby buildings (shared), simple blocks for context; not part of the sight lines
 const blds = YF.makeBuildings(THREE, P, surfH); scene.add(blds.group);
+
+// ---------------- the rest of Hong Kong ----------------
+// The terrain above stops a few kilometres out. For the area view the page also loads the rest of the map, from Tsuen
+// Wan and Tsing Yi to the Ninepins and from Ma On Shan to Lamma, when it opens: heights from the AWS Terrain Tiles
+// (Terrarium, zoom 12, the same source as the local grids) and the coastline, reservoirs, main roads and built-up areas
+// from OpenStreetMap through OpenFreeMap's vector tiles (zoom 11). If either cannot be loaded, the view keeps to the local
+// terrain. The local frame is equirectangular, origin at the east tip of Block A's east wing (fitted to within 0.3 m
+// against the OpenStreetMap buildings the nearby-building blocks were made from).
+const GEO = { lon0: 114.26597, lat0: 22.3245912, kx: 102974.37, ky: 110572.98 };
+const WIDE = { x0: -21000, y1: 11000, s: 100, nx: 311, ny: 261, z: null, hv: null, state: 'idle', ver: 0 };
+const toLocal = (lon, lat) => [(lon - GEO.lon0) * GEO.kx, (lat - GEO.lat0) * GEO.ky];
+const inFarBox = (x, y) => x > FAR.x0 && x < FAR.x0 + (FAR.nx - 1) * FAR.s && y < FAR.y1 && y > FAR.y1 - (FAR.ny - 1) * FAR.s;
+// heights the views and the sun use: the local grids first, then the wider one (sea views keep to the local grids)
+function elevAll(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y) || (WIDE.z ? samp(WIDE, x, y) : null); }
+// a minimal reader for Mapbox vector tiles: layers, features, tags and geometry
+function readMVT(buf) {
+  const b = new Uint8Array(buf), td = new TextDecoder(); let p = 0;
+  const vi = () => { let r = 0, s = 1, c; do { c = b[p++]; r += (c & 127) * s; s *= 128; } while (c & 128); return r; };
+  const skip = w => { if (w === 0) vi(); else if (w === 1) p += 8; else if (w === 2) p += vi(); else if (w === 5) p += 4; };
+  const str = n => { const s = td.decode(b.subarray(p, p + n)); p += n; return s; };
+  const layers = {};
+  while (p < b.length) {
+    const tag = vi(); if (tag >> 3 !== 3) { skip(tag & 7); continue; }
+    const end = p + vi(), L = { name: '', extent: 4096, keys: [], vals: [], feats: [] };
+    while (p < end) {
+      const t = vi(), f = t >> 3;
+      if (f === 1) L.name = str(vi());
+      else if (f === 2) {
+        const e2 = p + vi(), F = { tags: [], geom: [] };
+        while (p < e2) { const t2 = vi(), f2 = t2 >> 3; if (f2 === 2 || f2 === 4) { const e3 = p + vi(), a = f2 === 2 ? F.tags : F.geom; while (p < e3) a.push(vi()); } else skip(t2 & 7); }
+        L.feats.push(F);
+      } else if (f === 3) L.keys.push(str(vi()));
+      else if (f === 4) {
+        const e2 = p + vi(); let v = null;
+        while (p < e2) { const t2 = vi(), f2 = t2 >> 3; if (f2 === 1) v = str(vi()); else if (f2 === 4 || f2 === 5) v = vi(); else if (f2 === 2) { v = new DataView(b.buffer, b.byteOffset + p, 4).getFloat32(0, true); p += 4; } else if (f2 === 3) { v = new DataView(b.buffer, b.byteOffset + p, 8).getFloat64(0, true); p += 8; } else skip(t2 & 7); }
+        L.vals.push(v);
+      } else if (f === 5) L.extent = vi(); else skip(t & 7);
+    }
+    layers[L.name] = L;
+  }
+  return layers;
+}
+const mvtProps = (L, F) => { const o = {}; for (let i = 0; i < F.tags.length; i += 2) o[L.keys[F.tags[i]]] = L.vals[F.tags[i + 1]]; return o; };
+function mvtLines(F) {   // rings or lines in tile units
+  const g = F.geom, out = []; let x = 0, y = 0, i = 0, cur = null;
+  while (i < g.length) {
+    const c = g[i++], id = c & 7, n = c >> 3;
+    if (id === 1 || id === 2) for (let k = 0; k < n; k++) { const dx = g[i++], dy = g[i++]; x += (dx >> 1) ^ -(dx & 1); y += (dy >> 1) ^ -(dy & 1); if (id === 1) out.push(cur = [[x, y]]); else cur.push([x, y]); }
+    else if (id === 7 && cur) cur.push(cur[0]);
+  }
+  return out;
+}
+// tiles covering the wide grid at zoom z, and a converter from a tile's units to local metres
+function tilesFor(z) {
+  const n = 2 ** z, lon = x => GEO.lon0 + x / GEO.kx, lat = y => GEO.lat0 + y / GEO.ky;
+  const tx = l => Math.floor((l + 180) / 360 * n), ty = la => { const s = Math.sin(la * Math.PI / 180); return Math.floor((.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n); };
+  const x1 = WIDE.x0 + (WIDE.nx - 1) * WIDE.s, y0 = WIDE.y1 - (WIDE.ny - 1) * WIDE.s, out = [];
+  for (let x = tx(lon(WIDE.x0 - 300)); x <= tx(lon(x1 + 300)); x++) for (let y = ty(lat(WIDE.y1 + 300)); y <= ty(lat(y0 - 300)); y++) out.push([z, x, y]);
+  return out;
+}
+const tileToLocal = (z, tx, ty, ext) => (u, v) => { const n = 2 ** z, X = (tx + u / ext) / n, Y = (ty + v / ext) / n; return toLocal(X * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * Y))) * 180 / Math.PI); };
+async function loadImageData(url) {
+  const r = await fetch(url); if (!r.ok) throw new Error(url + ' ' + r.status);
+  const im = await createImageBitmap(await r.blob()), c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0); return g.getImageData(0, 0, im.width, im.height).data;
+}
+const wideMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrMat); wideMesh.visible = false; scene.add(wideMesh);
+let WIDE_ROADS = [], wideLand = null;
+async function loadWide() {
+  if (WIDE.state !== 'idle') return; WIDE.state = 'loading'; hud();
+  try {
+    const DZ = 12, VZ = 11, dem = {}, vt = [];
+    const tj = fetch('https://tiles.openfreemap.org/planet').then(r => r.json());
+    await Promise.all([
+      ...tilesFor(DZ).map(([z, x, y]) => loadImageData(`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`).then(d => { dem[x + '/' + y] = d; })),
+      tj.then(j => Promise.all(tilesFor(VZ).map(([z, x, y]) => fetch(j.tiles[0].replace('{z}', z).replace('{x}', x).replace('{y}', y)).then(r => { if (!r.ok) throw new Error('tile ' + r.status); return r.arrayBuffer(); }).then(b => vt.push({ z, x, y, ly: readMVT(b) })))))
+    ]);
+    // heights: bilinear in the Terrarium tiles
+    const n = 2 ** DZ * 256, demAt = (x, y) => {
+      const lon = GEO.lon0 + x / GEO.kx, s = Math.sin((GEO.lat0 + y / GEO.ky) * Math.PI / 180);
+      const fx = (lon + 180) / 360 * n - .5, fy = (.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n - .5, i = Math.floor(fx), j = Math.floor(fy), tx = fx - i, ty = fy - j;
+      const v = (I, J) => { const d = dem[(I >> 8) + '/' + (J >> 8)], k = ((J & 255) * 256 + (I & 255)) * 4; return d[k] * 256 + d[k + 1] + d[k + 2] / 256 - 32768; };
+      return v(i, j) * (1 - tx) * (1 - ty) + v(i + 1, j) * tx * (1 - ty) + v(i, j + 1) * (1 - tx) * ty + v(i + 1, j + 1) * tx * ty;
+    };
+    // the map layers drawn into rasters 25 m to the pixel: sea and reservoirs, and roads and town land (for built-up areas)
+    const S = 25, W = (WIDE.nx - 1) * WIDE.s / S + 1, H = (WIDE.ny - 1) * WIDE.s / S + 1;
+    const canvas = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, W, H); return [c, g]; };
+    const [cw, gw] = canvas(), [cu, gu] = canvas();
+    const each = (layer, fn) => { for (const t of vt) { const L = t.ly[layer]; if (L) { const tl = tileToLocal(t.z, t.x, t.y, L.extent); for (const F of L.feats) fn(L, F, mvtProps(L, F), tl); } } };
+    const path = (F, tl) => { const p = new Path2D(); for (const ring of mvtLines(F)) ring.forEach(([u, v], i) => { const [x, y] = tl(u, v), X = (x - WIDE.x0) / S, Y = (WIDE.y1 - y) / S; if (i) p.lineTo(X, Y); else p.moveTo(X, Y); }); return p; };
+    each('water', (L, F, pr, tl) => { if (pr.brunnel === 'tunnel' || pr.class === 'swimming_pool') return; gw.fillStyle = /ocean|river|dock/.test(pr.class) ? '#f00' : '#0f0'; gw.fill(path(F, tl)); });
+    gu.strokeStyle = '#fff'; gu.lineWidth = 2; gu.lineCap = 'round';
+    each('transportation', (L, F, pr, tl) => {
+      if (pr.brunnel === 'tunnel' || !/^(motorway|trunk|primary|secondary|tertiary|minor)$/.test(pr.class)) return;
+      gu.stroke(path(F, tl));
+      if (/^(motorway|trunk|primary|secondary)$/.test(pr.class)) for (const line of mvtLines(F)) WIDE_ROADS.push({ c: pr.class, pts: line.map(([u, v]) => tl(u, v)) });
+    });
+    gu.fillStyle = '#fff';
+    each('landuse', (L, F, pr, tl) => { if (/^(residential|commercial|industrial|retail|railway)$/.test(pr.class)) gu.fill(path(F, tl)); });
+    const wd = gw.getImageData(0, 0, W, H).data, ud = gu.getImageData(0, 0, W, H).data;
+    // built-up: the share of road and town land within about 250 m
+    const R = 10, sat = new Float64Array((W + 1) * (H + 1));
+    for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += ud[(y * W + x) * 4] / 255; sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + row; } }
+    const dens = (X, Y) => { const a = Math.max(0, X - R), b = Math.min(W, X + R + 1), c = Math.max(0, Y - R), d = Math.min(H, Y + R + 1); return (sat[d * (W + 1) + b] - sat[c * (W + 1) + b] - sat[d * (W + 1) + a] + sat[c * (W + 1) + a]) / ((b - a) * (d - c)); };
+    const N = WIDE.nx * WIDE.ny, z = new Float32Array(N); wideLand = { lake: new Uint8Array(N), urban: new Float32Array(N) };
+    for (let j = 0; j < WIDE.ny; j++) for (let i = 0; i < WIDE.nx; i++) {
+      const k = j * WIDE.nx + i, x = WIDE.x0 + i * WIDE.s, y = WIDE.y1 - j * WIDE.s, X = i * WIDE.s / S, Y = j * WIDE.s / S, q = (Y * W + X) * 4;
+      const sea = wd[q] > 127, h = demAt(x, y);
+      z[k] = sea ? 0 : Math.max(1.5, h);   // land the old survey still shows as sea (recent reclamation) is kept just above it
+      wideLand.lake[k] = !sea && wd[q + 1] > 127 ? 1 : 0;
+      wideLand.urban[k] = sea ? 0 : Math.min(1, Math.max(0, (dens(X, Y) - .07) / .16)) * (h < 260 ? 1 : 0);
+    }
+    WIDE.z = z; WIDE.state = 'ready'; WIDE.ver++;
+    buildWideMesh(st.trees ? 10 : 0);
+    wideRoadKey = ''; placeWideLabels(); castDirty = shadowDirty = true;
+    sunTable(); updateSun(); updateLabelVisibility(); hud(); dirty = true;
+  } catch (e) {
+    WIDE.state = 'failed'; hud(); console.warn('The rest of Hong Kong could not be loaded:', e);
+  }
+}
+// the wide terrain as one mesh: tucked under the local grids where they overlap, built-up areas pale grey, reservoirs blue
+let wideCanopy = -1;
+function buildWideMesh(canopy) {
+  if (!WIDE.z || canopy === wideCanopy) return; wideCanopy = canopy;
+  const g = WIDE, n = g.nx * g.ny, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = [0, 0, 0], hv = new Float32Array(n);
+  const URB = [.86, .85, .82], LAKE = [.55, .72, .82];
+  for (let j = 0; j < g.ny; j++) for (let i = 0; i < g.nx; i++) {
+    const k = j * g.nx + i, x = g.x0 + i * g.s, y = g.y1 - j * g.s, h = g.z[k], u = wideLand.urban[k];
+    let v = h === 0 ? -4 : h + (canopy && h > 0 && u < .3 && !wideLand.lake[k] ? canopy : 0);
+    if (inFarBox(x, y)) v -= 12;
+    hv[k] = v; pos[k * 3] = x; pos[k * 3 + 1] = v; pos[k * 3 + 2] = -y;
+    colorFor(h === 0 ? -1 : h, c);
+    if (wideLand.lake[k]) { c[0] = LAKE[0]; c[1] = LAKE[1]; c[2] = LAKE[2]; }
+    else if (u > 0) for (let q = 0; q < 3; q++) c[q] += (URB[q] - c[q]) * u * .85;
+    col[k * 3] = c[0]; col[k * 3 + 1] = c[1]; col[k * 3 + 2] = c[2];
+  }
+  const idx = [], deep = (x, y) => x > FAR.x0 + 100 && x < FAR.x0 + (FAR.nx - 2) * FAR.s && y < FAR.y1 - 100 && y > FAR.y1 - (FAR.ny - 2) * FAR.s;
+  for (let j = 0; j < g.ny - 1; j++) for (let i = 0; i < g.nx - 1; i++) {
+    const x = g.x0 + i * g.s, y = g.y1 - j * g.s;
+    if (deep(x, y) && deep(x + g.s, y - g.s)) continue;   // wholly under the local terrain
+    const a = j * g.nx + i, b = a + 1, d = a + g.nx, e = d + 1; idx.push(a, d, b, b, d, e);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  wideMesh.geometry.dispose(); wideMesh.geometry = geo; wideMesh.visible = true; g.hv = hv;
+}
+// height of the drawn surface anywhere: the local grids inside them, the wide mesh's own triangles outside
+function surfAll(x, y, canopy) {
+  if (inFarBox(x, y) || !WIDE.hv) return surfH(x, y, canopy);
+  const g = WIDE, fx = (x - g.x0) / g.s, fy = (g.y1 - y) / g.s, i = Math.floor(fx), j = Math.floor(fy);
+  if (i < 0 || j < 0 || i >= g.nx - 1 || j >= g.ny - 1) return 0;
+  const tx = fx - i, ty = fy - j, a = g.hv[j * g.nx + i], b = g.hv[j * g.nx + i + 1], d = g.hv[(j + 1) * g.nx + i], e = g.hv[(j + 1) * g.nx + i + 1];
+  return tx + ty <= 1 ? a + (b - a) * tx + (d - a) * ty : e + (d - e) * (1 - tx) + (b - e) * (1 - ty);
+}
+// main roads across Hong Kong in map colours. Their width grows as you zoom out so they stay visible; close in, the
+// detailed local roads take over round the estate.
+const LOCAL_ROADS_BOX = (() => { let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity; for (const w of YF.ROADS.ways) for (let i = 3; i + 1 < w.length; i += 2) { a = Math.min(a, w[i]); b = Math.max(b, w[i]); c = Math.min(c, w[i + 1]); d = Math.max(d, w[i + 1]); } return [a, b, c, d]; })();
+const wideRoadGrp = new THREE.Group(); scene.add(wideRoadGrp);
+const wrMat = c => new THREE.MeshBasicMaterial({ color: c, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 });
+const WR_MATS = { edge: wrMat(0x5b584f), major: wrMat(0xf2bd4b), minor: wrMat(0xfbf8f1) };
+const WR_W = { motorway: 20, trunk: 17, primary: 11, secondary: 8 };
+let wideRoadKey = '';
+const wideTier = () => (st.mode === 'doll' && inArea() ? (camDist() > 12000 ? 3 : camDist() > 4000 ? 2 : 1) : 0);
+function buildWideRoads() {
+  const tier = WIDE.z ? wideTier() : 0, canopy = st.trees ? 10 : 0, key = tier + '/' + canopy + '/' + WIDE.ver;
+  roadGroup.visible = YF.roadsOn && tier < 2;   // the detailed local roads, while close in
+  wideRoadGrp.visible = YF.roadsOn && tier > 0;
+  if (key === wideRoadKey) return; wideRoadKey = key;
+  while (wideRoadGrp.children.length) wideRoadGrp.children.pop().geometry.dispose();
+  if (!tier) return;
+  const scale = [0, 1, 2.2, 5.5][tier], lift = 2 + 3 * scale, [bx0, bx1, by0, by1] = LOCAL_ROADS_BOX;
+  const inLocal = (x, y) => tier === 1 && x > bx0 && x < bx1 && y > by0 && y < by1;
+  const out = { edge: [[], []], major: [[], []], minor: [[], []] };
+  const strip = (key, pts, half, up) => {
+    const [pos, idx] = out[key], base = pos.length / 3;
+    pts.forEach(([x, y, h], k) => {
+      const [x0, y0] = pts[Math.max(0, k - 1)], [x1, y1] = pts[Math.min(pts.length - 1, k + 1)], l = Math.hypot(x1 - x0, y1 - y0) || 1;
+      const nx = -(y1 - y0) / l * half, ny = (x1 - x0) / l * half;
+      for (const s of [1, -1]) { const v = P(x + nx * s, y + ny * s, h + up); pos.push(v.x, v.y, v.z); }
+      if (k) { const a = base + 2 * (k - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    });
+  };
+  for (const r of WIDE_ROADS) {
+    if (r.c === 'secondary' && tier === 3) continue;
+    // split into runs outside the local roads' patch, sampled every 50 m or so and laid on the surface
+    let run = [];
+    const flush = () => { if (run.length > 1) { const w = WR_W[r.c] * scale * .6, major = r.c === 'motorway' || r.c === 'trunk'; strip('edge', run, w / 2 + .55 * scale, lift); strip(major ? 'major' : 'minor', run, w / 2, lift + .3 * scale); } run = []; };
+    for (let i = 0; i < r.pts.length; i++) {
+      const [ax, ay] = r.pts[i], [bx, by] = r.pts[Math.min(i + 1, r.pts.length - 1)], m = i === r.pts.length - 1 ? 1 : Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / (40 * scale)));
+      for (let q = 0; q < m; q++) {
+        const x = ax + (bx - ax) * q / m, y = ay + (by - ay) * q / m;
+        if (inLocal(x, y)) { flush(); continue; }
+        run.push([x, y, Math.max(0, surfAll(x, y, canopy))]);
+      }
+    }
+    flush();
+  }
+  for (const k of ['edge', 'major', 'minor']) {
+    const [pos, idx] = out[k]; if (!pos.length) continue;
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
+    const m = new THREE.Mesh(geo, WR_MATS[k]); m.renderOrder = k === 'edge' ? 1 : 2; wideRoadGrp.add(m);
+  }
+}
+
 
 // materials (interior ones are clipped in the dollhouse)
 const CLIP = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e7);
@@ -2383,6 +2599,61 @@ const SITE_L = (() => {
   return { site: true, area: true, x, y, h, el: mkLabel('site', ''), v: P(x, y, h) };
 })();
 const OUT_L = XLABELS.concat(POI_L, ROAD_L, [SITE_L]);
+// Places across Hong Kong for the area view, with OpenStreetMap's names and positions (local metres). Tier 1 shows at any
+// zoom, tier 2 from about 22 km in and tier 3 from about 7 km in; where two collide on screen, the lower tier wins.
+const WIDE_PLACES = [
+  [1, 'town', 'Hong Kong Island', '香港島', -8300, -7300], [1, 'town', 'Kowloon', '九龍', -8500, -200],
+  [1, 'town', 'Sha Tin', '沙田', -7770, 6300], [1, 'town', 'Tsuen Wan', '荃灣', -15700, 5210], [1, 'town', 'Kwai Chung', '葵涌', -14100, 4020],
+  [1, 'town', 'Tsing Yi', '青衣', -17380, 2640], [1, 'town', 'Sai Kung', '西貢', 710, 6370], [1, 'town', 'Ma On Shan', '馬鞍山', -3680, 10860],
+  [1, 'town', 'Tseung Kwan O', '將軍澳', -650, -1750], [1, 'island', 'Lamma Island', '南丫島', -11970, -12730],
+  [1, 'water', 'Victoria Harbour', '維多利亞港', -9680, -3830],
+  [1, 'peak', 'Tai Mo Shan', '大帽山', -14560, 9460, 957], [1, 'peak', 'Ma On Shan', '馬鞍山', -1400, 9340, 702],
+  [1, 'peak', 'Kowloon Peak', '飛鵝山', -4390, 1770, 602], [1, 'peak', 'Lion Rock', '獅子山', -8130, 3060, 495],
+  [2, 'peak', 'Victoria Peak', '太平山', -12410, -5370, 552],
+  [2, 'district', 'Central', '中環', -11090, -4730], [2, 'district', 'Wan Chai', '灣仔', -9630, -5040], [2, 'district', 'Causeway Bay', '銅鑼灣', -8120, -4830],
+  [2, 'district', 'North Point', '北角', -6900, -3750], [2, 'district', 'Quarry Bay', '鰂魚涌', -5460, -4290], [2, 'district', 'Shau Kei Wan', '筲箕灣', -3820, -5000],
+  [2, 'district', 'Chai Wan', '柴灣', -2880, -6520], [2, 'district', 'Happy Valley', '跑馬地', -8140, -6340], [2, 'district', 'Sheung Wan', '上環', -11920, -4210],
+  [2, 'district', 'Kennedy Town', '堅尼地城', -14160, -4660], [2, 'district', 'The Peak', '山頂', -11870, -6050], [2, 'district', 'Pok Fu Lam', '薄扶林', -13300, -6990],
+  [2, 'district', 'Aberdeen', '香港仔', -11280, -8370], [2, 'district', 'Repulse Bay', '淺水灣', -7170, -9560], [2, 'district', 'Stanley', '赤柱', -5160, -12190],
+  [2, 'district', 'Shek O', '石澳', -1640, -10110], [2, 'district', 'Mong Kok', '旺角', -9900, -460], [2, 'district', 'Yau Ma Tei', '油麻地', -9880, -1600],
+  [2, 'district', 'Tsim Sha Tsui', '尖沙咀', -9460, -2840], [2, 'district', 'Hung Hom', '紅磡', -8200, -1960], [2, 'district', 'Sham Shui Po', '深水埗', -10830, 570],
+  [2, 'district', 'Cheung Sha Wan', '長沙灣', -11560, 1390], [2, 'district', 'Lai Chi Kok', '荔枝角', -12760, 1380], [2, 'district', 'Kowloon City', '九龍城', -7720, 600],
+  [2, 'district', 'Kai Tak', '啟德', -6300, -500], [2, 'district', 'Kowloon Tong', '九龍塘', -9270, 1370], [2, 'district', 'Wong Tai Sin', '黃大仙', -7510, 1930],
+  [2, 'district', 'Diamond Hill', '鑽石山', -6690, 1700], [2, 'district', 'Kwun Tong', '觀塘', -4220, -1390], [2, 'district', 'Lam Tin', '藍田', -3080, -1730],
+  [2, 'district', 'Yau Tong', '油塘', -2900, -2870], [2, 'district', 'Kowloon Bay', '九龍灣', -5870, 40], [2, 'district', 'Tai Wai', '大圍', -9060, 5350],
+  [2, 'district', 'Fo Tan', '火炭', -7000, 7790], [2, 'district', 'LOHAS Park', '日出康城', 420, -3160], [2, 'district', 'Clear Water Bay', '清水灣', 2780, -4160],
+  [2, 'island', 'Ap Lei Chau', '鴨脷洲', -11610, -9120], [2, 'island', 'Stonecutters Island', '昂船洲', -13150, -300], [2, 'island', 'Tung Lung Chau', '東龍洲', 2420, -8440],
+  [2, 'island', 'High Island', '糧船灣洲', 9110, 3780], [2, 'spot', 'Ocean Park', '海洋公園', -9370, -8690],
+  [2, 'water', 'Tai Tam Bay', '大潭灣', -4700, -11640], [2, 'water', 'Rambler Channel', '藍巴勒海峽', -16270, 3360], [2, 'water', 'East Lamma Channel', '東博寮海峽', -11430, -11010],
+  [2, 'water', 'Lei Yue Mun', '鯉魚門', -2810, -3970],
+  [2, 'peak', "Tate's Cairn", '大老山', -4950, 3670, 577], [2, 'peak', 'Mount Parker', '柏架山', -4750, -6480, 532], [2, 'peak', 'Needle Hill', '針山', -10850, 6890, 532],
+  [2, 'peak', 'Grassy Hill', '草山', -10310, 9630, 647], [2, 'peak', 'Buffalo Hill', '水牛山', -3250, 5530, 606], [2, 'peak', 'Lin Fa Shan', '蓮花山', -18190, 8130, 578],
+  [2, 'peak', 'Sze Fong Shan', '四方山', -13310, 10270, 784], [2, 'peak', 'Mount Kellett', '奇力山', -12090, -6960, 500],
+  [3, 'district', 'Mid-Levels', '半山', -11330, -5270], [3, 'district', 'Admiralty', '金鐘', -10450, -5050], [3, 'district', 'Sai Ying Pun', '西營盤', -12760, -4250],
+  [3, 'district', 'Tai Hang', '大坑', -7500, -5160], [3, 'district', 'Sai Wan Ho', '西灣河', -4580, -4660], [3, 'district', 'Siu Sai Wan', '小西灣', -1620, -6730],
+  [3, 'district', 'Wong Chuk Hang', '黃竹坑', -10220, -8430], [3, 'district', 'Deep Water Bay', '深水灣', -8080, -8570], [3, 'district', 'Big Wave Bay', '大浪灣', -2070, -8650],
+  [3, 'district', "Cape D'Aguilar", '鶴咀', -1520, -12390], [3, 'district', 'Ho Man Tin', '何文田', -8850, -960], [3, 'district', 'To Kwa Wan', '土瓜灣', -7870, -870],
+  [3, 'district', 'Tai Kok Tsui', '大角咀', -10880, -420], [3, 'district', 'Shek Kip Mei', '石硤尾', -10150, 1000], [3, 'district', 'San Po Kong', '新蒲崗', -6960, 1330],
+  [3, 'district', 'Ngau Tau Kok', '牛頭角', -4840, -1060], [3, 'district', 'Sau Mau Ping', '秀茂坪', -3500, -510], [3, 'district', 'Choi Hung', '彩虹', -5870, 1150],
+  [3, 'district', "Jardine's Lookout", '渣甸山', -7400, -6090], [3, 'district', 'Shouson Hill', '壽臣山', -8860, -8470],
+  [3, 'island', 'Bluff Island', '沙塘口山', 8740, -540], [3, 'island', 'North Ninepin Island', '北果洲', 8410, -6370], [3, 'island', 'Jin Island', '吊鐘洲', 5970, 1010],
+  [3, 'island', 'Sharp Island', '橋咀洲', 2920, 4390],
+  [3, 'peak', 'Beacon Hill', '筆架山', -9840, 2780, 457], [3, 'peak', 'Golden Hill', '金山', -12250, 4460, 369], [3, 'peak', 'Mount Butler', '畢拿山', -5650, -6300, 435],
+  [3, 'peak', 'Violet Hill', '紫羅蘭山', -6790, -8360, 435], [3, 'peak', 'Mount Cameron', '金馬倫山', -9360, -6880, 439], [3, 'peak', 'High West', '西高山', -13360, -5800, 494],
+  [3, 'peak', 'Temple Hill', '慈雲山', -6160, 3470, 489], [3, 'peak', 'The Twins', '孖崗山', -6230, -10390, 386], [3, 'peak', 'Mount Collinson', '哥連臣山', -3200, -8090, 348],
+  [3, 'peak', "D'Aguilar Peak", '鶴咀山', -1760, -11920, 325], [3, 'peak', 'Black Hill', '五桂山', -2200, -1650, 304], [3, 'peak', 'High Junk Peak', '釣魚翁', 2060, -3200, 344],
+  [3, 'peak', 'Tai Sheung Tok', '大上托', -2780, 60, 399], [3, 'peak', "Eagle's Nest", '尖山', -11270, 2510, 311], [3, 'peak', 'Mount Stenhouse', '山地塘', -14240, -14690, 353],
+  [3, 'peak', 'Pottinger Peak', '砵甸乍山', -1990, -7640, 312]
+];
+const WIDE_L = WIDE_PLACES.map(([tier, kind, en, zh, x, y, ele]) => ({ tier, kind, en, zh, x, y, ele, el: mkLabel('hk ' + kind, ''), v: new THREE.Vector3(), hidden: true }));
+// label heights from the terrain once it is in: towns and districts a little above the ground, peaks on their summits
+function placeWideLabels() {
+  for (const L of WIDE_L) {
+    const e = elevAll(L.x, L.y), g = e && !e[1] ? e[0] : 0;
+    L.v.copy(P(L.x, L.y, L.kind === 'peak' ? Math.max(g, L.ele) + 12 : L.kind === 'water' ? 15 : g + 45));
+  }
+}
+const wideLabelHtml = L => (L.kind === 'peak' ? `${T(L.en, L.zh)}<small>${L.ele}${T(' m', '米')}</small>` : T(L.en, L.zh));
 // the lift lobby and refuse room on the floor on show, labelled in the dollhouse
 const CORE_L = [{ t: 'Lifts', core: 'lift' }, { t: 'Refuse room', core: 'rs' }].map(L => Object.assign(L, { el: mkLabel('core ' + L.core, '') }));
 function placeFlatLabels() {
@@ -2457,6 +2728,7 @@ function updateLabelVisibility() {
     if ((L.p && !YF.poiShown(L.p)) || (L.road != null && !YF.roadsOn) || (L.site && !YF.siteOn)) continue;
     if (st.mode !== 'walk') {
       if (!area || L.fin) continue;
+      if (wideTier() >= 2 && !L.site) continue;   // zoomed well out: the estate's own place names give way to the rest of Hong Kong
       L.hidden = false; L.el.classList.remove('hid'); L.el.textContent = labelName(L);
       continue;
     }
@@ -2471,7 +2743,12 @@ function updateLabelVisibility() {
     L.el.classList.toggle('hid', L.behind);
     L.el.textContent = labelName(L) + (L.behind ? T(' · behind the hill', ' · 被山遮擋') : '');
   }
-  poiPins.visible = YF.poiOn && (st.mode === 'walk' || area); estPins.visible = YF.estOn && (st.mode === 'walk' || area);
+  poiPins.visible = YF.poiOn && (st.mode === 'walk' || area) && wideTier() < 2; estPins.visible = YF.estOn && (st.mode === 'walk' || area) && wideTier() < 2;
+  const tier = wideTier(), d = tier ? camDist() : 0, upTo = d > 22000 ? 1 : d > 7000 ? 2 : 3;
+  for (const L of WIDE_L) {
+    L.hidden = !(WIDE.z && tier && L.tier <= upTo) || (tier === 1 && Math.hypot(L.x, L.y) < 2600);   // close in, the local labels cover the estate's patch
+    if (!L.hidden) L.el.innerHTML = wideLabelHtml(L);
+  }
   sunLabelVis();
 }
 function placeLabels() {
@@ -2486,6 +2763,14 @@ function placeLabels() {
   for (const L of OUT_L) put(L.el, L.v, !L.hidden);
   for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll' && !inArea());
   for (const L of CORE_L) put(L.el, L.v, st.mode === 'doll' && !inArea() && camDist() > 9);
+  // places across Hong Kong: higher tiers first, and a label that would overlap one already placed is left out
+  const kept = [];
+  for (const L of WIDE_L) {
+    put(L.el, L.v, !L.hidden);
+    if (L.el.hidden) continue;
+    const x = parseFloat(L.el.style.left), y = parseFloat(L.el.style.top), w = L.el.textContent.length * (YF.lang === 'zh' ? 13 : 7) + 12;
+    if (kept.some(([a, b, c]) => Math.abs(a - x) < (c + w) / 2 && Math.abs(b - y) < 17)) L.el.hidden = true; else kept.push([x, y, w]);
+  }
   // sun hour labels: where the hours bunch up (round sunrise and sunset in summer), keep every other one that would overlap
   const taken = [];
   for (const L of SUN_L) {
@@ -2498,7 +2783,7 @@ function placeLabels() {
 
 // ---------------- cameras ----------------
 const controls = new THREE.OrbitControls(cam, canvas);
-controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 4000; controls.zoomSpeed = 2;
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 30000; controls.zoomSpeed = 2;
 // the dollhouse looks at the flat from above its inner corner, on the side of the gap
 function dollStartPose() {
   const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]);
@@ -2918,7 +3203,8 @@ function hud() {
   if (st.mode === 'walk') {
     const az = ((cs.yaw % 360) + 360) % 360;
     $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T(`eye +${EYE_H.toFixed(1)} mPD`, `視線 +${EYE_H.toFixed(1)} mPD`)}</span><span>${T('Facing', '面向')} ${Math.round(az)}° ${dirName(az)}</span>` + sunHud();
-  } else $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span><span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>` + sunHud();
+  } else $('hud').innerHTML = `<span>${where} · ${tr(LAYOUTS[st.layout].name)}</span>` + (inArea() ? '' : `<span>${T('Walls cut at 1.3 m', '牆身在1.3米高剖開')}</span>`)
+    + (inArea() && WIDE.state === 'loading' ? `<span>${T('Loading the rest of Hong Kong…', '正在載入香港其他地區…')}</span>` : '') + sunHud();
 }
 // where the sun is, and which rooms it is shining into
 function sunHud() {
@@ -3034,7 +3320,10 @@ function loop(t) {
     dirty = false;
     zoomSnap();
     if ((st.mode === 'doll' && !inArea()) !== visCut) setVis();
-    const a = showPlaces() + '/' + inArea(); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); if (st.sunOn) updateSun(); }
+    const wt = wideTier(), cd = wt ? camDist() : 0;
+    const a = showPlaces() + '/' + inArea() + '/' + wt + '/' + (cd > 22000 ? 1 : cd > 7000 ? 2 : 3); if (a !== lastArea) { lastArea = a; updateLabelVisibility(); if (st.sunOn) updateSun(); }
+    buildWideRoads();
+    scene.fog.near = Math.max(3500, cd * .9); scene.fog.far = Math.max(32000, cd * 3.2);
     if (st.sunOn && shadowDirty) { if (castDirty) shadowFlags(); renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
@@ -3158,13 +3447,13 @@ const hourName = h => (h === 12 ? T('noon', '正午') : T(`${(h + 11) % 12 + 1} 
 // the skyline of the hills from the flat: for each degree of azimuth, how high (degrees) the ground stands
 let HOR = null, horKey = '';
 function horizon() {
-  const key = FLAT.id + FLOOR + st.trees; if (key === horKey) return HOR; horKey = key;
+  const key = FLAT.id + FLOOR + st.trees + WIDE.ver; if (key === horKey) return HOR; horKey = key;
   const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]), h0 = FL + 1.5, can = st.trees ? 10 : 0;
   HOR = new Float32Array(360);
   for (let a = 0; a < 360; a++) {
     const dx = Math.sin(a * RAD), dy = Math.cos(a * RAD); let best = -Infinity;
-    for (let d = 40; d < 12000; d *= 1.025) {
-      const r = elev(cx + dx * d, cy + dy * d); if (!r) break; if (r[1]) continue;
+    for (let d = 40; d < 25000; d *= 1.025) {
+      const r = elevAll(cx + dx * d, cy + dy * d); if (!r) break; if (r[1]) continue;
       const v = (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * .87 - h0) / d; if (v > best) best = v;
     }
     HOR[a] = best === -Infinity ? -90 : Math.atan(best) / RAD;
@@ -3231,7 +3520,7 @@ function riseSet(ms) {
   return [edge(240, 720), edge(720, 1260)];
 }
 function sunRows() {
-  const D = sunDay(), key = [FLAT.id, FLOOR, st.layout, D.ms, st.trees].join('|');
+  const D = sunDay(), key = [FLAT.id, FLOOR, st.layout, D.ms, st.trees, WIDE.ver].join('|');
   if (sunCache[key]) return sunCache[key];
   sunGeometry();
   const hor = horizon(), steps = [];
@@ -3254,7 +3543,7 @@ let shadowDirty = true, castDirty = true;
 function shadowFlags() {
   scene.traverse(o => {
     if (!o.isMesh) return;
-    const m = o.material, lam = m && m.isMeshLambertMaterial && !m.transparent, terr = o === farMesh || o === nearMesh;
+    const m = o.material, lam = m && m.isMeshLambertMaterial && !m.transparent, terr = o === farMesh || o === nearMesh || o === wideMesh;
     o.castShadow = (lam && !terr && o !== sea) || m === CASTER; o.receiveShadow = lam && o !== sea;
   });
   castDirty = false;
@@ -3483,7 +3772,8 @@ sunUI();
 resize();
 $('loading').hidden = true;
 requestAnimationFrame(loop);
-window.__tour = { sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; } };
+setTimeout(loadWide, 1200);
+window.__tour = { WIDE, WIDE_L, loadWide, sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, wx, wy, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; } };
 })();
 </script>
 
