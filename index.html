@@ -3181,7 +3181,8 @@ function sunGeometry() {
 function winLit(w, s, hor) {
   if (s.el <= 0) return false;
   const dx = Math.sin(s.az * RAD), dy = Math.cos(s.az * RAD);
-  if (dx * w.nx + dy * w.ny < .02 || s.el < horAt(hor, s.az)) return false;
+  // the sun has to strike the glass at a useful angle (within about 84° of square on), and clear the hills
+  if ((dx * w.nx + dy * w.ny) * Math.cos(s.el * RAD) < .1 || s.el < horAt(hor, s.az)) return false;
   const tn = Math.tan(s.el * RAD);
   for (const [x, y] of w.pts) {
     let ok = true;
@@ -3199,7 +3200,14 @@ function spansOf(on) {
   const out = []; let a = -1;
   on.forEach((v, i) => { if (v && a < 0) a = i; if (!v && a >= 0) { out.push([SUN_T0 + a * SUN_DT, SUN_T0 + i * SUN_DT]); a = -1; } });
   if (a >= 0) out.push([SUN_T0 + a * SUN_DT, SUN_T0 + on.length * SUN_DT]);
+  // a few minutes behind a slim post or corner doesn't break up a spell of sun
+  for (let i = out.length - 1; i > 0; i--) if (out[i][0] - out[i - 1][1] <= 12) { out[i - 1][1] = out[i][1]; out.splice(i, 1); }
   return out;
+}
+// sunrise and sunset to the minute
+function riseSet(ms) {
+  const up = t => sunAt(ms + (t - 480) * 6e4).el > -.27, edge = (a, b) => { while (b - a > 1) { const m = (a + b) >> 1; if (up(m) === up(a)) a = m; else b = m; } return b; };
+  return [edge(240, 720), edge(720, 1260)];
 }
 function sunRows() {
   const D = sunDay(), key = [FLAT.id, FLOOR, st.layout, D.ms, st.trees].join('|');
@@ -3212,7 +3220,7 @@ function sunRows() {
     const spans = spansOf(steps.map(s => ws.some(x => winLit(x, s, hor)))).filter(([a, b]) => b - a >= 6);
     return { room, w, role, ws, spans };
   });
-  return (sunCache[key] = { rows, day: spansOf(steps.map(s => s.el > -.27))[0] || null });
+  return (sunCache[key] = { rows, day: riseSet(D.ms) });
 }
 
 // ---------------- the sun in the 3D view ----------------
