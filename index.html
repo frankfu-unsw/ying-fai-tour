@@ -2243,7 +2243,7 @@ const toLocal = (lon, lat) => [(lon - GEO.lon0) * GEO.kx, (lat - GEO.lat0) * GEO
 const inFarBox = (x, y) => x > FAR.x0 && x < FAR.x0 + (FAR.nx - 1) * FAR.s && y < FAR.y1 && y > FAR.y1 - (FAR.ny - 1) * FAR.s;
 // heights the views and the sun use: the local grids first, then the wider one (sea views keep to the local grids)
 function elevAll(x, y) { return samp(NEAR, x, y) || samp(FAR, x, y) || (WIDE.z ? samp(WIDE, x, y) : null); }
-// a minimal reader for Mapbox vector tiles: layers, features, tags and geometry
+// a minimal reader for Mapbox vector tiles: layers, features, tags and geometry (read each length before adding p)
 function readMVT(buf) {
   const b = new Uint8Array(buf), td = new TextDecoder(); let p = 0;
   const vi = () => { let r = 0, s = 1, c; do { c = b[p++]; r += (c & 127) * s; s *= 128; } while (c & 128); return r; };
@@ -2252,17 +2252,17 @@ function readMVT(buf) {
   const layers = {};
   while (p < b.length) {
     const tag = vi(); if (tag >> 3 !== 3) { skip(tag & 7); continue; }
-    const end = p + vi(), L = { name: '', extent: 4096, keys: [], vals: [], feats: [] };
+    const len = vi(), end = p + len, L = { name: '', extent: 4096, keys: [], vals: [], feats: [] };
     while (p < end) {
       const t = vi(), f = t >> 3;
       if (f === 1) L.name = str(vi());
       else if (f === 2) {
-        const e2 = p + vi(), F = { tags: [], geom: [] };
-        while (p < e2) { const t2 = vi(), f2 = t2 >> 3; if (f2 === 2 || f2 === 4) { const e3 = p + vi(), a = f2 === 2 ? F.tags : F.geom; while (p < e3) a.push(vi()); } else skip(t2 & 7); }
+        const l2 = vi(), e2 = p + l2, F = { tags: [], geom: [] };
+        while (p < e2) { const t2 = vi(), f2 = t2 >> 3; if (f2 === 2 || f2 === 4) { const l3 = vi(), e3 = p + l3, a = f2 === 2 ? F.tags : F.geom; while (p < e3) a.push(vi()); } else skip(t2 & 7); }
         L.feats.push(F);
       } else if (f === 3) L.keys.push(str(vi()));
       else if (f === 4) {
-        const e2 = p + vi(); let v = null;
+        const l2 = vi(), e2 = p + l2; let v = null;
         while (p < e2) { const t2 = vi(), f2 = t2 >> 3; if (f2 === 1) v = str(vi()); else if (f2 === 4 || f2 === 5) v = vi(); else if (f2 === 2) { v = new DataView(b.buffer, b.byteOffset + p, 4).getFloat32(0, true); p += 4; } else if (f2 === 3) { v = new DataView(b.buffer, b.byteOffset + p, 8).getFloat64(0, true); p += 8; } else skip(t2 & 7); }
         L.vals.push(v);
       } else if (f === 5) L.extent = vi(); else skip(t & 7);
