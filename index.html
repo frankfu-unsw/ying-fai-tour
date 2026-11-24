@@ -1518,8 +1518,8 @@ const LAYOUTS_A = {
     leaves: [[5700, 5740, 2600, 3300, 0, 2.05, 'white'], BAY_LEAF_A],
     rooms: [
       MASTER_A,
-      { id: 'bed3', name: 'Small bedroom 1', rects: [[0, 1240, 0, 2460]], at: [620, 1300], win: 'North, hillside', only: ['north'], role: 'bed3' },
-      { id: 'bed4', name: 'Small bedroom 2', rects: [[1315, 2530, 0, 2460]], at: [1920, 1300], win: 'North, hillside', only: ['north'], role: 'bed4' },
+      { id: 'bed3', name: 'Small bedroom 1', rects: [[0, 1240, 0, 2460]], at: [620, 800], win: 'North, hillside', only: ['north'], role: 'bed3' },
+      { id: 'bed4', name: 'Small bedroom 2', rects: [[1315, 2530, 0, 2460]], at: [1920, 1800], win: 'North, hillside', only: ['north'], role: 'bed4' },
       BAYBED_A,
       { id: 'living', name: 'Living & dining', rects: [[2605, 3440, 0, 2600], [3440, 5080, 0, 2440], [5080, 7965, 0, 2525], [0, 2605, 2535, 2600]], at: [5400, 1250], win: 'East, sea', sea: true, only: ['eastN'], role: 'living' },
       KITCHEN_ROOM, BATH_ROOM, FOYER_ROOM
@@ -1877,8 +1877,8 @@ const LAYOUTS_B = {
     leaves: [[5680, 5720, 2515, 3175, 0, 2.05, 'white'], BAY_LEAF_B],
     rooms: [
       MASTER_BC_B,
-      { id: 'bed3', name: 'Small bedroom 1', rects: [[0, 1240, 0, 2460]], at: [620, 1300], win: 'Small side window', only: ['sideW'], role: 'bed3' },
-      { id: 'bed4', name: 'Small bedroom 2', rects: [[1315, 2530, 0, 2460]], at: [1920, 1300], win: 'Small side window', only: ['sideW2'], role: 'bed4' },
+      { id: 'bed3', name: 'Small bedroom 1', rects: [[0, 1240, 0, 2460]], at: [620, 800], win: 'Small side window', only: ['sideW'], role: 'bed3' },
+      { id: 'bed4', name: 'Small bedroom 2', rects: [[1315, 2530, 0, 2460]], at: [1920, 1800], win: 'Small side window', only: ['sideW2'], role: 'bed4' },
       BAYBED_B,
       { id: 'living', name: 'Living & dining', rects: [[0, 1615, 2535, 4200], [1615, 2605, 2535, 3765], [2605, 3425, 0, 3765], [3425, 5065, 0, 2440], [5065, 7965, 0, 2440]], at: [5900, 1500], win: 'East, sea', sea: true, only: ['eastN', 'sideE'], role: 'living' },
       KITCHEN_B, BATH_B
@@ -1913,7 +1913,7 @@ const LAYOUTS_B = {
       bay: { name: 'The bay', sub: '2.1 × 2.1 m', text: 'A deep bay off the middle of the room with its own east-facing window.' }
     },
     wins: [
-      ['Living area', 'east window', 6465, 2262, ['eastN', 'eastS'], 'living'],
+      ['Living area', 'east window', 6800, 1300, ['eastN', 'eastS'], 'living'],
       ['Living area', 'side window', 6250, 1150, ['sideE'], 'living'],
       ['Bay', 'faces east', 3760, -1250, ['bay'], 'bay'],
       ['West end', 'two small side windows', 1100, 1250, ['sideW', 'sideW2'], 'bed3'],
@@ -2778,11 +2778,12 @@ function hud() {
 function drawHeader() {
   $('eyebrow').textContent = T(`Ying Fai Court · Block ${FLAT.block} · ${FLOOR}/F`, `影輝苑 · ${FLAT.block}座 · ${FLOOR}樓`);
   $('ttl').textContent = T(`Flat ${FLAT.no} walk-through`, `${FLAT.no}室室內導覽`);
-  $('sub').textContent = FLAT.type === 'A'
-    ? T(`560 sq ft, laid out from the HA floor plan. Compare three ways to split it into rooms, walk through each one, and look out of every window at the real hills and sea from ${FLOOR}/F.`,
-      `面積約560平方呎，按房委會平面圖繪畫。比較三種間隔方案，逐一走進每個房間，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`)
-    : T(`One long room with a bay, laid out from the HA floor plan. Walk through it and look out of every window at the real hills and sea from ${FLOOR}/F.`,
-      `一個連凸位的長形單位，按房委會平面圖繪畫。逐處走一遍，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`);
+  const vid = `<a href="https://www.youtube.com/watch?v=JGNr_1DD2Xo" target="_blank" rel="noopener">${T('the YouTube video', 'YouTube影片')}</a>`;
+  $('sub').innerHTML = FLAT.type === 'A'
+    ? T(`560 sq ft, laid out from the HA floor plan. Compare the three layouts from ${vid}, drawn there for flats 9 and 10 and adapted here, walk through each one, and look out of every window at the real hills and sea from ${FLOOR}/F.`,
+      `面積約560平方呎，按房委會平面圖繪畫。比較${vid}中的三種間隔（原為9室及10室設計，這裡按本單位改編），逐一走進每個房間，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`)
+    : T(`Laid out from the HA floor plan. Compare the three layouts from ${vid}, with three or four bedrooms, walk through each one, and look out of every window at the real hills and sea from ${FLOOR}/F.`,
+      `按房委會平面圖繪畫。比較${vid}中的三種間隔（三房或四房），逐一走進每個房間，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`);
   $('floorVal').innerHTML = `${FLOOR}<small>${T('/F', '樓')}</small>`;
   $('mpd').textContent = T(`floor +${FL.toFixed(2)} mPD`, `樓面 +${FL.toFixed(2)} mPD`);
   const fi = $('floorIn'); fi.min = FLAT.F0; fi.max = FLAT.F1; fi.value = FLOOR;

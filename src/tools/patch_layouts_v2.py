@@ -360,7 +360,7 @@ const LAYOUTS_B = {
       bay: { name: 'The bay', sub: '2.1 × 2.1 m', text: 'A deep bay off the middle of the room with its own east-facing window.' }
     },
     wins: [
-      ['Living area', 'east window', 6465, 2262, ['eastN', 'eastS'], 'living'],
+      ['Living area', 'east window', 6800, 1300, ['eastN', 'eastS'], 'living'],
       ['Living area', 'side window', 6250, 1150, ['sideE'], 'living'],
       ['Bay', 'faces east', 3760, -1250, ['bay'], 'bay'],
       ['West end', 'two small side windows', 1100, 1250, ['sideW', 'sideW2'], 'bed3'],
