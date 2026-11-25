@@ -65,6 +65,8 @@ body { background: var(--paper); color: var(--ink); font-family: var(--f-body); 
 .lbl.hk.nm.r2::before { background: #8d7b68; }
 .lbl.hk.nm.r3 { font-size: 10.5px; font-weight: 500; color: #3a464d; }
 .lbl.hk.nm.r3::before { display: none; }
+.lbl.hk.rd { text-transform: none; font-family: var(--f-body); font-weight: 500; letter-spacing: .01em; font-size: 10.5px; color: #3f4448; white-space: nowrap; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 1px #fff; pointer-events: none; }
+.lbl.hk.rd.main { font-weight: 700; font-size: 11.5px; color: #6b4708; }
 .lbl.hk.spot { text-transform: none; font-family: var(--f-body); font-size: 12px; letter-spacing: 0; color: #6a3f99; }
 .lbl.sunh { text-transform: none; letter-spacing: 0; font-family: var(--f-data); font-weight: 500; font-size: 11px; color: #5a3500; background: rgba(255,240,205,.94); border: 1px solid #e8922a; padding: 0 5px; border-radius: 9px; transform: translate(-50%, -135%); }
 .lbl.sunc { text-transform: none; letter-spacing: 0; font-size: 12px; color: #fff; background: rgba(196,108,18,.92); padding: 0 5px; transform: translate(-50%, -50%); }
@@ -2671,37 +2673,42 @@ function btStep() {
   const t = btQueue.shift(); if (!t || !t.layer) return;
   btDrop(t); t.mesh = btBuild(t); btLast = 0; shadowDirty = dirty = true;
 }
-// ---------------- names of estates and buildings across Hong Kong ----------------
-// From the Lands Department's map labels (its zoom-15 label tiles, about 1.1 km across, one set in English and one in
-// Chinese, with the same anchor points), streamed in round the point you're looking at in the area view once you're
-// within about 6 km. Estate and other site names show first; from about 2.5 km in, smaller sites such as schools; and
-// from about 1.1 km in, the names of single buildings. Where two would overlap on screen the bigger kind wins, then the
-// nearer one. The estate's own curated labels keep their names, so those aren't repeated.
-const NM_URL = (lang, x, y) => `https://mapapi.geodata.gov.hk/gs/api/v1.0.0/vt/label/hk/${lang}/WGS84/tile/15/${y}/${x}.pbf`;
+// ---------------- names of estates, buildings and roads across Hong Kong ----------------
+// From the Lands Department's map labels (one set of label tiles in English and one in Chinese, with the same anchor
+// points and label lines), streamed in round the point you're looking at in the area view.
+//  - Estates and other sites from about 6 km in, smaller sites such as schools from about 2.5 km, single buildings from
+//    about 1.1 km (zoom-15 tiles, about 1.1 km across).
+//  - Road names along their label lines, turned to run with the road: highways from far out (zoom-13 tiles), main roads
+//    from about 9 km (zoom 14), and from about 4.5 km every main road, then street names from about 2.8 km (zoom 15).
+// Where labels would overlap the more important one wins (main roads, then estates, streets, sites, buildings), then
+// the nearer one, and the same road name isn't repeated close by on screen. The estate's own curated labels keep their
+// names, so those aren't repeated either.
+const LB_URL = (lang, z, x, y) => `https://mapapi.geodata.gov.hk/gs/api/v1.0.0/vt/label/hk/${lang}/WGS84/tile/${z}/${y}/${x}.pbf`;
 const NM_LAYERS = [['SiteDisplayNameLabels_#_L16', 1], ['1823_Static_BuildingLabels_#:1', 1], ['SiteDisplayNameLabels_#_L17', 2], ['BuildingLabels_#:1', 3]];
-const NM_SHOW = [0, 6000, 2500, 1100], NM_LIFT = [0, 34, 26, 18], NM_MAX = 90;
-const NM = new Map(), NM_POOL = [];
-let nmAll = [], nmBusy = 0, nmLast = 0, nmTick = 0, nmOn = false, nmKey = '';
+const NM_SHOW = [0, 6000, 2500, 1100], NM_LIFT = [0, 34, 26, 18], NM_MAX = 100, RD_MAX = 45;
+const LB = new Map(), NM_POOL = [], RD_POOL = [];
+let nmAll = [], rdAll = [], lbBusy = 0, lbLast = 0, lbTick = 0, lbOn = false, lbKey = '';
 const NM_SKIP = new Set(YF.POIS.map(p => p.en.toLowerCase()).concat(['ying fai court']));
 const NM_CAPS = new Set('MTR HK HKU CUHK HKUST HKBU HKMU YMCA YWCA HSBC IFC ICC LOHAS PLK TWGHS SKH CCC ELCHK II III IV VI VII VIII IX XI XII'.split(' '));
-// English names come in capitals for estates and sites: Title Case them, keeping initialisms and roman numerals
+// English names come in capitals for estates, sites and roads: Title Case them, keeping initialisms and roman numerals
 const nmTitle = s => (/[a-z]/.test(s) ? s : s.replace(/[A-Z][A-Z']*/g, w => (NM_CAPS.has(w) ? w : w[0] + w.slice(1).toLowerCase())).replace(/ (Of|And|The|De|La) /g, m => m.toLowerCase()));
 const nmClean = s => String(s || '').replace(/[\s　]+/g, ' ').trim();
-function nmTileOf(x, y) {
-  const [lon, lat] = btLL(x, y), n = 2 ** 15, s = Math.sin(lat * Math.PI / 180);
+function lbTileOf(x, y, z) {
+  const [lon, lat] = btLL(x, y), n = 2 ** z, s = Math.sin(lat * Math.PI / 180);
   return [Math.floor((lon + 180) / 360 * n), Math.floor((.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n)];
 }
-// one tile's labels: [rank, English, Chinese, x, y], each anchor once (the bigger kind of label wins), and only those
-// whose anchor is inside the tile (the tiles repeat their neighbours' labels near the edges)
+const lbInside = (q, ext) => q[0] >= 0 && q[1] >= 0 && q[0] < ext && q[1] < ext;
+// a zoom-15 tile's estate and building names: [rank, English, Chinese, x, y], each anchor once (the bigger kind of
+// label wins), and only those whose anchor is inside the tile (the tiles repeat their neighbours' labels near the edges)
 function nmParse(t, en, tc) {
   const seen = new Set(), out = [];
   for (const [pat, rank] of NM_LAYERS) {
     const Le = en[pat.replace('#', 'EN')], Lt = tc && tc[pat.replace('#', 'TC')]; if (!Le) continue;
     const zh = new Map();
     if (Lt) for (const F of Lt.feats) { const q = (mvtLines(F)[0] || [])[0]; if (q) zh.set(q[0] + ',' + q[1], mvtProps(Lt, F)._name); }
-    const tl = tileToLocal(15, t.x, t.y, Le.extent);
+    const tl = tileToLocal(t.z, t.x, t.y, Le.extent);
     for (const F of Le.feats) {
-      const q = (mvtLines(F)[0] || [])[0]; if (!q || q[0] < 0 || q[1] < 0 || q[0] >= Le.extent || q[1] >= Le.extent) continue;
+      const q = (mvtLines(F)[0] || [])[0]; if (!q || !lbInside(q, Le.extent)) continue;
       const k = q[0] + ',' + q[1], e = nmTitle(nmClean(mvtProps(Le, F)._name)); if (!e || seen.has(k)) continue; seen.add(k);
       if (NM_SKIP.has(e.toLowerCase())) continue;
       const [x, y] = tl(q[0], q[1]);
@@ -2710,59 +2717,131 @@ function nmParse(t, en, tc) {
   }
   return out;
 }
-// which tiles to have: round the point you're looking at, nearest first
-function nmUpdate(now) {
-  const d = camDist(), on = st.mode === 'doll' && inArea() && WIDE.state === 'ready' && YF.estOn && d < NM_SHOW[1];
-  if (on !== nmOn) { nmOn = on; dirty = true; }
-  if (!on || now - nmLast < 300) return; nmLast = now; nmTick++;
-  const tx = controls.target.x, ty = -controls.target.z, reach = Math.min(4500, Math.max(1200, d * 1.1));
-  const [ax, ay] = nmTileOf(tx - reach, ty + reach), [bx, by] = nmTileOf(tx + reach, ty - reach), want = [];
-  for (let x = ax; x <= bx; x++) for (let y = ay; y <= by; y++) {
-    const n = 2 ** 15, lon = (x + .5) / n * 360 - 180, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + .5) / n))) * 180 / Math.PI;
-    const [cx, cy] = toLocal(lon, lat), dist = Math.hypot(cx - tx, cy - ty);
-    if (dist < reach + 800) want.push({ k: x + '/' + y, x, y, dist });
+// a tile's road labels: the name at the middle of its label line, with the line's direction there. The Chinese tile
+// has the same lines, so the two are matched on their geometry. Tunnels have their own labels already.
+function rdParse(t, en, tc) {
+  const gk = F => F.geom.length + ':' + F.geom.slice(0, 8).join(','), zh = new Map(), seen = new Set(), out = [];
+  for (const k in tc || {}) if (/^StreetCentreLines_.*label$/.test(k)) for (const F of tc[k].feats) zh.set(gk(F), mvtProps(tc[k], F)._name);
+  for (const k in en) {
+    const m = /^StreetCentreLines_(Highway_Tunnel_Mainroad|Road)\b.*label$/.exec(k); if (!m) continue;
+    const L = en[k], tl = tileToLocal(t.z, t.x, t.y, L.extent);
+    for (const F of L.feats) {
+      const e = nmTitle(nmClean(mvtProps(L, F)._name)); if (!e || /Tunnel|Crossing/i.test(e)) continue;
+      const line = mvtLines(F)[0] || []; if (line.length < 2) continue;
+      const sk = e + '|' + line[0].join(','); if (seen.has(sk)) continue; seen.add(sk);
+      // the middle of the line by length
+      let len = 0; for (let i = 1; i < line.length; i++) len += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+      let at = len / 2, i = 1;
+      for (; i < line.length - 1; i++) { const l = Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]); if (at <= l) break; at -= l; }
+      const [ua, va] = line[i - 1], [ub, vb] = line[i], l = Math.hypot(ub - ua, vb - va) || 1, q = [ua + (ub - ua) * at / l, va + (vb - va) * at / l];
+      if (!lbInside(q, L.extent)) continue;
+      const [x, y] = tl(q[0], q[1]), [ax, ay] = tl(ua, va), [bx, by] = tl(ub, vb), dl = Math.hypot(bx - ax, by - ay) || 1;
+      out.push({ main: m[1] !== 'Road' || t.z < 15, z: t.z, en: e, zh: nmClean(zh.get(gk(F))) || e, x, y, dx: (bx - ax) / dl, dy: (by - ay) / dl, v: null });
+    }
   }
-  want.sort((a, b) => a.dist - b.dist); want.length = Math.min(want.length, 60);
-  for (const w of want) {
-    const t = NM.get(w.k); if (t) { t.seen = nmTick; continue; }
-    if (nmBusy >= 4) continue;
-    const nt = { x: w.x, y: w.y, seen: nmTick, labels: null }; NM.set(w.k, nt); nmBusy++;
-    const get = lang => fetch(NM_URL(lang, w.x, w.y)).then(r => (r.ok ? r.arrayBuffer() : null)).then(b => b && readMVT(b)).catch(() => null);
-    Promise.all([get('en'), get('tc')]).then(([en, tc]) => { nt.labels = en ? nmParse(nt, en, tc) : []; nmKey = ''; dirty = true; }).finally(() => { nmBusy--; });
-  }
-  // keep at most 120 tiles, dropping the ones unseen longest
-  if (NM.size > 120) [...NM.entries()].sort((a, b) => a[1].seen - b[1].seen).slice(0, NM.size - 120).forEach(([k]) => { NM.delete(k); nmKey = ''; });
-  const key = want.map(w => w.k).join(',');
-  if (key !== nmKey) { nmKey = key; nmAll = []; for (const w of want) { const t = NM.get(w.k); if (t && t.labels) nmAll.push(...t.labels); } }
+  return out;
 }
-// place the names on screen, round the labels already placed ('kept': [x, y, width] in pixels)
+// a label tile, loading it if need be (null until it's in)
+function lbGet(z, x, y) {
+  const k = z + '/' + x + '/' + y; let t = LB.get(k);
+  if (t) { t.seen = lbTick; return t.done ? t : null; }
+  if (lbBusy >= 6) return null;
+  t = { z, x, y, seen: lbTick, done: false, names: [], roads: [] }; LB.set(k, t); lbBusy++;
+  const get = lang => fetch(LB_URL(lang, z, x, y)).then(r => (r.ok ? r.arrayBuffer() : null)).then(b => b && readMVT(b)).catch(() => null);
+  Promise.all([get('en'), get('tc')]).then(([en, tc]) => {
+    if (en) { if (z === 15) t.names = nmParse(t, en, tc); t.roads = rdParse(t, en, tc); }
+    t.done = true; lbKey = ''; dirty = true;
+  }).finally(() => { lbBusy--; });
+  return null;
+}
+// tiles of zoom z round the point you're looking at, nearest first
+function lbWant(z, reach, max) {
+  const tx = controls.target.x, ty = -controls.target.z, n = 2 ** z, want = [];
+  const [ax, ay] = lbTileOf(tx - reach, ty + reach, z), [bx, by] = lbTileOf(tx + reach, ty - reach, z);
+  for (let x = ax; x <= bx; x++) for (let y = ay; y <= by; y++) {
+    const lon = (x + .5) / n * 360 - 180, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + .5) / n))) * 180 / Math.PI, [cx, cy] = toLocal(lon, lat);
+    const dist = Math.hypot(cx - tx, cy - ty), half = 40075016 * .925 / n / 2;
+    if (dist < reach + half) want.push({ z, x, y, dist });
+  }
+  return want.sort((a, b) => a.dist - b.dist).slice(0, max);
+}
+function nmUpdate(now) {
+  const d = camDist(), area = st.mode === 'doll' && inArea() && WIDE.state === 'ready';
+  const names = area && YF.estOn && d < NM_SHOW[1], roads = area && YF.roadsOn && d < 30000, on = names || roads;
+  if (on !== lbOn) { lbOn = on; dirty = true; }
+  if (!on || now - lbLast < 300) return; lbLast = now; lbTick++;
+  const want = [];
+  if (names || (roads && d < 4500)) want.push(...lbWant(15, Math.min(4500, Math.max(1200, d * 1.1)), 60));
+  if (roads && d >= 2500 && d < 9500) want.push(...lbWant(14, Math.min(12000, d * 1.3), 40));
+  if (roads && d >= 8000) want.push(...lbWant(13, Math.min(26000, d * 1.2), 48));
+  const tiles = want.map(w => lbGet(w.z, w.x, w.y));
+  // keep at most 300 tiles (most are a kilobyte or two), dropping the ones unseen longest
+  if (LB.size > 300) [...LB.entries()].sort((a, b) => a[1].seen - b[1].seen).slice(0, LB.size - 300).forEach(([k]) => { LB.delete(k); lbKey = ''; });
+  const key = want.map(w => w.z + '/' + w.x + '/' + w.y).join(',') + names + roads;
+  if (key !== lbKey) {
+    lbKey = key; nmAll = []; rdAll = [];
+    for (const t of tiles) if (t) { if (names) nmAll.push(...t.names); if (roads) rdAll.push(...t.roads); }
+  }
+}
+// place the names on screen, round the labels already placed ('kept': [x, y, width, height] boxes in pixels, centred)
 function nmPlace(kept, w, h) {
-  let used = 0;
-  if (nmOn && nmAll.length) {
-    const d = camDist(), far = d * 1.7 + 900, v = new THREE.Vector3(), canopy = st.trees ? 10 : 0, cands = [];
+  let used = 0, usedR = 0;
+  if (lbOn) {
+    const d = camDist(), far = d * 1.7 + 900, v = new THREE.Vector3(), u = new THREE.Vector3(), canopy = st.trees ? 10 : 0, cands = [];
+    const onScreen = () => !(v.z > 1 || v.z < -1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1);
     for (const L of nmAll) {
       if (d > NM_SHOW[L.rank]) continue;
       if (!L.v || L.canopy !== canopy) { L.canopy = canopy; L.v = P(L.x, L.y, Math.max(0, surfAll(L.x, L.y, canopy)) + NM_LIFT[L.rank]); }
       const dl = cam.position.distanceTo(L.v); if (dl > far) continue;
-      v.copy(L.v).project(cam); if (v.z > 1 || v.z < -1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) continue;
-      cands.push([L.rank * 1e6 + dl, L, (v.x + 1) / 2 * w, (1 - v.y) / 2 * h]);
+      v.copy(L.v).project(cam); if (!onScreen()) continue;
+      cands.push([[0, 2, 4, 6][L.rank] * 1e6 + dl, L, (v.x + 1) / 2 * w, (1 - v.y) / 2 * h]);
+    }
+    // the local road labels round the estate keep their own names
+    const localRoad = new Set(); for (const L of ROAD_L) if (!L.el.hidden) localRoad.add(String((YF.ROADS.names[L.road] || [])[0] || '').toLowerCase());
+    for (const R of rdAll) {
+      // which zoom's labels show at this distance
+      if (R.z === 13 ? d < 8000 : R.z === 14 ? d < 2500 || d >= 9500 : d >= (R.main ? 4500 : 2800)) continue;
+      if (localRoad.has(R.en.toLowerCase())) continue;
+      if (!R.v || R.canopy !== canopy) { R.canopy = canopy; R.v = P(R.x, R.y, Math.max(0, surfAll(R.x, R.y, canopy)) + 3); }
+      const dl = cam.position.distanceTo(R.v); if (dl > far * 1.3) continue;
+      v.copy(R.v).project(cam); if (!onScreen()) continue;
+      const sx = (v.x + 1) / 2 * w, sy = (1 - v.y) / 2 * h;
+      // which way the road runs on screen, kept readable (never upside down)
+      u.copy(R.v).add(new THREE.Vector3(R.dx, 0, -R.dy).multiplyScalar(Math.max(5, dl * .02))).project(cam);
+      let ang = Math.atan2((1 - u.y) / 2 * h - sy, (u.x + 1) / 2 * w - sx) * 180 / Math.PI;
+      if (ang > 90) ang -= 180; else if (ang < -90) ang += 180;
+      cands.push([(R.main ? 1 : 3) * 1e6 + dl, R, sx, sy, ang]);
     }
     cands.sort((a, b) => a[0] - b[0]);
-    const zh = YF.lang === 'zh';
-    for (const [, L, x, y] of cands) {
-      if (used >= NM_MAX) break;
-      const txt = zh ? L.zh : L.en, tw = txt.length * (zh ? 12 : L.rank === 3 ? 5.6 : 6.2) + 10;
-      if (kept.some(([a, b, c]) => Math.abs(a - x) < (c + tw) / 2 + 4 && Math.abs(b - y) < 16)) continue;
-      kept.push([x, y, tw]);
-      let el = NM_POOL[used]; if (!el) { el = mkLabel('hk nm', ''); NM_POOL.push(el); }
-      used++;
-      if (el._L !== L || el._zh !== zh) { el._L = L; el._zh = zh; el.className = 'lbl hk nm r' + L.rank; el.textContent = txt; }
-      el.style.left = x + 'px'; el.style.top = y + 'px'; el.hidden = false;
+    const zh = YF.lang === 'zh', named = new Map();
+    const clash = (x, y, bw, bh) => kept.some(([a, b, c, e]) => Math.abs(a - x) < (c + bw) / 2 + 3 && Math.abs(b - y) < ((e || 16) + bh) / 2);
+    for (const [, L, x, y, ang] of cands) {
+      const road = ang !== undefined, txt = zh ? L.zh : L.en;
+      if (road) {
+        if (usedR >= RD_MAX) continue;
+        const tw = txt.length * (zh ? 12 : 6.4) + 8, th = 15, r = ang * Math.PI / 180, bw = Math.abs(tw * Math.cos(r)) + Math.abs(th * Math.sin(r)), bh = Math.abs(tw * Math.sin(r)) + Math.abs(th * Math.cos(r));
+        const same = named.get(txt) || [];
+        if (same.some(([a, b]) => Math.hypot(a - x, b - y) < 220) || clash(x, y, bw, bh)) continue;
+        kept.push([x, y, bw, bh]); same.push([x, y]); named.set(txt, same);
+        let el = RD_POOL[usedR]; if (!el) { el = mkLabel('hk rd', ''); RD_POOL.push(el); }
+        usedR++;
+        if (el._L !== L || el._zh !== zh) { el._L = L; el._zh = zh; el.className = 'lbl hk rd' + (L.main ? ' main' : ''); el.textContent = txt; }
+        el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.transform = `translate(-50%, -50%) rotate(${ang.toFixed(1)}deg)`; el.hidden = false;
+      } else {
+        if (used >= NM_MAX) continue;
+        const tw = txt.length * (zh ? 12 : L.rank === 3 ? 5.6 : 6.2) + 10;
+        if (clash(x, y - 8, tw, 16)) continue;
+        kept.push([x, y - 8, tw, 16]);
+        let el = NM_POOL[used]; if (!el) { el = mkLabel('hk nm', ''); NM_POOL.push(el); }
+        used++;
+        if (el._L !== L || el._zh !== zh) { el._L = L; el._zh = zh; el.className = 'lbl hk nm r' + L.rank; el.textContent = txt; }
+        el.style.left = x + 'px'; el.style.top = y + 'px'; el.hidden = false;
+      }
     }
   }
   for (let i = used; i < NM_POOL.length; i++) NM_POOL[i].hidden = true;
+  for (let i = usedR; i < RD_POOL.length; i++) RD_POOL[i].hidden = true;
 }
-
 
 // materials (interior ones are clipped in the dollhouse)
 const CLIP = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e7);
@@ -3208,10 +3287,10 @@ function placeLabels() {
     put(L.el, L.v, !L.hidden);
     if (L.el.hidden) continue;
     const x = parseFloat(L.el.style.left), y = parseFloat(L.el.style.top), w = L.el.textContent.length * (YF.lang === 'zh' ? 13 : 7) + 12;
-    if (kept.some(([a, b, c]) => Math.abs(a - x) < (c + w) / 2 && Math.abs(b - y) < 17)) L.el.hidden = true; else kept.push([x, y, w]);
+    if (kept.some(([a, b, c]) => Math.abs(a - x) < (c + w) / 2 && Math.abs(b - y + 8) < 17)) L.el.hidden = true; else kept.push([x, y - 8, w, 17]);
   }
-  // names of estates and buildings, round the places and the estate's own labels
-  for (const L of OUT_L) if (!L.el.hidden) kept.push([parseFloat(L.el.style.left), parseFloat(L.el.style.top) - 9, L.el.textContent.length * 6.5 + 24]);
+  // names of estates, buildings and roads, round the places and the estate's own labels
+  for (const L of OUT_L) if (!L.el.hidden) kept.push([parseFloat(L.el.style.left), parseFloat(L.el.style.top) - 9, L.el.textContent.length * 6.5 + 24, 18]);
   nmPlace(kept, w, h);
   // sun hour labels: where the hours bunch up (round sunrise and sunset in summer), keep every other one that would overlap
   const taken = [];
