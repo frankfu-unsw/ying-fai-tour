@@ -1778,6 +1778,14 @@ async function loadWide() {
       wideLand.lake[k] = !sea && wd[q + 1] > 127 ? 1 : 0;
       wideLand.urban[k] = sea ? 0 : Math.min(1, Math.max(0, (dens(X, Y) - .07) / .16)) * (h < 260 ? 1 : 0);
     }
+    // the height tiles have the odd bad sample (one in Sha Tin stood 730 m above the river): a point more than 150 m above
+    // or below all eight of its neighbours is levelled to the nearest of them
+    for (let j = 1; j < WIDE.ny - 1; j++) for (let i = 1; i < WIDE.nx - 1; i++) {
+      const k = j * WIDE.nx + i; if (z[k] === 0) continue;
+      let mx = -Infinity, mn = Infinity;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) if (a || b) { const v = z[k + b * WIDE.nx + a]; if (v > mx) mx = v; if (v < mn) mn = v; }
+      if (z[k] > mx + 150) z[k] = mx; else if (z[k] < mn - 150) z[k] = mn;
+    }
     WIDE.z = z; WIDE.state = 'ready'; WIDE.ver++;
     WIDE.sea = seaAt; builtCanopy = -1; rebuildTerrain();   // redraws the local terrain with the map's coastline, and the wide terrain
     // a label for each named tunnel, at the middle of the tunnel sections that run along its name's line
