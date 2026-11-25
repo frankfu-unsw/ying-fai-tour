@@ -2464,10 +2464,11 @@ function wrMat(color, xPx, xM, pull, extra) {
   return m;
 }
 // per class: which fill, half-width on the ground in metres, and the least half-width on screen in pixels
-const WR_CLS = { motorway: ['major', 7, 2.5], trunk: ['major', 6, 2.3], primary: ['prim', 4.5, 1.7], secondary: ['sec', 3.5, 1.15] };
+// (each carriageway of a dual road is its own line, so those come out about twice as wide)
+const WR_CLS = { motorway: ['major', 5.5, 1.7], trunk: ['major', 5, 1.6], primary: ['prim', 4, 1.25], secondary: ['sec', 3, .9] };
 const WR_MATS = {
   major: wrMat(0xf3b53a, 0, 0, .0052), prim: wrMat(0xfde38a, 0, 0, .0049), sec: wrMat(0xfbf8f1, 0, 0, .0047),
-  edgeMajor: wrMat(0x7c5212, 1, 1.4, .0042), edge: wrMat(0x5b584f, .9, 1.1, .0040),
+  edgeMajor: wrMat(0x7c5212, .8, 1.2, .0042), edge: wrMat(0x5b584f, .75, 1, .0040),
   tunnel: wrMat(0xc9821c, 0, 0, .0036, { transparent: true, opacity: .75, depthWrite: false })
 };
 let wideRoadKey = '', wideTunnelKey = '';
@@ -2865,9 +2866,9 @@ function buildShell() {
 }
 // ---------------- doors ----------------
 // A leaf in every room's doorway: hinged, swinging the way the plan's door leaf opens, or for plan A's two small bedrooms
-// sliding along the wall. With doors on they start shut, and inside each one opens as you come within about 1.5 m of
-// it and shuts again once you've gone; with doors off the doorways are left open. (The front door stays shut either
-// way, and the sight-line counts treat bedroom doors as shut regardless.)
+// sliding along the wall. With doors on they start shut and open as you go through them inside (see doorTick); with
+// doors off the doorways are left open. The front door stays shut either way, and the sight-line counts treat
+// bedroom doors as shut regardless.
 const DOOR_T = 40, DOORS = [];
 function buildDoors(g, openings, leaves, lay) {
   for (const [X0, X1, Y0, Y1, o] of openings) {
@@ -2908,13 +2909,22 @@ function setDoor(d, f) {
   d.open = f;
   if (d.slide) d.pivot.position.lerpVectors(d.p0, d.p1, f); else d.pivot.rotation.y = d.shut + d.turn * f;
 }
-// each frame inside: open the doors you're next to, shut the rest
+// each frame inside: a door opens when the way to the next stop goes through it, when you walk up to it, or when you
+// stand in its doorway, and stays open while you're within about 1.3 m; the rest shut
 function doorTick(dt) {
   if (!st.doors) return;
   let moved = false;
+  const walk = st.mode === 'walk', moving = walk && keys.size > 0;
+  const onPath = d => {
+    if (!glide) return false;
+    const ax = glide.from.x, ay = glide.from.y, bx = glide.to.x, by = glide.to.y, px = d.cx, py = -d.cz, l2 = (bx - ax) ** 2 + (by - ay) ** 2 || 1e-9;
+    const f = Math.max(0, Math.min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2));
+    return Math.hypot(ax + (bx - ax) * f - px, ay + (by - ay) * f - py) < .45;
+  };
   for (const d of DOORS) {
     if (d.lay && d.lay !== st.layout) continue;
-    const want = st.mode === 'walk' && Math.hypot(cam.position.x - d.cx, cam.position.z - d.cz) < 1.5 ? 1 : 0;
+    const dist = Math.hypot(cam.position.x - d.cx, cam.position.z - d.cz);
+    const want = walk && (dist < .75 || (dist < 1.3 && (moving || d.open > 0)) || onPath(d)) ? 1 : 0;
     if (d.open === want) continue;
     setDoor(d, want > d.open ? Math.min(1, d.open + dt * 3.5) : Math.max(0, d.open - dt * 2.5)); moved = true;
   }
