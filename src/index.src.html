@@ -446,7 +446,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
         <li data-zh="兩座大廈的外形按房委會標準樓層平面圖描畫，並按說明書的位置圖擺放；升降機和垃圾房位置取自同一份平面圖。平台（1樓，約主水平基準上52米）、大堂、天台設施和花槽是按布局圖和房委會模型估算。主要道路取自 OpenStreetMap，鋪在地形上，所以天橋和路塹都以地面高度顯示；隧道沒有畫出。拉遠鏡頭或選「周邊」，就可以連同附近地點一併看到。">Both towers are traced from the HA typical floor plans and placed from the brochure's key plan; the lifts and refuse rooms come from the same plans. The podium deck (1/F, taken at about +52 mPD), the lobbies, the roof features and the planters are estimates from the layout plan and the HA's model. Main roads come from OpenStreetMap and are laid on the terrain, so flyovers and cuttings show at ground level; tunnels are left out. Zoom out, or pick Area, to see them with the nearby places.</li>
         <li data-zh="「海景角度」是指從你所站的位置經窗口看得到海的方位度數，已計及牆、隔音鰭、鄰座單位和山勢。各窗的數字大致在離玻璃1.5米處量度（視乎房間大小）。睡房和浴室門當作關上：在這些房間內只計該房的窗，在其他位置也不能穿過這些門看出去。">"Degrees of sea" counts the compass directions in which you can see sea through a window from where you stand, after walls, the fin, the neighbouring flats and the hills. Window figures are taken about 1.5 m back from the glass where the room allows. Bedroom and bathroom doors count as shut: inside one of those rooms only its own window counts, and from elsewhere you can't see through it.</li>
         <li data-zh="太陽位置按屋苑位置（約北緯22.31度、東經114.27度）及香港時間，以標準天文公式計算，誤差不足一度。直射陽光時間把單位本身的牆、隔音鰭和兩座大廈當作由地面到天台的實體，山勢則沿用景觀計算的地形；附近其他建築物、樹木（除非選了加上）、雲和煙霞不計。立體畫面的光和影子來自同一個太陽；在鳥瞰模式下，單位的天花雖然看不見，仍然會遮光。">The sun's position is worked out for the estate (about 22.31°N, 114.27°E) on Hong Kong time with the standard solar formulas, which are good to a fraction of a degree. The direct-sun times treat the flat's own walls, the acoustic fin and both towers as solid from the ground to the roof, and take the hills from the same terrain as the views; nearby buildings, trees (unless you add them), cloud and haze are left out. The light and shadows in the 3D view come from the same sun, and in the dollhouse the flat's ceiling still blocks the light even though you can't see it.</li>
-        <li data-zh="周邊視角拉遠時見到的香港其他地區，是在打開頁面時由瀏覽器即時載入：地勢取自 AWS Terrain Tiles（Mapzen，主要來自 SRTM，與附近地形同一來源），海岸線、水塘、主要道路和市區範圍取自 OpenStreetMap（經 OpenFreeMap / OpenMapTiles 向量圖塊），地名和山峰高度亦取自 OpenStreetMap。市區範圍按道路密度估算，只作示意。拉近時，視點附近的建築物亦會從同一份 OpenStreetMap 資料逐步載入，有記錄高度的按高度顯示；屋苑和建築物名稱則取自地政總署的地圖標籤（© 地圖資料由地政總署提供）。如未能載入，周邊視角只顯示將軍澳一帶。">The rest of Hong Kong in the area view is loaded by your browser when the page opens: the terrain from the AWS Terrain Tiles (Mapzen, mostly SRTM, the same source as the nearby terrain), and the coastline, reservoirs, main roads and built-up areas from OpenStreetMap through OpenFreeMap's OpenMapTiles vector tiles. Place names and peak heights are also from OpenStreetMap. Built-up areas are estimated from how dense the roads are, so treat them as a rough guide. Zoomed in, the buildings round the point you're looking at stream in from the same OpenStreetMap data, with heights where they are mapped, and the names of estates and buildings come from the Lands Department's map labels (© Map information from Lands Department). If they can't be loaded, the area view shows only the Tseung Kwan O area.</li>
+        <li data-zh="周邊視角拉遠時見到的香港其他地區，是在打開頁面時由瀏覽器即時載入：地勢（整個香港，連大嶼山、機場、屯門、元朗及離島）取自 AWS Terrain Tiles（Mapzen，主要來自 SRTM，與附近地形同一來源），海岸線、水塘、主要道路和市區範圍取自 OpenStreetMap（經 OpenFreeMap / OpenMapTiles 向量圖塊），地名和山峰高度亦取自 OpenStreetMap。市區範圍按道路密度估算，只作示意。拉近時，視點附近的建築物亦會從同一份 OpenStreetMap 資料逐步載入，有記錄高度的按高度顯示；屋苑和建築物名稱則取自地政總署的地圖標籤（© 地圖資料由地政總署提供）。如未能載入，周邊視角只顯示將軍澳一帶。">The rest of Hong Kong in the area view (all of it, including Lantau, the airport, Tuen Mun, Yuen Long and the outlying islands) is loaded by your browser when the page opens: the terrain from the AWS Terrain Tiles (Mapzen, mostly SRTM, the same source as the nearby terrain), and the coastline, reservoirs, main roads and built-up areas from OpenStreetMap through OpenFreeMap's OpenMapTiles vector tiles. Place names and peak heights are also from OpenStreetMap. Built-up areas are estimated from how dense the roads are, so treat them as a rough guide. Zoomed in, the buildings round the point you're looking at stream in from the same OpenStreetMap data, with heights where they are mapped, and the names of estates and buildings come from the Lands Department's map labels (© Map information from Lands Department). If they can't be loaded, the area view shows only the Tseung Kwan O area.</li>
       </ul>
     </details>
   </aside>
@@ -1667,14 +1667,15 @@ function buildRoads() { roads.build(st.trees ? 10 : 0, st.mode === 'walk' ? 'rea
 const blds = YF.makeBuildings(THREE, P, surfH); scene.add(blds.group);
 
 // ---------------- the rest of Hong Kong ----------------
-// The terrain above stops a few kilometres out. For the area view the page also loads the rest of the map, from Tsuen
-// Wan and Tsing Yi to the Ninepins and from Sheung Shui, Tai Po and Plover Cove to Lamma, when it opens: heights from the AWS Terrain Tiles
+// The terrain above stops a few kilometres out. For the area view the page also loads the rest of the map, all of Hong
+// Kong from Lantau, the airport and Tuen Mun to Tung Ping Chau and from the Shenzhen border down to Po Toi and the Soko
+// Islands, when it opens: heights from the AWS Terrain Tiles
 // (Terrarium, zoom 12, the same source as the local grids) and the coastline, reservoirs, main roads and built-up areas
 // from OpenStreetMap through OpenFreeMap's vector tiles (zoom 11). If either cannot be loaded, the view keeps to the local
 // terrain. The local frame is equirectangular, origin at the east tip of Block A's east wing (fitted to within 0.3 m
 // against the OpenStreetMap buildings the nearby-building blocks were made from).
 const GEO = { lon0: 114.26597, lat0: 22.3245912, kx: 102974.37, ky: 110572.98 };
-const WIDE = { x0: -21000, y1: 22000, s: 100, nx: 311, ny: 371, z: null, hv: null, state: 'idle', ver: 0 };
+const WIDE = { x0: -45000, y1: 26000, s: 100, nx: 631, ny: 456, z: null, hv: null, state: 'idle', ver: 0 };
 const toLocal = (lon, lat) => [(lon - GEO.lon0) * GEO.kx, (lat - GEO.lat0) * GEO.ky];
 const inFarBox = (x, y) => x > FAR.x0 && x < FAR.x0 + (FAR.nx - 1) * FAR.s && y < FAR.y1 && y > FAR.y1 - (FAR.ny - 1) * FAR.s;
 // heights the views and the sun use: the local grids first, then the wider one (sea views keep to the local grids)
@@ -2470,7 +2471,32 @@ const WIDE_PLACES = [
   [3, 'peak', 'Pottinger Peak', '砵甸乍山', -1990, -7640, 312],
   [3, 'district', 'Wu Kai Sha', '烏溪沙', -2460, 11450], [3, 'district', 'Tai Po Kau', '大埔滘', -8440, 11980], [3, 'district', 'Ting Kok', '汀角', -5400, 16530],
   [3, 'spot', "Bride's Pool", '新娘潭', -2290, 19620], [3, 'island', 'Ma Shi Chau', '馬屎洲', -3720, 14290], [3, 'island', 'Double Island', '往灣洲', 4870, 21080],
-  [3, 'island', 'Grass Island', '塔門', 9880, 16710], [3, 'peak', 'Wong Leng', '黃嶺', -5990, 18210, 639], [3, 'peak', 'Lo Tin Teng', '羅天頂', -18580, 15510, 585]
+  [3, 'island', 'Grass Island', '塔門', 9880, 16710], [3, 'peak', 'Wong Leng', '黃嶺', -5990, 18210, 639], [3, 'peak', 'Lo Tin Teng', '羅天頂', -18580, 15510, 585],
+  // the west, Lantau and the outlying islands, and the far north and east
+  [1, 'town', 'Tuen Mun', '屯門', -29750, 7320], [1, 'town', 'Yuen Long', '元朗', -24710, 13260], [1, 'town', 'Tin Shui Wai', '天水圍', -27180, 14960],
+  [1, 'town', 'Tung Chung', '東涌', -33530, -4140], [1, 'island', 'Lantau Island', '大嶼山', -32300, -6400], [1, 'spot', 'Hong Kong International Airport', '香港國際機場', -36060, -1330],
+  [1, 'town', 'Shenzhen', '深圳', -21770, 24320], [1, 'peak', 'Lantau Peak', '鳳凰山', -35630, -8320, 934],
+  [2, 'town', 'Discovery Bay', '愉景灣', -25890, -2790], [2, 'town', 'Mui Wo', '梅窩', -27250, -6640], [2, 'town', 'Tai O', '大澳', -41430, -7790],
+  [2, 'district', 'Ngong Ping', '昂坪', -37260, -7610], [2, 'district', 'Sham Tseng', '深井', -21380, 4770], [2, 'district', 'Kam Tin', '錦田', -21040, 12810],
+  [2, 'district', 'Lau Fau Shan', '流浮山', -29020, 15790], [2, 'district', 'Sha Tau Kok', '沙頭角', -4570, 24430],
+  [2, 'island', 'Cheung Chau', '長洲', -24340, -12710], [2, 'island', 'Peng Chau', '坪洲', -22830, -4280], [2, 'island', 'Ma Wan', '馬灣', -21250, 3050],
+  [2, 'island', 'Po Toi', '蒲台', -440, -17300], [2, 'spot', 'Hong Kong Disneyland', '香港迪士尼樂園', -23140, -1280],
+  [2, 'water', 'Deep Bay', '后海灣', -31500, 18000], [2, 'water', 'Mirs Bay', '大鵬灣', 11700, 21600],
+  [2, 'water', 'Tai Lam Chung Reservoir', '大欖涌水塘', -23780, 6680], [2, 'water', 'Shek Pik Reservoir', '石壁水塘', -38720, -9890],
+  [2, 'tunnel', 'Tsing Ma Bridge', '青馬大橋', -19900, 2880], [2, 'tunnel', 'Hong Kong–Zhuhai–Macao Bridge', '港珠澳大橋', -42300, -4800],
+  [2, 'tunnel', 'Shenzhen Bay Bridge', '深圳灣公路大橋', -31500, 16200],
+  [2, 'peak', 'Sunset Peak', '大東山', -32260, -7440, 869], [2, 'peak', 'Castle Peak', '青山', -32200, 7040, 583],
+  [3, 'district', 'Gold Coast', '黃金海岸', -28930, 5020], [3, 'district', 'Tsing Lung Tau', '青龍頭', -23270, 4470], [3, 'district', 'Lam Tei', '藍地', -28420, 10550],
+  [3, 'district', 'Hung Shui Kiu', '洪水橋', -27390, 11650], [3, 'district', 'Sunny Bay', '欣澳', -24310, 950], [3, 'district', 'Siu Ho Wan', '小蠔灣', -27710, -1360],
+  [3, 'district', 'Cheung Sha', '長沙', -32170, -9840], [3, 'district', 'Lung Kwu Tan', '龍鼓灘', -35460, 7190], [3, 'district', 'Pak Nai', '白泥', -32610, 12500],
+  [3, 'district', 'Mai Po', '米埔', -23270, 18300], [3, 'district', 'Lok Ma Chau', '落馬洲', -20180, 20490], [3, 'district', 'Lai Chi Wo', '荔枝窩', -680, 22360],
+  [3, 'district', 'Tai Long', '大浪', 11040, 10150], [3, 'district', 'Shek Pik', '石壁', -38540, -10870], [3, 'district', 'Fan Lau', '分流', -42700, -13490],
+  [3, 'spot', 'Tian Tan Buddha', '天壇大佛', -37170, -7810],
+  [3, 'island', 'Hei Ling Chau', '喜靈洲', -23170, -8260], [3, 'island', 'Shek Kwu Chau', '石鼓洲', -28740, -14290], [3, 'island', 'Soko Islands', '索罟群島', -36330, -16850],
+  [3, 'island', 'Crooked Island', '吉澳', 2740, 24220], [3, 'island', 'Tung Ping Chau', '東平洲', 16720, 24430], [3, 'island', 'Basalt Island', '火石洲', 10220, -1180],
+  [3, 'water', 'West Lamma Channel', '西博寮海峽', -21210, -11560],
+  [3, 'peak', 'Nei Lak Shan', '彌勒山', -36540, -6780, 752], [3, 'peak', 'Lin Fa Shan', '蓮花山', -30410, -6470, 766], [3, 'peak', 'Kau Keng Shan', '九逕山', -27910, 7070, 507],
+  [3, 'peak', 'Lo Fu Tau', '老虎頭', -27370, -2770, 465], [3, 'peak', "Robin's Nest", '紅花嶺', -7810, 23970, 491], [3, 'peak', 'Sharp Peak', '蚺蛇尖', 11350, 11720, 468]
 ];
 const WIDE_L = WIDE_PLACES.map(([tier, kind, en, zh, x, y, ele]) => ({ tier, kind, en, zh, x, y, ele, el: mkLabel('hk ' + kind, ''), v: new THREE.Vector3(), hidden: true }));
 // label heights from the terrain once it is in: towns and districts a little above the ground, peaks on their summits
@@ -2613,7 +2639,7 @@ function placeLabels() {
 
 // ---------------- cameras ----------------
 const controls = new THREE.OrbitControls(cam, canvas);
-controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 30000; controls.zoomSpeed = 2;
+controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 55000; controls.zoomSpeed = 2;
 // the dollhouse looks at the flat from above its inner corner, on the side of the gap
 function dollStartPose() {
   const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]);
@@ -3159,7 +3185,7 @@ function loop(t) {
     if (fwd || side) {
       const f = new THREE.Vector3(-off.x, 0, -off.z).normalize(), r = new THREE.Vector3(-f.z, 0, f.x), v = .55 * dist * dt * boost;
       controls.target.addScaledVector(f, fwd * v).addScaledVector(r, side * v);
-      controls.target.x = Math.min(14000, Math.max(-25000, controls.target.x)); controls.target.z = Math.min(19000, Math.max(-23000, controls.target.z));
+      controls.target.x = Math.min(19000, Math.max(-46000, controls.target.x)); controls.target.z = Math.min(20500, Math.max(-27000, controls.target.z));
     }
     cam.position.copy(controls.target).add(off);
     const gr = elevAll(cam.position.x, -cam.position.z), low = (gr && !gr[1] ? gr[0] : 0) + 25;
@@ -3319,7 +3345,7 @@ function horizon() {
   HOR = new Float32Array(360);
   for (let a = 0; a < 360; a++) {
     const dx = Math.sin(a * RAD), dy = Math.cos(a * RAD); let best = -Infinity;
-    for (let d = 40; d < 25000; d *= 1.025) {
+    for (let d = 40; d < 45000; d *= 1.025) {
       const r = elevAll(cx + dx * d, cy + dy * d); if (!r) break; if (r[1]) continue;
       const v = (r[0] + (d > 60 ? can : 0) - d * d / (2 * R) * .87 - h0) / d; if (v > best) best = v;
     }
