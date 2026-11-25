@@ -3834,12 +3834,11 @@ function sunFollow() {
   if (v === 'area') areaShadow();
   sunPin();
 }
-// shadows over the area view: a square on the ground a little larger than the view's reach, centred just ahead of the
-// point you're looking at, so hills and buildings throw their shadows wherever you are. It is only re-aimed when you've
+// shadows over the area view: a square reaching from under the camera to well beyond the point you're looking at, so hills and buildings throw their shadows wherever you are. It is only re-aimed when you've
 // moved or zoomed a fair way, so panning doesn't redraw the shadows every frame.
 function areaShadow() {
-  const d = camDist(), half = Math.min(16000, Math.max(500, d * 1.1)), t = controls.target;
-  const f = new THREE.Vector3(t.x - cam.position.x, 0, t.z - cam.position.z).normalize().multiplyScalar(d * .5), cx = t.x + f.x, cz = t.z + f.z;
+  const d = camDist(), half = Math.min(40000, Math.max(500, d * 1.25)), t = controls.target;
+  const f = new THREE.Vector3(t.x - cam.position.x, 0, t.z - cam.position.z).normalize().multiplyScalar(d * .25), cx = t.x + f.x, cz = t.z + f.z;
   const b = shadowBox;
   if (b && b.at === st.sunT + '/' + st.sunDay && Math.abs(Math.log(half / b.half)) < .22 && Math.hypot(cx - b.x, cz - b.z) < half * .22) return;
   shadowBox = { half, x: cx, z: cz, at: st.sunT + '/' + st.sunDay };
