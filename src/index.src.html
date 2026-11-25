@@ -2332,12 +2332,15 @@ function doorTick(dt) {
   if (!st.doors) return;
   let moved = false;
   const walk = st.mode === 'walk', moving = walk && keys.size > 0;
-  // whether the glide to the next stop crosses the doorway
+  // whether the glide to the next stop goes through the doorway or close by it (glides run straight, sometimes through
+  // a wall, so a door the line passes near opens too)
   const side = (ax, ay, bx, by, px, py) => Math.sign((bx - ax) * (py - ay) - (by - ay) * (px - ax));
   const onPath = d => {
     if (!glide) return false;
     const { x: ax, y: ay } = glide.from, { x: bx, y: by } = glide.to, [px, py, qx, qy] = d.line;
-    return side(ax, ay, bx, by, px, py) !== side(ax, ay, bx, by, qx, qy) && side(px, py, qx, qy, ax, ay) !== side(px, py, qx, qy, bx, by);
+    if (side(ax, ay, bx, by, px, py) !== side(ax, ay, bx, by, qx, qy) && side(px, py, qx, qy, ax, ay) !== side(px, py, qx, qy, bx, by)) return true;
+    const cx = d.cx, cy = -d.cz, l2 = (bx - ax) ** 2 + (by - ay) ** 2 || 1e-9, f = Math.max(0, Math.min(1, ((cx - ax) * (bx - ax) + (cy - ay) * (by - ay)) / l2));
+    return Math.hypot(ax + (bx - ax) * f - cx, ay + (by - ay) * f - cy) < .6;
   };
   for (const d of DOORS) {
     if (d.lay && d.lay !== st.layout) continue;
