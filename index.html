@@ -2294,6 +2294,13 @@ function tilesFor(z) {
   for (let x = tx(lon(WIDE.x0 - 300)); x <= tx(lon(x1 + 300)); x++) for (let y = ty(lat(WIDE.y1 + 300)); y <= ty(lat(y0 - 300)); y++) out.push([z, x, y]);
   return out;
 }
+// the runs of a line that lie over the wide terrain (the vector tiles reach beyond it, into Shenzhen and out to sea)
+function inWide(pts) {
+  const x1 = WIDE.x0 + (WIDE.nx - 1) * WIDE.s, y0 = WIDE.y1 - (WIDE.ny - 1) * WIDE.s, runs = []; let run = [];
+  for (const p of pts) { if (p[0] >= WIDE.x0 && p[0] <= x1 && p[1] >= y0 && p[1] <= WIDE.y1) run.push(p); else { if (run.length > 1) runs.push(run); run = []; } }
+  if (run.length > 1) runs.push(run);
+  return runs;
+}
 const tileToLocal = (z, tx, ty, ext) => (u, v) => { const n = 2 ** z, X = (tx + u / ext) / n, Y = (ty + v / ext) / n; return toLocal(X * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * Y))) * 180 / Math.PI); };
 async function loadImageData(url) {
   const r = await fetch(url); if (!r.ok) throw new Error(url + ' ' + r.status);
@@ -2328,10 +2335,10 @@ async function loadWide() {
     gu.strokeStyle = '#fff'; gu.lineWidth = 2; gu.lineCap = 'round';
     each('transportation', (L, F, pr, tl) => {
       // tunnels (the harbour crossings, and the tunnels through the hills such as Tseung Kwan O-Lam Tin) are kept apart and drawn dashed
-      if (pr.brunnel === 'tunnel') { if (/^(motorway|trunk|primary)$/.test(pr.class)) for (const line of mvtLines(F)) WIDE_TUNNELS.push({ c: pr.class, pts: line.map(([u, v]) => tl(u, v)) }); return; }
+      if (pr.brunnel === 'tunnel') { if (/^(motorway|trunk|primary)$/.test(pr.class)) for (const line of mvtLines(F)) for (const pts of inWide(line.map(([u, v]) => tl(u, v)))) WIDE_TUNNELS.push({ c: pr.class, pts }); return; }
       if (!/^(motorway|trunk|primary|secondary|tertiary|minor)$/.test(pr.class)) return;
       gu.stroke(path(F, tl));
-      if (/^(motorway|trunk|primary|secondary)$/.test(pr.class)) for (const line of mvtLines(F)) WIDE_ROADS.push({ c: pr.class, pts: line.map(([u, v]) => tl(u, v)) });
+      if (/^(motorway|trunk|primary|secondary)$/.test(pr.class)) for (const line of mvtLines(F)) for (const pts of inWide(line.map(([u, v]) => tl(u, v)))) WIDE_ROADS.push({ c: pr.class, pts });
     });
     const named = {};
     each('transportation_name', (L, F, pr, tl) => {
