@@ -3246,12 +3246,12 @@ function buildSunPath() {
   if (area) placeDome();
   for (const o of sunObjs.concat(sunDisc, sunStem)) o.renderOrder = 5;
 }
-// In the area view the ring, its hours and the sun go round the point you're looking at, sized to the zoom (a little over
-// a third of the way to the camera), so the sun keeps the same place in the picture however far in or out you are and
+// In the area view the ring, its hours and the sun go round the point you're looking at, sized to the zoom (three tenths of
+// the way to the camera, which keeps it clear of the dial), so the sun keeps the same place in the picture however far in or out you are and
 // wherever you move.
 function placeDome() {
   if (!st.sunOn || sunView() !== 'area' || !SUN.now) return;
-  const c = controls.target, r = camDist() * .38, s = SUN.now;
+  const c = controls.target, r = camDist() * .3, s = SUN.now;
   sunDome.position.copy(c); sunDome.scale.setScalar(r);
   for (const L of SUN_L) if (L.u) L.v.copy(c).addScaledVector(L.u, r);
   sunDisc.position.copy(c).addScaledVector(sunVec(s), r); sunDisc.scale.setScalar(r * SUN_VIEW.area.disc);
