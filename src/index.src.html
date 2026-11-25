@@ -2953,6 +2953,7 @@ function loop(t) {
     const a = showPlaces() + '/' + inArea() + '/' + wt + '/' + (cd > 22000 ? 1 : cd > 7000 ? 2 : 3); if (a !== lastArea) { const wasArea = lastArea.split('/')[1]; lastArea = a; updateLabelVisibility(); if (st.sunOn) updateSun(); if (wasArea !== String(inArea())) { setHint(); if (!inArea()) keys.clear(); } }
     buildWideRoads();
     scene.fog.near = Math.max(3500, cd * .9); scene.fog.far = Math.max(32000, cd * 3.2);
+    if (st.sunOn && st.mode === 'doll' && inArea()) placeDome();
     if (st.sunOn && shadowDirty) { if (castDirty) shadowFlags(); renderer.shadowMap.needsUpdate = true; shadowDirty = false; }
     syncDock(); renderer.render(scene, cam); placeLabels(); hud();
   }
@@ -3209,20 +3210,22 @@ const SUN_L = [], SUN = { now: null, vis: false, rooms: [] };
 // round the flat at the cut with the sun's bearing at each hour marked on it, and the sun on a dome over the flat, joined
 // to the ring by a line so you can read how high it is (or how far below the horizon). The area view does the same round
 // the whole estate.
-const SUN_VIEW = { walk: { r: 15000, disc: 1000, dot: 180 }, doll: { r: 7, disc: 1.6, dot: .3 }, area: { r: 320, disc: 70, dot: 13 } };
+// (the area view's ring is drawn at unit size and scaled to the zoom every frame: see placeDome)
+const SUN_VIEW = { walk: { r: 15000, disc: 1000, dot: 180 }, doll: { r: 7, disc: 1.6, dot: .3 }, area: { r: 1, disc: .13, dot: .022 } };
 const sunView = () => (st.mode === 'walk' ? 'walk' : inArea() ? 'area' : 'doll');
 const EST_C = [(YF.BLOCKS.A.label[0] + YF.BLOCKS.B.label[0]) / 2, (YF.BLOCKS.A.label[1] + YF.BLOCKS.B.label[1]) / 2];
 function sunCentre(v) {
   v = v || sunView();
   return v === 'walk' ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : v === 'doll' ? P(FLAT_C.x, -FLAT_C.z, FL + CUT + .02) : P(EST_C[0], EST_C[1], FL);
 }
+const sunDome = new THREE.Group(); sunGrp.add(sunDome);
 function buildSunPath() {
-  for (const o of sunObjs) { sunGrp.remove(o); if (o.geometry) o.geometry.dispose(); }
+  for (const o of sunObjs) { if (o.parent) o.parent.remove(o); if (o.geometry) o.geometry.dispose(); }
   sunObjs = []; SUN_L.forEach(L => L.el.remove()); SUN_L.length = 0;
   if (!st.sunOn) return;
-  const v = sunView(), V = SUN_VIEW[v], D = sunDay(), c = sunCentre(v);
+  const v = sunView(), V = SUN_VIEW[v], D = sunDay(), area = v === 'area', c = area ? new THREE.Vector3() : sunCentre(v);
   const at = (s, rr) => c.clone().addScaledVector(sunVec(s), rr || V.r);
-  const add = o => { sunGrp.add(o); sunObjs.push(o); return o; };
+  const add = o => { (area ? sunDome : sunGrp).add(o); sunObjs.push(o); return o; };
   const hours = [];
   for (let h = 0; h < 24; h++) { const s = sunAt(D.ms + (h * 60 - 480) * 6e4); if (s.el >= 1) hours.push([h, s]); }
   if (v === 'walk') {
@@ -3232,15 +3235,28 @@ function buildSunPath() {
   } else {
     const ring = []; for (let a = 0; a <= 360; a += 3) ring.push(at({ az: a, el: 0 }));
     add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring), ringMat));
-    [[0, 'N', '北'], [90, 'E', '東'], [180, 'S', '南'], [270, 'W', '西']].forEach(([a, en, zh]) => SUN_L.push({ el: mkLabel('sunc', T(en, zh)), v: at({ az: a, el: 0 }, V.r * 1.1), az: a, alt: 0, hidden: true }));
+    [[0, 'N', '北'], [90, 'E', '東'], [180, 'S', '南'], [270, 'W', '西']].forEach(([a, en, zh]) => { const p = at({ az: a, el: 0 }, V.r * 1.1); SUN_L.push({ el: mkLabel('sunc', T(en, zh)), v: p.clone(), u: area ? p : null, az: a, alt: 0, hidden: true }); });
   }
   for (const [h, s] of hours) {
     const p = v === 'walk' ? at(s) : at({ az: s.az, el: 0 });
     const d = add(new THREE.Sprite(dotMat)); d.position.copy(p); d.scale.setScalar(V.dot);
-    SUN_L.push({ el: mkLabel('sunh', hourName(h)), v: p, az: s.az, alt: s.el, hidden: true });
+    SUN_L.push({ el: mkLabel('sunh', hourName(h)), v: p.clone(), u: area ? p : null, az: s.az, alt: s.el, hidden: true });
   }
   sunDisc.scale.setScalar(V.disc);
+  if (area) placeDome();
   for (const o of sunObjs.concat(sunDisc, sunStem)) o.renderOrder = 5;
+}
+// In the area view the ring, its hours and the sun go round the point you're looking at, sized to the zoom (a little over
+// a third of the way to the camera), so the sun keeps the same place in the picture however far in or out you are and
+// wherever you move.
+function placeDome() {
+  if (!st.sunOn || sunView() !== 'area' || !SUN.now) return;
+  const c = controls.target, r = camDist() * .38, s = SUN.now;
+  sunDome.position.copy(c); sunDome.scale.setScalar(r);
+  for (const L of SUN_L) if (L.u) L.v.copy(c).addScaledVector(L.u, r);
+  sunDisc.position.copy(c).addScaledVector(sunVec(s), r); sunDisc.scale.setScalar(r * SUN_VIEW.area.disc);
+  const a = sunStem.geometry.attributes.position, g = c.clone().addScaledVector(sunVec({ az: s.az, el: 0 }), r);
+  a.setXYZ(0, sunDisc.position.x, sunDisc.position.y, sunDisc.position.z); a.setXYZ(1, g.x, g.y, g.z); a.needsUpdate = true; sunStem.geometry.computeBoundingSphere();
 }
 // hour marks are shown from inside only where you could see that bit of sky: not behind a wall, a tower or the hills
 const sunRay = new THREE.Raycaster();
@@ -3285,6 +3301,7 @@ function updateSun() {
       const a = sunStem.geometry.attributes.position, g = sunCentre(v).addScaledVector(sunVec({ az: s.az, el: 0 }), V.r);
       a.setXYZ(0, sunDisc.position.x, sunDisc.position.y, sunDisc.position.z); a.setXYZ(1, g.x, g.y, g.z); a.needsUpdate = true; sunStem.geometry.computeBoundingSphere();
     }
+    if (area) placeDome();
     sunGeometry();
     SUN.rooms = [...new Set(LAYOUTS[st.layout].wins.filter(([, , , , only]) => (only || Object.keys(SUNWIN)).some(id => SUNWIN[id] && winLit(SUNWIN[id], s, hor))).map(r => r[0]))];
   }
