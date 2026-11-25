@@ -1903,7 +1903,7 @@ function btTileOf(x, y) {
   const [lon, lat] = btLL(x, y), n = 2 ** BT_Z, s = Math.sin(lat * Math.PI / 180);
   return [Math.floor((lon + 180) / 360 * n), Math.floor((.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n)];
 }
-// Douglas-Peucker, to drop the extra points of curved or finely traced outlines
+// Douglas-Peucker on an open line, to drop the extra points of curved or finely traced outlines
 function simplify(pts, tol) {
   if (pts.length < 5) return pts;
   const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
@@ -1915,6 +1915,14 @@ function simplify(pts, tol) {
     if (best > 0) { keep[best] = 1; stack.push([a, best], [best, b]); }
   }
   return pts.filter((_, i) => keep[i]);
+}
+// a closed outline: split it at the point furthest from the first, and simplify each half
+function simplifyRing(pts, tol) {
+  if (pts.length < 5) return pts;
+  let m = 0, md = -1;
+  for (let i = 1; i < pts.length; i++) { const d = (pts[i][0] - pts[0][0]) ** 2 + (pts[i][1] - pts[0][1]) ** 2; if (d > md) { md = d; m = i; } }
+  const a = simplify(pts.slice(0, m + 1), tol), b = simplify(pts.slice(m).concat([pts[0]]), tol);
+  return a.concat(b.slice(1, -1));
 }
 const BT_LOW = ['#e7dccb', '#dccfb9', '#efe7da', '#d6c7af', '#e4d5c0', '#d9cdbf'], BT_HIGH = ['#dfe1e2', '#d3d8dc', '#e5e2da', '#ccd3d9', '#dcd8cf', '#d8dee3'];
 const btRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -1932,7 +1940,7 @@ function btBuild(t) {
       if (a <= 0) continue;   // holes (courtyards) are left filled
       let pts = ring.slice(0, -1).map(([u, v]) => tl(u, v));
       if (pts[0][0] > bx0 && pts[0][0] < bx1 && pts[0][1] > by0 && pts[0][1] < by1) continue;
-      pts = simplify(pts.concat([pts[0]]), 1.2).slice(0, -1);
+      pts = simplifyRing(pts, 1.2);
       if (pts.length < 3) continue;
       let area = 0; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; area += p[0] * q[1] - q[0] * p[1]; }
       if (area < 0) { pts.reverse(); area = -area; }   // counter-clockwise in local metres, so walls face out
