@@ -2300,20 +2300,21 @@ function buildDoors(g, openings, leaves, lay) {
       const la = alongX ? (lf[0] + lf[1]) / 2 : (lf[2] + lf[3]) / 2, lb = alongX ? (lf[2] + lf[3]) / 2 : (lf[0] + lf[1]) / 2;
       side = lb > (b0 + b1) / 2 ? 1 : -1; hi = Math.abs(la - a1) < Math.abs(la - a0);
     }
-    const face = side > 0 ? b1 : b0, len = slide ? a1 - a0 + 30 : a1 - a0 - T - 10;
+    const face = side > 0 ? b1 : b0, len = slide ? a1 - a0 + 30 : a1 - a0 - 5;
     // the hinge (or a sliding leaf's near end), and the world direction of a plan vector
     const [hx, hy] = slide ? at(a0 - 15, face + side * (T / 2 + 8)) : at(hi ? a1 - T / 2 : a0 + T / 2, face + side * T / 2);
     const ang = (vx, vy) => Math.atan2(wy(hy + vy) - wy(hy), wx(hx + vx) - wx(hx));   // P maps plan y to -z, so this is three's rotation.y
     const shut = ang(...at(slide || !hi ? 1 : -1, 0)), open = ang(...at(0, side));
     const pivot = new THREE.Group(); pivot.position.copy(P(wx(hx), wy(hy), FL)); pivot.rotation.y = shut; g.add(pivot);
-    const Lm = len / 1000, Tm = T / 1000;
-    const leaf = new THREE.Mesh(new THREE.BoxGeometry(Lm, H, Tm), M.white); leaf.position.set(Lm / 2, H / 2, 0); pivot.add(leaf);
+    // a hinged leaf starts half its thickness behind the hinge, so shut it reaches the jamb and open it tucks into the wall
+    const Lm = len / 1000, Tm = T / 1000, x0 = slide ? 0 : -Tm / 2, xe = x0 + Lm;
+    const leaf = new THREE.Mesh(new THREE.BoxGeometry(Lm, H, Tm), M.white); leaf.position.set(x0 + Lm / 2, H / 2, 0); pivot.add(leaf);
     // its solid top where the dollhouse cuts it (the doors are always shut there)
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(Lm, .029, Tm), CAP.door); cap.position.set(Lm / 2, CUT - .0155, 0); pivot.add(cap);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(Lm, .029, Tm), CAP.door); cap.position.set(x0 + Lm / 2, CUT - .0155, 0); pivot.add(cap);
     for (const s of [1, -1]) {   // on each face: a lever handle near the free edge, or a bar pull at a sliding leaf's leading edge
-      if (slide) { const pl = new THREE.Mesh(new THREE.BoxGeometry(.022, .32, .022), M.steel); pl.position.set(o.slide[1] > 0 ? .07 : Lm - .07, 1.0, s * (Tm / 2 + .02)); pivot.add(pl); continue; }
-      const hd = new THREE.Mesh(new THREE.BoxGeometry(.13, .022, .022), M.steel); hd.position.set(Lm - .1, 1.0, s * (Tm / 2 + .03)); pivot.add(hd);
-      const rs = new THREE.Mesh(new THREE.BoxGeometry(.05, .07, .03), M.steel); rs.position.set(Lm - .055, 1.0, s * (Tm / 2 + .015)); pivot.add(rs);
+      if (slide) { const pl = new THREE.Mesh(new THREE.BoxGeometry(.022, .32, .022), M.steel); pl.position.set(o.slide[1] > 0 ? .07 : xe - .07, 1.0, s * (Tm / 2 + .02)); pivot.add(pl); continue; }
+      const hd = new THREE.Mesh(new THREE.BoxGeometry(.13, .022, .022), M.steel); hd.position.set(xe - .11, 1.0, s * (Tm / 2 + .03)); pivot.add(hd);
+      const rs = new THREE.Mesh(new THREE.BoxGeometry(.05, .07, .03), M.steel); rs.position.set(xe - .065, 1.0, s * (Tm / 2 + .015)); pivot.add(rs);
     }
     let p0 = null, p1 = null, turn = 0;
     if (slide) { p0 = pivot.position.clone(); const [ex, ey] = at(a0 - 15 + o.slide[1] * (a1 - a0), face + side * (T / 2 + 8)); p1 = P(wx(ex), wy(ey), FL); }
