@@ -1871,7 +1871,8 @@ function wrMat(color, xPx, xM, pull, extra) {
     sh.uniforms.uPx = WR_PX; sh.uniforms.uWr = u;
     sh.vertexShader = 'attribute vec2 wrSide;\nattribute vec2 wrW;\nuniform float uPx;\nuniform vec3 uWr;\n' + sh.vertexShader.replace('#include <project_vertex>', [
       'vec4 wp = modelMatrix * vec4(transformed, 1.0);',
-      'float hwid = max(wrW.x + uWr.y, (wrW.y + uWr.x) * uPx * distance(wp.xyz, cameraPosition));',
+      // (three only fills in cameraPosition for some materials, so the distance comes from view space)
+      'float hwid = max(wrW.x + uWr.y, (wrW.y + uWr.x) * uPx * length((viewMatrix * wp).xyz));',
       'wp.xz += wrSide * hwid;',
       'vec4 mvPosition = viewMatrix * wp;',
       'mvPosition.xyz *= uWr.z;',
