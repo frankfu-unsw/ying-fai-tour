@@ -249,10 +249,11 @@ details.poigrp[open] > summary h3::after { content: "−"; }
 /* the sun: dock controls, the readout and the window table */
 .dock .sun > button, .dock .door > button { display: inline-flex; align-items: center; gap: 7px; }
 .dock .door > button svg { width: 18px; height: 18px; flex: none; }
-/* on-screen W A S D and Shift for flying the area view on a touch screen: see-through keycaps above the bar */
-.tkeys { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 66px; display: grid; grid-template-columns: repeat(4, 46px); grid-template-rows: 46px 46px; grid-template-areas: ". . w ." "sh a s d"; gap: 6px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
-.tkeys .tk { display: grid; place-items: center; padding: 0; font: 700 16px/1 var(--f-display); letter-spacing: .04em; color: rgba(238,244,246,.92); background: rgba(19,35,44,.42); border: 1px solid rgba(238,244,246,.28); border-bottom-width: 3px; border-radius: 7px; box-shadow: 0 1px 3px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; transition: background .08s, transform .08s; }
-.tkeys .tk svg { width: 19px; height: 19px; }
+/* on-screen W A S D and Shift for flying the area view on a touch screen: see-through keycaps, halfway down the left side */
+.tkeys { --tk: 68px; position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: repeat(4, var(--tk)); grid-template-rows: var(--tk) var(--tk); grid-template-areas: ". . w ." "sh a s d"; gap: 14px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
+.tkeys .tk { display: grid; place-items: center; padding: 0; font: 700 21px/1 var(--f-display); letter-spacing: .04em; color: rgba(238,244,246,.92); background: rgba(19,35,44,.42); border: 1px solid rgba(238,244,246,.28); border-bottom-width: 3px; border-radius: 7px; box-shadow: 0 1px 3px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; transition: background .08s, transform .08s; }
+.tkeys .tk svg { width: 26px; height: 26px; }
+@container (max-width: 560px) { .tkeys { --tk: 56px; gap: 10px; left: 10px; } }
 .tkeys .tk.on { background: rgba(238,244,246,.92); color: #13232c; border-bottom-width: 1px; transform: translateY(2px); }
 .tkeys .sh[aria-pressed="true"] { background: rgba(245,196,106,.92); color: #13232c; border-color: rgba(255,236,200,.6); }
 .dock .sun > button svg { width: 18px; height: 18px; flex: none; }
@@ -3509,7 +3510,7 @@ function walkable(x, y) {
 const keys = new Set();
 let keyFast = false, touchFast = false;
 // ---------------- on-screen keys for touch screens ----------------
-// In the area view on a touch screen, W A S D keycaps sit above the bar: hold one to fly as with the keyboard, while
+// In the area view on a touch screen, W A S D keycaps sit halfway down the left side: hold one to fly as with the keyboard, while
 // another finger drags the map to steer (and pinches to zoom). The Shift key locks 3× speed on and off with a tap.
 let TOUCH = navigator.maxTouchPoints > 0 || matchMedia('(any-pointer: coarse)').matches;
 addEventListener('touchstart', () => { if (!TOUCH) { TOUCH = true; dockKey = ''; setHint(); dirty = true; } }, { passive: true, capture: true });
@@ -3936,9 +3937,9 @@ YF.onBldg(() => { blds.group.visible = YF.bldgOn; btLast = 0; dirty = true; });
 // ---------------- Inside / Dollhouse / Area switch over the 3D view ----------------
 let lastArea = '', dockKey = '';
 function syncDock() {
-  const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang + FLAT.id + FLOOR + st.layout + st.trees + st.doors + TOUCH + $('dock').offsetHeight;
+  const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang + FLAT.id + FLOOR + st.layout + st.trees + st.doors + TOUCH;
   if (key === dockKey) return; dockKey = key;
-  syncTouchKeys(on === 'dArea'); $('tkeys').style.bottom = ($('dock').offsetHeight + 20) + 'px';
+  syncTouchKeys(on === 'dArea');
   const best = Math.max(0, ...winRows(st.layout).map(r => r.deg || 0));
   $('dFl').innerHTML = `<b>${FLOOR}${T('/F', '樓')}</b><small>${best ? T(`up to ${best}° sea`, `最多海景${best}°`) : T('no sea', '無海景')}</small>`;
   $('dDn').disabled = FLOOR <= FLAT.F0; $('dUp').disabled = FLOOR >= FLAT.F1;
