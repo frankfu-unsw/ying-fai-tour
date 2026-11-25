@@ -2318,25 +2318,26 @@ function buildDoors(g, openings, leaves, lay) {
     let p0 = null, p1 = null, turn = 0;
     if (slide) { p0 = pivot.position.clone(); const [ex, ey] = at(a0 - 15 + o.slide[1] * (a1 - a0), face + side * (T / 2 + 8)); p1 = P(wx(ex), wy(ey), FL); }
     else { turn = open - shut; while (turn > Math.PI) turn -= 2 * Math.PI; while (turn < -Math.PI) turn += 2 * Math.PI; }
-    const c = P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), FL);
-    DOORS.push({ pivot, cap, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z });
+    const c = P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), FL), [ux, uy] = at(a0, (b0 + b1) / 2), [vx, vy] = at(a1, (b0 + b1) / 2);
+    DOORS.push({ pivot, cap, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z, line: [wx(ux), wy(uy), wx(vx), wy(vy)] });
   }
 }
 function setDoor(d, f) {
   d.open = f;
   if (d.slide) d.pivot.position.lerpVectors(d.p0, d.p1, f); else d.pivot.rotation.y = d.shut + d.turn * f;
 }
-// each frame inside: a door opens when the way to the next stop goes through it or when you walk up to it, and stays
+// each frame inside: a door opens when the glide to the next stop goes through it or when you walk up to it, and stays
 // open while you're within about 1.3 m; the rest shut
 function doorTick(dt) {
   if (!st.doors) return;
   let moved = false;
   const walk = st.mode === 'walk', moving = walk && keys.size > 0;
+  // whether the glide to the next stop crosses the doorway
+  const side = (ax, ay, bx, by, px, py) => Math.sign((bx - ax) * (py - ay) - (by - ay) * (px - ax));
   const onPath = d => {
     if (!glide) return false;
-    const ax = glide.from.x, ay = glide.from.y, bx = glide.to.x, by = glide.to.y, px = d.cx, py = -d.cz, l2 = (bx - ax) ** 2 + (by - ay) ** 2 || 1e-9;
-    const f = Math.max(0, Math.min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2));
-    return Math.hypot(ax + (bx - ax) * f - px, ay + (by - ay) * f - py) < .45;
+    const { x: ax, y: ay } = glide.from, { x: bx, y: by } = glide.to, [px, py, qx, qy] = d.line;
+    return side(ax, ay, bx, by, px, py) !== side(ax, ay, bx, by, qx, qy) && side(px, py, qx, qy, ax, ay) !== side(px, py, qx, qy, bx, by);
   };
   for (const d of DOORS) {
     if (d.lay && d.lay !== st.layout) continue;
