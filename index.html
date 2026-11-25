@@ -2465,10 +2465,10 @@ function wrMat(color, xPx, xM, pull, extra) {
 }
 // per class: which fill, half-width on the ground in metres, and the least half-width on screen in pixels
 // (each carriageway of a dual road is its own line, so those come out about twice as wide)
-const WR_CLS = { motorway: ['major', 5.5, 1.7], trunk: ['major', 5, 1.6], primary: ['prim', 4, 1.25], secondary: ['sec', 3, .9] };
+const WR_CLS = { motorway: ['major', 4.5, 1.8], trunk: ['major', 4.2, 1.7], primary: ['prim', 3.5, 1.25], secondary: ['sec', 2.8, .9] };
 const WR_MATS = {
   major: wrMat(0xf3b53a, 0, 0, .0052), prim: wrMat(0xfde38a, 0, 0, .0049), sec: wrMat(0xfbf8f1, 0, 0, .0047),
-  edgeMajor: wrMat(0x7c5212, .8, 1.2, .0042), edge: wrMat(0x5b584f, .75, 1, .0040),
+  edgeMajor: wrMat(0x7c5212, .8, 1, .0042), edge: wrMat(0x5b584f, .75, .9, .0040),
   tunnel: wrMat(0xc9821c, 0, 0, .0036, { transparent: true, opacity: .75, depthWrite: false })
 };
 let wideRoadKey = '', wideTunnelKey = '';
@@ -2541,7 +2541,9 @@ function buildWideRoads() {
     }
     wrMesh(b, [WR_MATS.tunnel], { tunnel: true });
   }
-  for (const m of wideRoadGrp.children) m.visible = !(m.userData.inLocal && tier === 1) && !(m.userData.cls === 'sec' && tier === 3);
+  // round the estate the main roads are drawn over the detailed local ones until you're within about 1.5 km
+  const close = tier === 1 && camDist() < 1500;
+  for (const m of wideRoadGrp.children) m.visible = !(m.userData.inLocal && close) && !(m.userData.cls === 'sec' && tier === 3);
 }
 // ---------------- buildings across Hong Kong ----------------
 // OpenStreetMap footprints and heights (OpenFreeMap's zoom-14 vector tiles, about 2.3 km across), streamed in round the
@@ -2909,8 +2911,8 @@ function setDoor(d, f) {
   d.open = f;
   if (d.slide) d.pivot.position.lerpVectors(d.p0, d.p1, f); else d.pivot.rotation.y = d.shut + d.turn * f;
 }
-// each frame inside: a door opens when the way to the next stop goes through it, when you walk up to it, or when you
-// stand in its doorway, and stays open while you're within about 1.3 m; the rest shut
+// each frame inside: a door opens when the way to the next stop goes through it or when you walk up to it, and stays
+// open while you're within about 1.3 m; the rest shut
 function doorTick(dt) {
   if (!st.doors) return;
   let moved = false;
@@ -2924,7 +2926,7 @@ function doorTick(dt) {
   for (const d of DOORS) {
     if (d.lay && d.lay !== st.layout) continue;
     const dist = Math.hypot(cam.position.x - d.cx, cam.position.z - d.cz);
-    const want = walk && (dist < .75 || (dist < 1.3 && (moving || d.open > 0)) || onPath(d)) ? 1 : 0;
+    const want = walk && ((dist < 1.3 && (moving || d.open > 0)) || onPath(d)) ? 1 : 0;
     if (d.open === want) continue;
     setDoor(d, want > d.open ? Math.min(1, d.open + dt * 3.5) : Math.max(0, d.open - dt * 2.5)); moved = true;
   }
@@ -3177,7 +3179,7 @@ function placeLabels() {
     if (kept.some(([a, b, c]) => Math.abs(a - x) < (c + w) / 2 && Math.abs(b - y) < 17)) L.el.hidden = true; else kept.push([x, y, w]);
   }
   // names of estates and buildings, round the places and the estate's own labels
-  for (const L of POI_L) if (!L.el.hidden) kept.push([parseFloat(L.el.style.left), parseFloat(L.el.style.top) - 9, L.el.textContent.length * 6.5 + 24]);
+  for (const L of OUT_L) if (!L.el.hidden) kept.push([parseFloat(L.el.style.left), parseFloat(L.el.style.top) - 9, L.el.textContent.length * 6.5 + 24]);
   nmPlace(kept, w, h);
   // sun hour labels: where the hours bunch up (round sunrise and sunset in summer), keep every other one that would overlap
   const taken = [];
