@@ -1612,7 +1612,7 @@ const skyMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.Bac
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   scene.add(new THREE.Mesh(g, skyMat));
 })();
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(90000, 90000), new THREE.MeshLambertMaterial({ color: 0x3d7ea3 }));
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), new THREE.MeshLambertMaterial({ color: 0x3d7ea3 }));
 sea.rotation.x = -Math.PI / 2; scene.add(sea);
 
 // terrain
