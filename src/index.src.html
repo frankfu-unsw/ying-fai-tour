@@ -2209,7 +2209,7 @@ const CUT = 1.3;
 const CAP = {
   wall: new THREE.MeshBasicMaterial({ color: 0x2a363d }), part: new THREE.MeshBasicMaterial({ color: 0x66737a }),
   glass: new THREE.MeshBasicMaterial({ color: 0x7fb0c8 }), next: new THREE.MeshBasicMaterial({ color: 0xa8a397 }),
-  fin: new THREE.MeshBasicMaterial({ color: 0x8c8273 })
+  fin: new THREE.MeshBasicMaterial({ color: 0x8c8273 }), door: new THREE.MeshBasicMaterial({ color: 0x9aa5ab })
 };
 const floorMeshes = [], mainFloors = [];
 // (re)build everything that belongs to the flat and floor on show
@@ -2305,6 +2305,8 @@ function buildDoors(g, openings, leaves, lay) {
     const pivot = new THREE.Group(); pivot.position.copy(P(wx(hx), wy(hy), FL)); pivot.rotation.y = shut; g.add(pivot);
     const Lm = len / 1000, Tm = T / 1000;
     const leaf = new THREE.Mesh(new THREE.BoxGeometry(Lm, H, Tm), M.white); leaf.position.set(Lm / 2, H / 2, 0); pivot.add(leaf);
+    // its solid top where the dollhouse cuts it (the doors are always shut there)
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(Lm, .029, Tm), CAP.door); cap.position.set(Lm / 2, CUT - .0155, 0); pivot.add(cap);
     for (const s of [1, -1]) {   // on each face: a lever handle near the free edge, or a bar pull at a sliding leaf's leading edge
       if (slide) { const pl = new THREE.Mesh(new THREE.BoxGeometry(.022, .32, .022), M.steel); pl.position.set(o.slide[1] > 0 ? .07 : Lm - .07, 1.0, s * (Tm / 2 + .02)); pivot.add(pl); continue; }
       const hd = new THREE.Mesh(new THREE.BoxGeometry(.13, .022, .022), M.steel); hd.position.set(Lm - .1, 1.0, s * (Tm / 2 + .03)); pivot.add(hd);
@@ -2314,7 +2316,7 @@ function buildDoors(g, openings, leaves, lay) {
     if (slide) { p0 = pivot.position.clone(); const [ex, ey] = at(a0 - 15 + o.slide[1] * (a1 - a0), face + side * (T / 2 + 8)); p1 = P(wx(ex), wy(ey), FL); }
     else { turn = open - shut; while (turn > Math.PI) turn -= 2 * Math.PI; while (turn < -Math.PI) turn += 2 * Math.PI; }
     const c = P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), FL);
-    DOORS.push({ pivot, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z });
+    DOORS.push({ pivot, cap, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z });
   }
 }
 function setDoor(d, f) {
@@ -2967,6 +2969,7 @@ function setVis() {
     LG[k].doors.visible = on && st.doors;
   }
   shellDoors.visible = st.doors;
+  for (const d of DOORS) d.cap.visible = cutOn;
   commonFurn.visible = furn; capCommon.visible = furn && cutOn; capGrp.visible = cutOn;
   ceilGrp.visible = !doll; above.visible = !doll;
   for (const f of mainFloors) f.material = furn ? M.wood : M.screed;
