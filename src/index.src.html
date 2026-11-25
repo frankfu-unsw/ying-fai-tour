@@ -3272,7 +3272,10 @@ function sunPin() {
   if (!behind && x > mx && x < W - mx && y > top && y < H - bot) { pin.hidden = true; return; }
   let dx = x - W / 2, dy = y - H / 2; if (behind) { dx = -dx; dy = -dy; }
   const cy = (top + H - bot) / 2, k = Math.min((W / 2 - mx) / Math.max(1e-6, Math.abs(dx)), (dy < 0 ? cy - top : H - bot - cy) / Math.max(1e-6, Math.abs(dy)));
-  pin.hidden = false; pin.style.left = (W / 2 + dx * k).toFixed(0) + 'px'; pin.style.top = (cy + dy * k).toFixed(0) + 'px';
+  let px = W / 2 + dx * k, py = cy + dy * k;
+  // keep it out from under the dial
+  const sp = $('sunPanel'); if (!sp.hidden) { const r = sp.getBoundingClientRect(), c = canvas.getBoundingClientRect(), l = r.left - c.left - 22, b = r.bottom - c.top + 22; if (px > l && py < b) { if (dx > 0 && Math.abs(dy) < Math.abs(dx) * 1.2) py = b; else px = l; } }
+  pin.hidden = false; pin.style.left = px.toFixed(0) + 'px'; pin.style.top = py.toFixed(0) + 'px';
   pin.style.setProperty('--a', (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(0) + 'deg');
   pin.title = T(`The sun: ${Math.round(s.el)}° up in the ${dirName(s.az)}`, `太陽：${dirName(s.az)}，仰角${Math.round(s.el)}°`);
 }
