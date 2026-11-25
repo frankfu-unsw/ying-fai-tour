@@ -249,6 +249,12 @@ details.poigrp[open] > summary h3::after { content: "−"; }
 /* the sun: dock controls, the readout and the window table */
 .dock .sun > button, .dock .door > button { display: inline-flex; align-items: center; gap: 7px; }
 .dock .door > button svg { width: 18px; height: 18px; flex: none; }
+/* on-screen W A S D and Shift for flying the area view on a touch screen: see-through keycaps above the bar */
+.tkeys { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 66px; display: grid; grid-template-columns: repeat(4, 46px); grid-template-rows: 46px 46px; grid-template-areas: ". . w ." "sh a s d"; gap: 6px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
+.tkeys .tk { display: grid; place-items: center; padding: 0; font: 700 16px/1 var(--f-display); letter-spacing: .04em; color: rgba(238,244,246,.92); background: rgba(19,35,44,.42); border: 1px solid rgba(238,244,246,.28); border-bottom-width: 3px; border-radius: 7px; box-shadow: 0 1px 3px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; transition: background .08s, transform .08s; }
+.tkeys .tk svg { width: 19px; height: 19px; }
+.tkeys .tk.on { background: rgba(238,244,246,.92); color: #13232c; border-bottom-width: 1px; transform: translateY(2px); }
+.tkeys .sh[aria-pressed="true"] { background: rgba(245,196,106,.92); color: #13232c; border-color: rgba(255,236,200,.6); }
 .dock .sun > button svg { width: 18px; height: 18px; flex: none; }
 .dock .sun > button[aria-pressed="true"] { background: #f5c46a; color: #13232c; }
 .hud span.sunhud { background: rgba(110,66,6,.88); color: #ffe9bf; }
@@ -333,6 +339,13 @@ svg.sscale { height: 11px; margin-top: 3px; }
       <div class="grp sun" role="group" id="dSunGrp" aria-label="Sun">
         <button type="button" id="dSun" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><span id="dSunTxt">Sun</span></button>
       </div>
+    </div>
+    <div class="tkeys" id="tkeys" role="group" aria-label="Flying keys" hidden>
+      <button type="button" class="tk" data-k="w" style="grid-area: w" tabindex="-1">W</button>
+      <button type="button" class="tk sh" id="tkShift" style="grid-area: sh" tabindex="-1" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 4 12h4.5v7h7v-7H20z"/></svg></button>
+      <button type="button" class="tk" data-k="a" style="grid-area: a" tabindex="-1">A</button>
+      <button type="button" class="tk" data-k="s" style="grid-area: s" tabindex="-1">S</button>
+      <button type="button" class="tk" data-k="d" style="grid-area: d" tabindex="-1">D</button>
     </div>
     <div class="loading" id="loading" data-zh="正在建立單位模型…">Building the flat…</div>
   </div>
@@ -3367,7 +3380,7 @@ function applyWalkCam() {
 }
 function setHint() {
   $('hint').textContent = st.mode === 'doll' && inArea()
-    ? T('Drag to turn · WASD or arrow keys to move · Q/E to turn · + and − to zoom · Shift for speed', '拖動旋轉 · WASD 或方向鍵移動 · Q/E 轉向 · + − 縮放 · 按住 Shift 加速')
+    ? (TOUCH ? T('Hold W A S D to fly · drag to steer · pinch to zoom · ⇧ for 3× speed', '按住 W A S D 飛行 · 拖動轉向 · 雙指縮放 · ⇧ 三倍速度') : T('Drag to turn · WASD or arrow keys to move · Q/E to turn · + and − to zoom · Shift for speed', '拖動旋轉 · WASD 或方向鍵移動 · Q/E 轉向 · + − 縮放 · 按住 Shift 加速'))
     : st.mode === 'doll'
     ? T('Drag to turn · zoom out a little for nearby places · tap a room to step inside', '拖動旋轉 · 稍為拉遠可見附近地點 · 點房間走進去')
     : T('Drag to look around · tap the floor to walk · arrow keys or WASD to move', '拖動環顧 · 點地面行過去 · 方向鍵或 WASD 移動');
@@ -3494,7 +3507,38 @@ function walkable(x, y) {
   return true;
 }
 const keys = new Set();
-let keyFast = false;
+let keyFast = false, touchFast = false;
+// ---------------- on-screen keys for touch screens ----------------
+// In the area view on a touch screen, W A S D keycaps sit above the bar: hold one to fly as with the keyboard, while
+// another finger drags the map to steer (and pinches to zoom). The Shift key locks 3× speed on and off with a tap.
+let TOUCH = navigator.maxTouchPoints > 0 || matchMedia('(any-pointer: coarse)').matches;
+addEventListener('touchstart', () => { if (!TOUCH) { TOUCH = true; dockKey = ''; setHint(); dirty = true; } }, { passive: true, capture: true });
+// the orbit controls count every finger on the screen, so a finger holding a key would turn a one-finger drag into a
+// pinch: for touches on the 3D view, count only the fingers on it
+for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) addEventListener(type, e => {
+  if (e.target === canvas) try { Object.defineProperty(e, 'touches', { value: e.targetTouches }); } catch (err) {}
+}, { capture: true, passive: true });
+function tkRelease(b) { const k = b.dataset.k; if (k) keys.delete(k); b.classList.remove('on'); b._pid = null; }
+for (const b of $('tkeys').querySelectorAll('.tk')) {
+  b.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (b === $('tkShift')) { touchFast = !touchFast; b.setAttribute('aria-pressed', String(touchFast)); return; }
+    b._pid = e.pointerId; try { b.setPointerCapture(e.pointerId); } catch (err) {}
+    keys.add(b.dataset.k); b.classList.add('on'); dirty = true;
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, e => { if (b._pid === e.pointerId) tkRelease(b); });
+  // no focus change, double-tap zoom or long-press menu from the keys
+  b.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  b.addEventListener('mousedown', e => e.preventDefault());
+  b.addEventListener('contextmenu', e => e.preventDefault());
+}
+function syncTouchKeys(area) {
+  const show = TOUCH && area, el = $('tkeys');
+  if (el.hidden === !show) return;
+  el.hidden = !show;
+  if (!show) for (const b of el.querySelectorAll('.tk')) if (b.dataset.k) tkRelease(b);
+  $('tkShift').title = T('Tap for 3× speed', '點一下以三倍速度');
+}
 stage.addEventListener('keydown', e => {
   if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); setFloor(FLOOR + (e.key === 'PageUp' ? 1 : -1)); return; }
   const k = e.key.toLowerCase(), area = st.mode === 'doll' && inArea();
@@ -3844,7 +3888,7 @@ function loop(t) {
     const has = (...k) => k.some(x => keys.has(x));
     const fwd = (has('w', 'arrowup') ? 1 : 0) - (has('s', 'arrowdown') ? 1 : 0), side = (has('d') ? 1 : 0) - (has('a') ? 1 : 0);
     const turn = (has('e', 'arrowright') ? 1 : 0) - (has('q', 'arrowleft') ? 1 : 0), zoom = (has('-', '_') ? 1 : 0) - (has('+', '=') ? 1 : 0);
-    const off = cam.position.clone().sub(controls.target), dist = off.length(), boost = keyFast ? 3 : 1;
+    const off = cam.position.clone().sub(controls.target), dist = off.length(), boost = keyFast || touchFast ? 3 : 1;
     if (turn) off.applyAxisAngle(new THREE.Vector3(0, 1, 0), -turn * 70 * Math.PI / 180 * dt);
     if (zoom) off.setLength(Math.min(controls.maxDistance, Math.max(AREA_DIST + 5, dist * Math.exp(zoom * 1.3 * dt * boost))));
     if (fwd || side) {
@@ -3892,8 +3936,9 @@ YF.onBldg(() => { blds.group.visible = YF.bldgOn; btLast = 0; dirty = true; });
 // ---------------- Inside / Dollhouse / Area switch over the 3D view ----------------
 let lastArea = '', dockKey = '';
 function syncDock() {
-  const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang + FLAT.id + FLOOR + st.layout + st.trees + st.doors;
+  const on = st.mode === 'walk' ? 'dWalk' : inArea() ? 'dArea' : 'dDoll', key = on + YF.lang + FLAT.id + FLOOR + st.layout + st.trees + st.doors + TOUCH + $('dock').offsetHeight;
   if (key === dockKey) return; dockKey = key;
+  syncTouchKeys(on === 'dArea'); $('tkeys').style.bottom = ($('dock').offsetHeight + 20) + 'px';
   const best = Math.max(0, ...winRows(st.layout).map(r => r.deg || 0));
   $('dFl').innerHTML = `<b>${FLOOR}${T('/F', '樓')}</b><small>${best ? T(`up to ${best}° sea`, `最多海景${best}°`) : T('no sea', '無海景')}</small>`;
   $('dDn').disabled = FLOOR <= FLAT.F0; $('dUp').disabled = FLOOR >= FLAT.F1;
