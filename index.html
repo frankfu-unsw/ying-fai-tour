@@ -2360,46 +2360,55 @@ function genericType(id) {
     keep.push(alongX ? [d.X0, d.X1, d.Y0 - w - 100, d.Y1 + w + 100] : [d.X0 - w - 100, d.X1 + w + 100, d.Y0, d.Y1]);
   }
   const hit = (q, list) => list.some(k => q[0] < k[1] && q[1] > k[0] && q[2] < k[3] && q[3] > k[2]);
-  const inLiv = q => rects('living').some(r => q[0] >= r[0] - 5 && q[1] <= r[1] + 5 && q[2] >= r[2] - 5 && q[3] <= r[3] + 5);
+  const livR = rects('living');
+  // inside the room: every point of the piece (on a 100 mm grid) falls in one of the room's rectangles
+  const inLiv = q => { for (let x = q[0] + 5; x <= q[1] - 5 + 1e-6; x += Math.max(50, (q[1] - q[0] - 10) / Math.ceil((q[1] - q[0]) / 100))) for (let y = q[2] + 5; y <= q[3] - 5 + 1e-6; y += Math.max(50, (q[3] - q[2] - 10) / Math.ceil((q[3] - q[2]) / 100))) if (!livR.some(r => x >= r[0] - 5 && x <= r[1] + 5 && y >= r[2] - 5 && y <= r[3] + 5)) return false; return true; };
   const furn = [], chairs = []; let pend = null;
-  const place = (parts, plan) => { const q = parts[0]; if (!inLiv(q) || hit(q, keep)) return false; for (const p of parts) furn.push(p); keep.push(q); return true; };
-  if (mainWin && liv) {
-    // a: along the window wall, b: away from it
-    const ws = mainWin.out, alongX = ws[0] === 'Y', A0 = alongX ? liv[0] : liv[2], A1 = alongX ? liv[1] : liv[3];
-    const B0 = ws === 'Y0' ? liv[2] : ws === 'Y1' ? liv[3] : ws === 'X0' ? liv[0] : liv[1], bs = ws === 'Y0' || ws === 'X0' ? 1 : -1;
-    const Bd = alongX ? liv[3] - liv[2] : liv[1] - liv[0], A = A1 - A0;
+  if (mainWin && livR.length) {
+    // a runs along the main window's wall, b into the room from it; both across the whole living room
+    const ws = mainWin.out, alongX = ws[0] === 'Y';
+    const bx0 = Math.min(...livR.map(r => r[0])), bx1 = Math.max(...livR.map(r => r[1])), by0 = Math.min(...livR.map(r => r[2])), by1 = Math.max(...livR.map(r => r[3]));
+    const A0 = alongX ? bx0 : by0, A = (alongX ? bx1 : by1) - A0;
+    const B0 = ws === 'Y0' ? by0 : ws === 'Y1' ? by1 : ws === 'X0' ? bx0 : bx1, bs = ws === 'Y0' || ws === 'X0' ? 1 : -1, Bd = alongX ? by1 - by0 : bx1 - bx0;
     const R = (a0, a1, b0, b1) => { const p = B0 + bs * b0, q = B0 + bs * b1; return alongX ? [A0 + a0, A0 + a1, Math.min(p, q), Math.max(p, q)] : [Math.min(p, q), Math.max(p, q), A0 + a0, A0 + a1]; };
-    const pc = (r, z0, z1, m, pl_) => [...r, z0, z1, m, pl_ ? 1 : 0];
-    const sb = Math.min(700, Bd * .15);
-    if (A >= 3000 && Bd >= 3200) {
+    const pc = (r, z0, z1, m, p) => [...r, z0, z1, m, p ? 1 : 0];
+    // sofa against one side wall and the TV against the facing one, a little in from the window
+    let placed = false;
+    for (const sb of [500, 300, 800, 150, 1100]) {
       for (const flip of [false, true]) {
+        if (placed) break;
         const S = (a0, a1) => (flip ? [A - a1, A - a0] : [a0, a1]);
-        const sofa = R(...S(30, 830), sb, sb + 1800), tv = R(...S(A - 420, A - 20), sb + 300, sb + 1500);
-        if (!inLiv(sofa) || hit(sofa, keep) || !inLiv(tv) || hit(tv, keep)) continue;
-        const ok = place([pc(sofa, .12, .42, 'fabric', 1), pc(R(...S(30, 260), sb, sb + 1800), .42, .86, 'fabric'), pc(R(...S(30, 830), sb, sb + 160), .42, .62, 'fabric'), pc(R(...S(30, 830), sb + 1640, sb + 1800), .42, .62, 'fabric'),
-          pc(R(...S(260, 810), sb + 170, sb + 890), .42, .52, 'fabric2'), pc(R(...S(260, 810), sb + 910, sb + 1630), .42, .52, 'fabric2'), pc(R(...S(260, 390), sb + 220, sb + 590), .52, .84, 'terracotta')]);
-        if (!ok) continue;
-        place([pc(tv, 0, .45, 'oak', 1), pc(R(...S(A - 100, A - 60), sb + 350, sb + 1450), .8, 1.45, 'black')]);
+        // the side walls are where the room ends along a at this depth
+        const sofa = R(...S(30, 830), sb, sb + 1800), tv = R(...S(A - 420, A - 20), sb + 300, sb + 1500), mid = R(...S(830, A - 420), sb + 300, sb + 1500);
+        if (A < 2900 || !inLiv(sofa) || !inLiv(tv) || !inLiv(mid) || hit(sofa, keep) || hit(tv, keep)) continue;
+        furn.push(pc(sofa, .12, .42, 'fabric', 1), pc(R(...S(30, 260), sb, sb + 1800), .42, .86, 'fabric'), pc(R(...S(30, 830), sb, sb + 160), .42, .62, 'fabric'), pc(R(...S(30, 830), sb + 1640, sb + 1800), .42, .62, 'fabric'),
+          pc(R(...S(260, 810), sb + 170, sb + 890), .42, .52, 'fabric2'), pc(R(...S(260, 810), sb + 910, sb + 1630), .42, .52, 'fabric2'), pc(R(...S(260, 390), sb + 220, sb + 590), .52, .84, 'terracotta'),
+          pc(tv, 0, .45, 'oak', 1), pc(R(...S(A - 100, A - 60), sb + 350, sb + 1450), .8, 1.45, 'black'));
         const ct = R(...S(1150, 1650), sb + 500, sb + 1300);
-        if (!hit(ct, keep.slice(0, -2))) { furn.push(pc(ct, .38, .42, 'oak', 1), pc(R(...S(1180, 1220), sb + 530, sb + 570), 0, .38, 'oak'), pc(R(...S(1580, 1620), sb + 1230, sb + 1270), 0, .38, 'oak'), pc(R(...S(950, A - 700), sb + 150, sb + 1650), 0, .008, 'rug')); }
-        break;
+        furn.push(pc(ct, .38, .42, 'oak', 1), pc(R(...S(1180, 1220), sb + 530, sb + 570), 0, .38, 'oak'), pc(R(...S(1580, 1620), sb + 1230, sb + 1270), 0, .38, 'oak'), pc(R(...S(950, Math.max(1700, A - 700)), sb + 150, sb + 1650), 0, .008, 'rug'));
+        keep.push(R(0, A, sb, sb + 1800)); placed = true;
       }
+      if (placed) break;
     }
-    // dining table, 1.2 × 0.75 m with four chairs, centred across the room further from the window
-    const tb = Math.min(Bd - 900, Math.max(sb + 2500, Bd - 1300)), am = A / 2;
-    const table = R(am - 600, am + 600, tb - 375, tb + 375);
-    if (Bd >= 3600 && A >= 2200 && inLiv(table) && !hit(R(am - 600, am + 600, tb - 800, tb + 800), keep)) {
+    // a 1.2 × 0.75 m table for four, with room for the chairs round it, as close to the middle of the rest of the room as fits
+    let best = null;
+    for (let b = 900; b <= Bd - 700; b += 100) for (let a = 700; a <= A - 700; a += 100) {
+      const table = R(a - 600, a + 600, b - 375, b + 375), zone = R(a - 650, a + 650, b - 800, b + 800);
+      if (!inLiv(zone) || hit(zone, keep)) continue;
+      const score = Math.abs(a - A / 2) + Math.abs(b - Math.min(Bd - 1000, Math.max(2900, Bd * .65)));
+      if (!best || score < best.score) best = { a, b, table, zone, score };
+    }
+    if (best) {
+      const { a: am, b: tb, table } = best;
       furn.push(pc(table, .72, .76, 'oak', 1));
-      for (const [da, db] of [[-560, -340], [560, -340], [-560, 340], [560, 340]]) { const q = R(am + da - 25, am + da + 25, tb + db - 25, tb + db + 25); furn.push(pc(q, 0, .72, 'oak')); }
-      keep.push(R(am - 600, am + 600, tb - 800, tb + 800));
-      // chairs: two along each long side, backs away from the table
+      for (const [da, db] of [[-560, -340], [560, -340], [-560, 340], [560, 340]]) furn.push(pc(R(am + da - 25, am + da + 25, tb + db - 25, tb + db + 25), 0, .72, 'oak'));
+      keep.push(best.zone);
+      const tc = ctrOf(table);
       for (const da of [-300, 300]) for (const sgn of [-1, 1]) {
         const q = R(am + da - 10, am + da + 10, tb + sgn * 590 - 10, tb + sgn * 590 + 10), cx = (q[0] + q[1]) / 2, cy = (q[2] + q[3]) / 2;
-        // which plan side the back is on: away from the table
-        const tc = ctrOf(table), back = alongX ? (cy < tc[1] ? 'N' : 'S') : (cx < tc[0] ? 'W' : 'E');
-        chairs.push([Math.round(cx), Math.round(cy), back]);
+        chairs.push([Math.round(cx), Math.round(cy), alongX ? (cy < tc[1] ? 'N' : 'S') : (cx < tc[0] ? 'W' : 'E')]);
       }
-      pend = ctrOf(table).map(Math.round);
+      pend = tc.map(Math.round);
     }
   }
   const T0 = { name: 'Furnished', sub: 'Simple furniture', furnished: true, desc: say('As handed over, with simple furniture: a sofa and TV near the main window and a dining table for four further in. The kitchen and bathroom fittings are laid out to suit each room.', '按交樓狀態加上簡單傢俬：主窗附近放梳化和電視，較內放四人餐枱。廚房和浴室設備按房間形狀擺放。'),
