@@ -2375,23 +2375,31 @@ function genericType(id) {
     const Bd = ws === 'Y0' ? by1 - B0 : ws === 'Y1' ? B0 - by0 : ws === 'X0' ? bx1 - B0 : B0 - bx0;
     const R = (a0, a1, b0, b1) => { const p = B0 + bs * b0, q = B0 + bs * b1; return alongX ? [A0 + a0, A0 + a1, Math.min(p, q), Math.max(p, q)] : [Math.min(p, q), Math.max(p, q), A0 + a0, A0 + a1]; };
     const pc = (r, z0, z1, m, p) => [...r, z0, z1, m, p ? 1 : 0];
-    // sofa against one side wall and the TV against the facing one, a little in from the window
-    let placed = false;
-    for (const sb of [350, 150, 600, 900]) {
-      for (const flip of [false, true]) {
-        if (placed) break;
-        const S = (a0, a1) => (flip ? [A - a1, A - a0] : [a0, a1]);
-        // the side walls are where the room ends along a at this depth
-        const sofa = R(...S(30, 830), sb, sb + 1800), tv = R(...S(A - 420, A - 20), sb + 300, sb + 1500), mid = R(...S(830, A - 420), sb + 300, sb + 1500);
-        if (A < 2450 || !inLiv(sofa) || !inLiv(tv) || !inLiv(mid) || hit(sofa, keep) || hit(tv, keep)) continue;
-        furn.push(pc(sofa, .12, .42, 'fabric', 1), pc(R(...S(30, 260), sb, sb + 1800), .42, .86, 'fabric'), pc(R(...S(30, 830), sb, sb + 160), .42, .62, 'fabric'), pc(R(...S(30, 830), sb + 1640, sb + 1800), .42, .62, 'fabric'),
-          pc(R(...S(260, 810), sb + 170, sb + 890), .42, .52, 'fabric2'), pc(R(...S(260, 810), sb + 910, sb + 1630), .42, .52, 'fabric2'), pc(R(...S(260, 390), sb + 220, sb + 590), .52, .84, 'terracotta'),
-          pc(tv, 0, .45, 'oak', 1), pc(R(...S(A - 100, A - 60), sb + 350, sb + 1450), .8, 1.45, 'black'));
-        const ct = R(...S(1150, 1650), sb + 500, sb + 1300);
-        if (A >= 3000) furn.push(pc(ct, .38, .42, 'oak', 1), pc(R(...S(1180, 1220), sb + 530, sb + 570), 0, .38, 'oak'), pc(R(...S(1580, 1620), sb + 1230, sb + 1270), 0, .38, 'oak'), pc(R(...S(950, Math.max(1700, A - 700)), sb + 150, sb + 1650), 0, .008, 'rug'));
-        keep.push(R(0, A, sb, sb + 1800)); placed = true;
+    // sofa against one wall and the TV against the facing one, in whichever clear part of the room fits them, as close to
+    // the main window as possible
+    const mw = ctrOf([mainWin.X0, mainWin.X1, mainWin.Y0, mainWin.Y1]);
+    let bestS = null;
+    for (const q of roomParts(livR).slice(0, 3)) for (const ax of ['X', 'Y']) for (const flip of [false, true]) {
+      const across = ax === 'X' ? q.X1 - q.X0 : q.Y1 - q.Y0, alongLo = ax === 'X' ? q.Y0 : q.X0, alongHi = ax === 'X' ? q.Y1 : q.X1;
+      if (across < 2450 || alongHi - alongLo < 1850) continue;
+      const lo = ax === 'X' ? q.X0 : q.Y0, hi = lo + across;
+      for (let p = alongLo + 20; p <= alongHi - 1820; p += 100) {
+        // c0..c1 across the room, from the sofa's wall; p..p+1800 along it
+        const at = (c0, c1, b0, b1) => { const u0 = flip ? hi - c1 : lo + c0, u1 = flip ? hi - c0 : lo + c1; return ax === 'X' ? [u0, u1, p + b0, p + b1] : [p + b0, p + b1, u0, u1]; };
+        const sofa = at(30, 830, 0, 1800), tv = at(across - 420, across - 20, 300, 1500), mid = at(830, across - 420, 300, 1500);
+        if (!inLiv(sofa) || !inLiv(tv) || hit(sofa, keep) || hit(tv, keep) || hit(mid, keep)) continue;
+        const c = ctrOf(at(0, across, 0, 1800)), score = Math.hypot(c[0] - mw[0], c[1] - mw[1]);
+        if (!bestS || score < bestS.score) bestS = { at, across, score };
       }
-      if (placed) break;
+    }
+    if (bestS) {
+      const { at, across } = bestS;
+      furn.push(pc(at(30, 830, 0, 1800), .12, .42, 'fabric', 1), pc(at(30, 260, 0, 1800), .42, .86, 'fabric'), pc(at(30, 830, 0, 160), .42, .62, 'fabric'), pc(at(30, 830, 1640, 1800), .42, .62, 'fabric'),
+        pc(at(260, 810, 170, 890), .42, .52, 'fabric2'), pc(at(260, 810, 910, 1630), .42, .52, 'fabric2'), pc(at(260, 390, 220, 590), .52, .84, 'terracotta'),
+        pc(at(across - 420, across - 20, 300, 1500), 0, .45, 'oak', 1), pc(at(across - 100, across - 60, 350, 1450), .8, 1.45, 'black'));
+      if (across >= 3000) furn.push(pc(at(1150, 1650, 500, 1300), .38, .42, 'oak', 1), pc(at(1180, 1220, 530, 570), 0, .38, 'oak'), pc(at(1580, 1620, 1230, 1270), 0, .38, 'oak'));
+      if (across >= 2900) furn.push(pc(at(950, across - 700, 150, 1650), 0, .008, 'rug'));
+      keep.push(at(0, across, 0, 1800));
     }
     // a 1.2 × 0.75 m table for four, with room for the chairs round it, as close to the middle of the rest of the room as fits
     let best = null;
