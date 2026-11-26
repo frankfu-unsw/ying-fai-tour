@@ -4296,7 +4296,7 @@ resize();
 $('loading').hidden = true;
 requestAnimationFrame(loop);
 setTimeout(loadWide, 1200);
-window.__tour = { corridorRoute, get route() { return route; }, get glide() { return glide; }, stopFor, WIDE, WIDE_L, loadWide, sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, W2, PL2, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; }, est, FLATS, get TY() { return TY; }, applyFlat, genericType, keys, applyWalkCam, walkable, get FDOORS() { return FDOORS; }, doorFlatAt };
+window.__tour = { redraw: () => { dirty = true; updateCompassMarker(); }, corridorRoute, get route() { return route; }, get glide() { return glide; }, stopFor, WIDE, WIDE_L, loadWide, sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, W2, PL2, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; }, est, FLATS, get TY() { return TY; }, applyFlat, genericType, keys, applyWalkCam, walkable, get FDOORS() { return FDOORS; }, doorFlatAt };
 })();
 </script>
 
