@@ -2634,14 +2634,85 @@ function buildCorridor() {
     sg.position.copy(P(d.px + d.ox * .005, d.py + d.oy * .005, FL + 2.3)); sg.rotation.y = Math.atan2(d.ox, -d.oy); shell.add(sg);
   }
 }
+// a route along the corridors: breadth-first over the 0.1 m grid kept 0.3 m clear of the walls, then pulled tight so
+// it runs in straight legs
+const routeGrid = {};
+function corridorRoute(ax, ay, bx, by) {
+  const c = YF.corridorGrid(FLAT.block), W = c.w, H = c.h;
+  let g = routeGrid[FLAT.block];
+  if (!g) {   // cells at least three cells from the edge of the walkable area
+    const d = new Uint8Array(W * H), q = new Int32Array(W * H); let qh = 0, qt = 0;
+    for (let k = 0; k < W * H; k++) { const i = k % W, j = (k / W) | 0; if (!c.g[k]) continue; d[k] = 255;
+      if (i === 0 || j === 0 || i === W - 1 || j === H - 1 || !c.g[k - 1] || !c.g[k + 1] || !c.g[k - W] || !c.g[k + W]) { d[k] = 1; q[qt++] = k; } }
+    while (qh < qt) { const k = q[qh++]; for (const kk of [k - 1, k + 1, k - W, k + W]) if (kk >= 0 && kk < W * H && d[kk] === 255) { d[kk] = d[k] + 1; q[qt++] = kk; } }
+    g = routeGrid[FLAT.block] = new Uint8Array(W * H); for (let k = 0; k < W * H; k++) g[k] = c.g[k] && d[k] >= 4 ? 1 : 0;
+  }
+  const cell = (x, y) => [Math.floor((x - c.x0) / c.c), Math.floor((c.y1 - y) / c.c)];
+  const ok = (i, j) => i >= 0 && j >= 0 && i < W && j < H && g[j * W + i] === 1;
+  const snap = (x, y) => { const [i, j] = cell(x, y); if (ok(i, j)) return [i, j];
+    for (let r = 1; r < 20; r++) for (let a = -r; a <= r; a++) for (const [ii, jj] of [[i + a, j - r], [i + a, j + r], [i - r, j + a], [i + r, j + a]]) if (ok(ii, jj)) return [ii, jj];
+    return null; };
+  const s = snap(ax, ay), t = snap(bx, by); if (!s || !t) return null;
+  const prev = new Int32Array(W * H).fill(-1), q = new Int32Array(W * H); let qh = 0, qt = 0;
+  const si = s[1] * W + s[0], ti = t[1] * W + t[0]; prev[si] = si; q[qt++] = si;
+  while (qh < qt) {
+    const k = q[qh++]; if (k === ti) break; const i = k % W, j = (k / W) | 0;
+    for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const ii = i + di, jj = j + dj; if (!ok(ii, jj)) continue; const kk = jj * W + ii; if (prev[kk] >= 0) continue;
+      if (di && dj && !(ok(i + di, j) && ok(i, j + dj))) continue;
+      prev[kk] = k; q[qt++] = kk;
+    }
+  }
+  if (prev[ti] < 0) return null;
+  const path = []; for (let k = ti; ; k = prev[k]) { path.push(k); if (k === si) break; } path.reverse();
+  const pt = k => [c.x0 + (k % W + .5) * c.c, c.y1 - (((k / W) | 0) + .5) * c.c];
+  const clear = (a, b) => { const [x0, y0] = pt(a), [x1, y1] = pt(b), n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / .05);
+    for (let m = 0; m <= n; m++) { const [i, j] = cell(x0 + (x1 - x0) * m / n, y0 + (y1 - y0) * m / n); if (!ok(i, j)) return false; } return true; };
+  const keep = [path[0]]; let a = 0;
+  for (let k = 2; k < path.length; k++) if (!clear(path[a], path[k])) { a = k - 1; keep.push(path[a]); }
+  if (path.length > 1) keep.push(path[path.length - 1]);
+  return keep.map(pt);
+}
+// walking a route: one straight glide per leg at a walking pace, facing the way you go, then the stop's own view
+let route = null;
+const bearing = (x, y) => (Math.atan2(x - cs.x, y - cs.y) * 180 / Math.PI + 360) % 360;
+const legMs = (x, y) => Math.max(250, Math.hypot(x - cs.x, y - cs.y) / 2.6 * 1000);   // a brisk walk
+function followRoute(pts, end) { route = { pts, end }; nextLeg(); }
+function nextLeg() {
+  const r = route; if (!r) return;
+  while (r.pts.length && Math.hypot(r.pts[0][0] - cs.x, r.pts[0][1] - cs.y) < .15) r.pts.shift();
+  if (r.pts.length) { const [x, y] = r.pts.shift(); glideTo(x, y, bearing(x, y), -4, legMs(x, y), true); return; }
+  route = null; const e = r.end; if (e) glideTo(e.x, e.y, e.yaw, e.pitch, Math.max(700, legMs(e.x, e.y)), true);
+}
+// the current flat's front door: a point just inside it and one just outside in the corridor
+function frontDoorPts() {
+  const d = FDOORS.find(q => q.id === FLAT.id); if (!d) return null;
+  return { inX: d.cx - d.ox * .7, inY: d.cy - d.oy * .7, outX: d.cx + d.ox * .75, outY: d.cy + d.oy * .75 };
+}
+const inFlatNow = () => { const [X, Y] = PL2(cs.x, cs.y); return FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 - 30 && X <= X1 + 30 && Y >= Y0 - 30 && Y <= Y1 + 30); };
+// the walk to a stop: along the corridors when it starts or ends outside the flat, otherwise straight there
+function walkToStop(s) {
+  const [x, y] = W2(s.X, s.Y), end = { x, y, yaw: s.yaw, pitch: s.pitch }, fd = frontDoorPts(), here = inFlatNow(), there = s.id !== 'lift';
+  if (!fd || (here && there)) { glideTo(x, y, s.yaw, s.pitch); return; }
+  let pts = [];
+  if (here) pts.push([fd.inX, fd.inY], [fd.outX, fd.outY]);
+  const a = here ? [fd.outX, fd.outY] : [cs.x, cs.y], b = there ? [fd.outX, fd.outY] : [x, y];
+  const r = corridorRoute(a[0], a[1], b[0], b[1]);
+  if (!r) { glideTo(x, y, s.yaw, s.pitch); return; }
+  pts = pts.concat(r);
+  if (there) pts.push([fd.outX, fd.outY], [fd.inX, fd.inY]);
+  followRoute(pts, end);
+}
 // the lift lobby stop: just out of the lift nearest your front door, facing away from it
 function liftStop() {
   const PLb = YF.PLAN[FLAT.block], e = YF.FLATKEY[FLAT.id].door; if (!PLb.lifts) return null;
   const L = PLb.lifts.reduce((a, b) => (Math.hypot(b[0] - e[0], b[1] - e[1]) < Math.hypot(a[0] - e[0], a[1] - e[1]) ? b : a));
-  // looking down the lobby, the way to your front door
-  const x = L[0] + L[2] * 1.9, y = L[1] + L[3] * 1.9, [X, Y] = PL2(x, y);
-  let ux = -L[3], uy = L[2]; if (ux * (e[0] - x) + uy * (e[1] - y) < 0) { ux = -ux; uy = -uy; }
-  return { id: 'lift', name: 'Lift lobby', sub: 'Out of the lift', X, Y, yaw: (Math.atan2(ux, uy) * 180 / Math.PI + 360) % 360, pitch: -4,
+  // facing the way to your front door along the corridors
+  const x = L[0] + L[2] * 1.9, y = L[1] + L[3] * 1.9, [X, Y] = PL2(x, y), fd = frontDoorPts();
+  let yaw = (Math.atan2(e[0] - x, e[1] - y) * 180 / Math.PI + 360) % 360;
+  const r = fd && corridorRoute(x, y, fd.outX, fd.outY);
+  if (r) { const p = r.find(q => Math.hypot(q[0] - x, q[1] - y) > 1.2) || r[r.length - 1]; yaw = (Math.atan2(p[0] - x, p[1] - y) * 180 / Math.PI + 360) % 360; }
+  return { id: 'lift', name: 'Lift lobby', sub: 'Out of the lift', X, Y, yaw, pitch: -4,
     text: T(`Out of the lift on ${FLOOR}/F. Walk along the corridor to your front door (it opens as you reach it), or walk up to any other flat's door to go into that flat.`,
       `在${FLOOR}樓步出升降機。沿走廊走到你的大門（行近時會打開），或走到任何其他單位門口就會進入該單位。`) };
 }
@@ -3190,9 +3261,10 @@ function setMode(m) {
 // glide between viewpoints
 let glide = null;
 const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-function glideTo(x, y, yaw, pitch, ms) {
+function glideTo(x, y, yaw, pitch, ms, leg) {
+  if (!leg) route = null;
   const dyaw = ((yaw - cs.yaw + 540) % 360) - 180;
-  glide = { t0: performance.now(), ms: ms || 900, from: { x: cs.x, y: cs.y, yaw: cs.yaw, pitch: cs.pitch }, to: { x, y, yaw: cs.yaw + dyaw, pitch } };
+  glide = { t0: performance.now(), ms: ms || 900, from: { x: cs.x, y: cs.y, yaw: cs.yaw, pitch: cs.pitch }, to: { x, y, yaw: cs.yaw + dyaw, pitch }, leg: !!leg && !!route };
 }
 // fly from the dollhouse down to an eye-level view, then switch to walking
 let dive = null;
@@ -3240,7 +3312,7 @@ function goStop(id) {
       if (inArea()) { setMode('walk'); [cs.x, cs.y] = W2(s.X, s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }   // from the area, cut straight in
       else diveTo(...W2(s.X, s.Y), s.yaw, s.pitch);
     }
-    else glideTo(...W2(s.X, s.Y), s.yaw, s.pitch);
+    else walkToStop(s);
   }
   refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
 }
@@ -3656,10 +3728,12 @@ function loop(t) {
   btUpdate(t); btStep(); nmUpdate(t);
   if (st.mode === 'walk') {
     if (glide) {
-      const f = Math.min(1, (t - glide.t0) / glide.ms), e = ease(f), a = glide.from, b = glide.to;
-      cs.x = a.x + (b.x - a.x) * e; cs.y = a.y + (b.y - a.y) * e; cs.yaw = a.yaw + (b.yaw - a.yaw) * e; cs.pitch = a.pitch + (b.pitch - a.pitch) * e;
+      // a leg of a corridor walk keeps a steady pace and turns to face the way early; a single glide eases in and out
+      const f = Math.min(1, (t - glide.t0) / glide.ms), a = glide.from, b = glide.to;
+      const e = glide.leg ? f : ease(f), ey = glide.leg ? ease(Math.min(1, f * glide.ms / 450)) : e;
+      cs.x = a.x + (b.x - a.x) * e; cs.y = a.y + (b.y - a.y) * e; cs.yaw = a.yaw + (b.yaw - a.yaw) * ey; cs.pitch = a.pitch + (b.pitch - a.pitch) * ey;
       // a tap on the floor in front of another flat's door ends the walk there and takes you in
-      if (f >= 1) { glide = null; const id = doorFlatAt(cs.x, cs.y); if (id) walkInto(id); updateSight(); updateLabelVisibility(); }
+      if (f >= 1) { glide = null; if (route) nextLeg(); else { const id = doorFlatAt(cs.x, cs.y); if (id) walkInto(id); } updateSight(); updateLabelVisibility(); }
       applyWalkCam(); dirty = true; updateCompassMarker();
     }
     if (keys.size) {
@@ -3673,7 +3747,7 @@ function loop(t) {
       const nx = cs.x + (Math.sin(a) * fwd + Math.cos(a) * side) * sp, ny = cs.y + (Math.cos(a) * fwd - Math.sin(a) * side) * sp;
       if (walkable(nx, ny)) { cs.x = nx; cs.y = ny; } else if (walkable(nx, cs.y)) cs.x = nx; else if (walkable(cs.x, ny)) cs.y = ny;
       { const id = doorFlatAt(cs.x, cs.y); if (id) walkInto(id); }
-      glide = null; st.stop = null; applyWalkCam(); dirty = true; updateCompassMarker();
+      glide = null; route = null; st.stop = null; applyWalkCam(); dirty = true; updateCompassMarker();
       if ((sightTimer += dt) > .15) { sightTimer = 0; updateSight(); updateLabelVisibility(); refreshPanel(); }
     }
   }
@@ -4207,7 +4281,7 @@ resize();
 $('loading').hidden = true;
 requestAnimationFrame(loop);
 setTimeout(loadWide, 1200);
-window.__tour = { WIDE, WIDE_L, loadWide, sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, W2, PL2, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; }, est, FLATS, get TY() { return TY; }, applyFlat, genericType, keys, applyWalkCam, walkable, get FDOORS() { return FDOORS; }, doorFlatAt };
+window.__tour = { corridorRoute, get route() { return route; }, get glide() { return glide; }, stopFor, WIDE, WIDE_L, loadWide, sunAt, sunRows, setSunOn, setSunDay, updateSun, SUN, horizon, renderer, st, cs, goStop, setLayout, setFlat, setFloor, sightFrom, summarise, W2, PL2, winRows, SIGHT: () => SIGHT, SEGS: () => SEGS, cam, controls, get flat() { return FLAT.id; }, get floor() { return FLOOR; }, get FL() { return FL; }, est, FLATS, get TY() { return TY; }, applyFlat, genericType, keys, applyWalkCam, walkable, get FDOORS() { return FDOORS; }, doorFlatAt };
 })();
 </script>
 
