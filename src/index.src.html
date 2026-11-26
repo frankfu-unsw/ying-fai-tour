@@ -2638,9 +2638,10 @@ function buildCorridor() {
 function liftStop() {
   const PLb = YF.PLAN[FLAT.block], e = YF.FLATKEY[FLAT.id].door; if (!PLb.lifts) return null;
   const L = PLb.lifts.reduce((a, b) => (Math.hypot(b[0] - e[0], b[1] - e[1]) < Math.hypot(a[0] - e[0], a[1] - e[1]) ? b : a));
-  // facing the way to your front door
-  const x = L[0] + L[2] * 2, y = L[1] + L[3] * 2, [X, Y] = PL2(x, y);
-  return { id: 'lift', name: 'Lift lobby', sub: 'Out of the lift', X, Y, yaw: (Math.atan2(e[0] - x, e[1] - y) * 180 / Math.PI + 360) % 360, pitch: -4,
+  // looking down the lobby, the way to your front door
+  const x = L[0] + L[2] * 1.9, y = L[1] + L[3] * 1.9, [X, Y] = PL2(x, y);
+  let ux = -L[3], uy = L[2]; if (ux * (e[0] - x) + uy * (e[1] - y) < 0) { ux = -ux; uy = -uy; }
+  return { id: 'lift', name: 'Lift lobby', sub: 'Out of the lift', X, Y, yaw: (Math.atan2(ux, uy) * 180 / Math.PI + 360) % 360, pitch: -4,
     text: T(`Out of the lift on ${FLOOR}/F. Walk along the corridor to your front door (it opens as you reach it), or walk up to any other flat's door to go into that flat.`,
       `在${FLOOR}樓步出升降機。沿走廊走到你的大門（行近時會打開），或走到任何其他單位門口就會進入該單位。`) };
 }
