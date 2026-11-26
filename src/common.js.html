@@ -344,9 +344,25 @@ window.YF = (() => {
     });
     // one window's pieces, in its flat's frame: wall below the sill and above the head, the glass near the outer face and
     // an aluminium frame with a mullion every 1.2 m or so
-    function windowParts(fr, w, out) {
+    // lite: for the storeys repeated up the tower, where only the outside shows: the glass is a single pane facing out
+    // and the frame only its mullions
+    const OUTV = { X0: [-1, 0], X1: [1, 0], Y0: [0, -1], Y1: [0, 1] };
+    function windowParts(fr, w, out, lite) {
       const [X0, X1, Y0, Y1, sill, head, side] = w;
       out.wall.push([boxOf(fr, X0, X1, Y0, Y1), 0, sill], [boxOf(fr, X0, X1, Y0, Y1), head, STY]);
+      if (lite) {
+        const [ox, oy] = OUTV[side], gx = ox < 0 ? X0 + 30 : ox > 0 ? X1 - 30 : null, gy = oy < 0 ? Y0 + 30 : oy > 0 ? Y1 - 30 : null;
+        // ends of the pane, ordered so the quad faces outwards
+        const a = gx != null ? [gx, Y0] : [X0, gy], b = gx != null ? [gx, Y1] : [X1, gy];
+        const pa = toWorld(fr, ...a), pb = toWorld(fr, ...b), o = [ox * fr.ex[0] + oy * fr.ey[0], ox * fr.ex[1] + oy * fr.ey[1]];
+        const flip = ((pb[0] - pa[0]) * -o[1] + (pb[1] - pa[1]) * o[0]) < 0;
+        out.pane.push(flip ? [pb, pa, sill, head] : [pa, pb, sill, head]);
+        const alongX = side === 'Y0' || side === 'Y1', a0 = alongX ? X0 : Y0, a1 = alongX ? X1 : Y1, len = a1 - a0;
+        const g0 = side === 'Y0' ? Y0 + 25 : side === 'Y1' ? Y1 - 85 : side === 'X0' ? X0 + 25 : X1 - 85, g1 = g0 + 60;
+        const n = Math.max(1, Math.round(len / 1200));
+        for (let i = 1; i < n; i++) { const m = a0 + len * i / n; out.frame.push([alongX ? boxOf(fr, m - 25, m + 25, g0, g1) : boxOf(fr, g0, g1, m - 25, m + 25), sill, head]); }
+        return;
+      }
       const alongX = side === 'Y0' || side === 'Y1';
       const g0 = side === 'Y0' ? Y0 + 25 : side === 'Y1' ? Y1 - 85 : side === 'X0' ? X0 + 25 : X1 - 85, g1 = g0 + 60;
       const seg = (a0, a1, z0, z1, m) => out[m].push([alongX ? boxOf(fr, a0, a1, g0, g1) : boxOf(fr, g0, g1, a0, a1), z0, z1]);
@@ -359,13 +375,13 @@ window.YF = (() => {
     }
     // everything on one storey of a block, grouped by material; skip = flat number whose walls and windows to leave out
     function storeyParts(k, skip, extOnly) {
-      const PL = PLAN[k], out = { wall: [], glass: [], frame: [] };
+      const PL = PLAN[k], out = { wall: [], glass: [], frame: [], pane: [] };
       const mine = skip ? new Set(PL.f[skip].cl) : null;
       PL.r.forEach((r, i) => { if ((!extOnly || r[5]) && !(mine && mine.has(i))) out.wall.push([rectBox(r), 0, STY]); });
       for (const no of FLAT_NOS) {
         if (no === skip) continue;
         const fr = flatFrame(k, no);
-        for (const w of PL.f[no].w) windowParts(fr, w, out);
+        for (const w of PL.f[no].w) windowParts(fr, w, out, extOnly);
       }
       // the corridor windows, 200 mm deep inside the outline
       for (const [x1, y1, x2, y2] of PL.cw) {
@@ -380,6 +396,7 @@ window.YF = (() => {
       return out;
     }
     function partsGeo(list, top) { const G = Geo(); for (const [b, z0, z1] of list) addBox(G, b, z0, z1, top); return G; }
+    function paneGeo(list, G) { G = G || Geo(); for (const [[x1, y1], [x2, y2], z0, z1] of list) quad(G, x1, y1, x2, y2, z0, z1, 0, 1, 0, 1); return G; }
     function finsGeo(k) {
       const G = Geo(), skip = finSkip(k);
       (PLAN[k].fin || []).forEach((poly, i) => {
@@ -402,7 +419,7 @@ window.YF = (() => {
     group.add(occGrp);
     for (const k of ['A', 'B']) {
       const B = BLOCKS[k], parts = storeyParts(k, 0, true), n = B.high - B.low + 1, inst = [];
-      const geos = [[merge([partsGeo(parts.wall), finsGeo(k)]), FM.wall], [partsGeo(parts.glass, false), FM.glass], [partsGeo(parts.frame), FM.frame], [slabGeo(k, true), FM.slab]];
+      const geos = [[merge([partsGeo(parts.wall, false), finsGeo(k)]), FM.wall], [merge([partsGeo(parts.glass, false), paneGeo(parts.pane)]), FM.glass], [partsGeo(parts.frame, false), FM.frame], [slabGeo(k, true), FM.slab]];
       for (const [G, m] of geos) {
         const msh = mesh(G, m), im = new THREE.InstancedMesh(msh.geometry, m, n);
         im.raycast = noRay; im.frustumCulled = false; inst.push(im); towerWalls[k].add(im);

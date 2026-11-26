@@ -1656,7 +1656,7 @@ function genericType(id) {
     let bestS = null;
     for (const q of roomParts(livR).slice(0, 3)) for (const ax of ['X', 'Y']) for (const flip of [false, true]) {
       const across = ax === 'X' ? q.X1 - q.X0 : q.Y1 - q.Y0, alongLo = ax === 'X' ? q.Y0 : q.X0, alongHi = ax === 'X' ? q.Y1 : q.X1;
-      if (across < 2450 || alongHi - alongLo < 1850) continue;
+      if (across < 2250 || alongHi - alongLo < 1850) continue;
       const lo = ax === 'X' ? q.X0 : q.Y0, hi = lo + across;
       for (let p = alongLo + 20; p <= alongHi - 1820; p += 100) {
         // c0..c1 across the room, from the sofa's wall; p..p+1800 along it
