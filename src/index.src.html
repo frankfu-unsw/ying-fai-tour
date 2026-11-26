@@ -2761,7 +2761,10 @@ function walkInto(id) {
   const f = FLATS[id]; if (!f || FLOOR < f.F0 || FLOOR > f.F1) return false;
   const keep = { x: cs.x, y: cs.y, yaw: cs.yaw, pitch: cs.pitch };
   applyFlat(id, FLOOR, true);
-  Object.assign(cs, keep); st.stop = null; applyWalkCam(); refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker();
+  Object.assign(cs, keep); st.stop = null; applyWalkCam();
+  // its front door is open, as you're standing in it
+  if (st.doors) for (const d of DOORS) if (!d.lay && Math.hypot(cam.position.x - d.cx, cam.position.z - d.cz) < 1.3) setDoor(d, 1);
+  refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = shadowDirty = true;
   return true;
 }
 // (re)build everything that belongs to the flat and floor on show
