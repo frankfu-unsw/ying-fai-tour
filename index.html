@@ -3367,9 +3367,14 @@ const flatDoors = blk => YF.FLAT_NOS.map(no => {
   const half = (alongX ? Y1 - Y0 : X1 - X0) / 2;
   const w = (X, Y) => YF.toWorld(fr, X, Y);
   const [cx, cy] = w(cX, cY), [px, py] = w(cX + oX * (half + 12), cY + oY * (half + 12));
-  const ox = (px - cx), oy = (py - cy), ol = Math.hypot(ox, oy) || 1;
+  const ox = (px - cx) / (Math.hypot(px - cx, py - cy) || 1), oy = (py - cy) / (Math.hypot(px - cx, py - cy) || 1);
   const wid = (alongX ? X1 - X0 : Y1 - Y0) / 1000, dep = 2 * half / 1000;
-  return { id: blk + no, no, cx, cy, ox: ox / ol, oy: oy / ol, px, py, wid, dep };
+  // the corridor face of the wall round the door, a little to the side of it, for the number plate
+  const inWall = (x, y) => YF.PLAN[blk].r.some(([rx, ry, lx, ly, a]) => { const t = a * Math.PI / 180, dx = x - rx, dy = y - ry;
+    return Math.abs(dx * Math.cos(t) + dy * Math.sin(t)) <= lx / 2 + .005 && Math.abs(-dx * Math.sin(t) + dy * Math.cos(t)) <= ly / 2 + .005; });
+  let tf = dep / 2;
+  for (let k = 0; k < 80; k++) { const t = dep / 2 + k * .005, sx = cx + ox * t + oy * (wid / 2 + .05), sy = cy + oy * t - ox * (wid / 2 + .05); if (!inWall(sx, sy) && !inWall(cx + ox * t - oy * (wid / 2 + .05), cy + oy * t + ox * (wid / 2 + .05))) { tf = t; break; } }
+  return { id: blk + no, no, cx, cy, ox, oy, px: cx + ox * tf, py: cy + oy * tf, wid, dep };
 }).filter(Boolean);
 let FDOORS = [];
 function buildCorridor() {
