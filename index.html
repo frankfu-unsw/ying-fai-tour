@@ -3353,7 +3353,7 @@ function signMesh(txt, wm, hm, bg, fg) {
 }
 // a point and outward direction in world, from a door in a flat's own plan frame
 const flatDoors = blk => YF.FLAT_NOS.map(no => {
-  const f = YF.PLAN[blk].f[no], fr = YF.flatFrame(blk, no), d = f.d.find(q => q[5] >= 2.1), e = f.e;
+  const f = YF.PLAN[blk].f[no], fr = YF.flatFrame(blk, no), d = f.d.find(q => q[0] === 'd' && q[5] === 2.1), e = f.e;   // the front door's head is 2.1 m
   if (!d || !e) return null;
   const [, X0, X1, Y0, Y1] = d, alongX = X1 - X0 > Y1 - Y0, cX = (X0 + X1) / 2, cY = (Y0 + Y1) / 2;
   // outwards: across the wall, away from the spot just inside the door
