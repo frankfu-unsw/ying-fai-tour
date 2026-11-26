@@ -2644,6 +2644,14 @@ function liftStop() {
     text: T(`Out of the lift on ${FLOOR}/F. Walk along the corridor to your front door (it opens as you reach it), or walk up to any other flat's door to go into that flat.`,
       `在${FLOOR}樓步出升降機。沿走廊走到你的大門（行近時會打開），或走到任何其他單位門口就會進入該單位。`) };
 }
+// through any front doorway on the floor: from just inside the flat to just outside in the corridor
+function inDoorway(x, y) {
+  for (const d of FDOORS) {
+    const rx = x - d.cx, ry = y - d.cy, a = rx * d.ox + ry * d.oy, b = -rx * d.oy + ry * d.ox;
+    if (Math.abs(a) < d.dep / 2 + .35 && Math.abs(b) < d.wid / 2 - .12) return true;
+  }
+  return false;
+}
 // walking into another flat's doorway takes you into that flat
 function doorFlatAt(x, y) {
   for (const d of FDOORS) {
@@ -3277,7 +3285,7 @@ canvas.addEventListener('wheel', e => { if (st.mode !== 'walk') return; e.preven
 
 function walkable(x, y) {
   const [X, Y] = PL2(x, y);
-  const onFloor = FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1) || YF.onCorridor(FLAT.block, x, y);
+  const onFloor = FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1) || YF.onCorridor(FLAT.block, x, y) || inDoorway(x, y);
   if (!onFloor) return false;
   const r = .18;
   for (const b of WALK) {
