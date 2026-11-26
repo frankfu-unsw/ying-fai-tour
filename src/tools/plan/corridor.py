@@ -30,8 +30,13 @@ for blk in 'AB':
     cl, n = ndi.label(C); C = cl == cl[seed[1], seed[0]]
     # doors face the lobby: of the four diagonals, the one that reaches open floor first
     diag = [(math.sqrt(.5) * sx, math.sqrt(.5) * sy) for sx in (1, -1) for sy in (1, -1)]
+    # the cars stand in two rows either side of the lobby; each faces across it, square to its own row
     for L in lifts:
-        best = max(diag, key=lambda q: (q[0] * (lobby[0] - L[0]) + q[1] * (lobby[1] - L[1])))
+        mate = min((M_ for M_ in lifts if M_ is not L), key=lambda M_: math.hypot(M_[0] - L[0], M_[1] - L[1]))
+        ux, uy = mate[0] - L[0], mate[1] - L[1]; ul = math.hypot(ux, uy); ux, uy = ux / ul, uy / ul
+        nx, ny = -uy, ux
+        if nx * (lobby[0] - L[0]) + ny * (lobby[1] - L[1]) < 0: nx, ny = -nx, -ny
+        best = max(diag, key=lambda q: q[0] * nx + q[1] * ny)
         L += [round(best[0], 4), round(best[1], 4)]
     # the shafts are not floor
     M = np.zeros(C.shape, np.uint8)
