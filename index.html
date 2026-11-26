@@ -3440,20 +3440,24 @@ function corridorRoute(ax, ay, bx, by) {
 // walking a route: one straight glide per leg at a walking pace, facing the way you go, then the stop's own view
 let route = null;
 const bearing = (x, y) => (Math.atan2(x - cs.x, y - cs.y) * 180 / Math.PI + 360) % 360;
-const legMs = (x, y) => Math.max(250, Math.hypot(x - cs.x, y - cs.y) / 2.6 * 1000);   // a brisk walk
-function followRoute(pts, end) { route = { pts, end }; nextLeg(); }
+const legMs = (x, y) => Math.max(250, Math.hypot(x - cs.x, y - cs.y) / (route ? route.v : 2.6) * 1000);
+// a brisk walk, quicker on the long way round so it never takes much more than eight seconds
+function followRoute(pts, end) {
+  let L = 0, p = [cs.x, cs.y]; for (const q of pts.concat(end ? [[end.x, end.y]] : [])) { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }
+  route = { pts, end, v: Math.max(2.6, L / 8) }; nextLeg();
+}
 function nextLeg() {
   const r = route; if (!r) return;
   while (r.pts.length && Math.hypot(r.pts[0][0] - cs.x, r.pts[0][1] - cs.y) < .15) r.pts.shift();
   if (r.pts.length) { const [x, y] = r.pts.shift(); glideTo(x, y, bearing(x, y), -4, legMs(x, y), true); return; }
-  route = null; const e = r.end; if (e) glideTo(e.x, e.y, e.yaw, e.pitch, Math.max(700, legMs(e.x, e.y)), true);
+  const e = r.end; if (e) glideTo(e.x, e.y, e.yaw, e.pitch, Math.max(700, legMs(e.x, e.y)), true); route = null; if (glide) glide.leg = false;
 }
 // the current flat's front door: a point just inside it and one just outside in the corridor
 function frontDoorPts() {
   const d = FDOORS.find(q => q.id === FLAT.id); if (!d) return null;
   return { inX: d.cx - d.ox * .7, inY: d.cy - d.oy * .7, outX: d.cx + d.ox * .75, outY: d.cy + d.oy * .75 };
 }
-const inFlatNow = () => { const [X, Y] = PL2(cs.x, cs.y); return FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 - 30 && X <= X1 + 30 && Y >= Y0 - 30 && Y <= Y1 + 30); };
+function inFlatNow() { const [X, Y] = PL2(cs.x, cs.y); return FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 - 30 && X <= X1 + 30 && Y >= Y0 - 30 && Y <= Y1 + 30); }
 // the walk to a stop: along the corridors when it starts or ends outside the flat, otherwise straight there
 function walkToStop(s) {
   const [x, y] = W2(s.X, s.Y), end = { x, y, yaw: s.yaw, pitch: s.pitch }, fd = frontDoorPts(), here = inFlatNow(), there = s.id !== 'lift';
@@ -3893,7 +3897,7 @@ function updateLabelVisibility() {
       L.hidden = false; L.el.classList.remove('hid'); L.el.textContent = labelName(L);
       continue;
     }
-    if (L.area) continue;
+    if (L.area || !inFlatNow()) continue;   // nothing outside is pointed out from the corridors
     const D = Math.hypot(L.x - cs.x, L.y - cs.y), dx = (L.x - cs.x) / D, dy = (L.y - cs.y) / D;
     let near = Infinity;
     for (const b of SIGHT) { const t = hitT(b, cs.x, cs.y, dx, dy); if (t < near) near = t; }
@@ -4202,6 +4206,12 @@ function updateSight() {
   if (st.mode === 'doll') {
     $('verdict').textContent = T('Step inside to check the view', '走進室內查看景觀');
     $('facts').innerHTML = T('<dt>Tip</dt><dd>Pick a tour stop or tap a room</dd>', '<dt>提示</dt><dd>揀一個導覽點，或點一下房間</dd>');
+    $('compass').innerHTML = compassSVG(null);
+    return;
+  }
+  if (!inFlatNow()) {
+    $('verdict').textContent = T('In the common corridor. Walk into a flat to check its view.', '身處公用走廊。走進單位查看景觀。');
+    $('facts').innerHTML = T('<dt>Tip</dt><dd>Walk up to any front door to go in</dd>', '<dt>提示</dt><dd>走到任何單位大門前即可進入</dd>');
     $('compass').innerHTML = compassSVG(null);
     return;
   }
