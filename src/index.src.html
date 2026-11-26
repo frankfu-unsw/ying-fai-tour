@@ -245,6 +245,25 @@ details.poigrp[open] > summary h3::after { content: "−"; }
 #floorIn { width: 100%; accent-color: var(--ink); margin: 0; }
 .lbl.core { text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-weight: 600; font-size: 12.5px; color: #13232c; background: #f5d58e; padding: 1px 7px; }
 .lbl.core.lift { background: #13232c; color: #fff; }
+.lbl.flatno { pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%); min-width: 26px; text-align: center; font: 700 13px/1.5 var(--f-display); letter-spacing: 0; color: #13232c; background: rgba(255,255,255,.92); border: 1.5px solid #13232c; border-radius: 13px; padding: 0 6px; }
+.lbl.flatno:hover { background: #13232c; color: #fff; }
+.flatpick { display: grid; gap: 7px; }
+.fp-row { display: grid; grid-template-columns: 52px 1fr; align-items: start; gap: 6px; }
+.fp-b { font: 600 12px/28px var(--f-body); color: var(--ink-2); white-space: nowrap; }
+.fp-g { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 3px; }
+.fp-g button { position: relative; min-width: 0; height: 28px; padding: 0; font: 600 13px/1 var(--f-body); font-variant-numeric: tabular-nums; color: var(--ink); background: var(--chip); border: 1px solid var(--rule); border-radius: 3px; cursor: pointer; touch-action: manipulation; }
+.fp-g button:hover { border-color: var(--ink-2); }
+.fp-g button.plans::after, .fp-note i { content: ""; position: absolute; top: 3px; right: 3px; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); }
+.fp-g button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.fp-note { margin: 0; font-size: 12px; line-height: 1.4; color: var(--ink-2); }
+.fp-note i { position: static; display: inline-block; margin-right: 5px; vertical-align: 2px; }
+.flatpop { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 62px; width: min(430px, calc(100% - 20px)); padding: 10px 12px 12px; background: var(--panel); color: var(--ink); border-radius: 4px; box-shadow: 0 4px 18px rgba(0,0,0,.28); z-index: 5; }
+.flatpop .fp-g button { height: 34px; }
+.dock #dFlat { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.dock #dFlat svg { width: 16px; height: 16px; }
+.kp-flat { cursor: pointer; }
+.kp-flat:hover .kp-sib { fill-opacity: .32; }
+.kp-no { font-size: 2.1px; }
 .dock .fl b { font-size: 19px; }
 /* the sun: dock controls, the readout and the window table */
 .dock .sun > button, .dock .door > button { display: inline-flex; align-items: center; gap: 7px; }
@@ -332,7 +351,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
         <button type="button" id="dUp" class="sq" aria-label="One floor up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12M12 6v12"/></svg></button>
       </div>
       <div class="grp" role="group" id="dFlatGrp" aria-label="Flat">
-        <button type="button" id="dA2" aria-pressed="true">A2</button><button type="button" id="dA3" aria-pressed="false">A3</button><button type="button" id="dB9" aria-pressed="false">B9</button><button type="button" id="dB10" aria-pressed="false">B10</button>
+        <button type="button" id="dFlat" aria-haspopup="true" aria-expanded="false">A2</button>
       </div>
       <div class="grp door" role="group" id="dDoorGrp" aria-label="Doors">
         <button type="button" id="dDoor" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M6 21V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21"/><circle cx="14.6" cy="12.4" r="1" fill="currentColor" stroke="none"/></svg><span id="dDoorTx">Doors</span></button>
@@ -341,6 +360,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
         <button type="button" id="dSun" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><span id="dSunTxt">Sun</span></button>
       </div>
     </div>
+    <div class="flatpop" id="flatPop" hidden></div>
     <div class="tkeys" id="tkeys" role="group" aria-label="Flying keys" hidden>
       <button type="button" class="tk" data-k="w" style="grid-area: w" tabindex="-1">W</button>
       <button type="button" class="tk sh" id="tkShift" style="grid-area: sh" tabindex="-1" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 4 12h4.5v7h7v-7H20z"/></svg></button>
@@ -352,7 +372,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
   </div>
 
   <aside class="side" id="side">
-    <nav class="site" aria-label="Ying Fai Court pages" data-zh-aria="影輝苑頁面"><a href="index.html" aria-current="page" data-zh="單位導覽&lt;small&gt;2、3、9、10室，任何樓層&lt;/small&gt;">Flat tour<small>Flats 2, 3, 9, 10 inside</small></a><a href="block-a.html" data-zh="A座景觀&lt;small&gt;2、3室，所有樓層&lt;/small&gt;">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" data-zh="B座景觀&lt;small&gt;9、10室，所有樓層&lt;/small&gt;">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
+    <nav class="site" aria-label="Ying Fai Court pages" data-zh-aria="影輝苑頁面"><a href="index.html" aria-current="page" data-zh="單位導覽&lt;small&gt;A、B座每個單位&lt;/small&gt;">Flat tour<small>Every flat in Blocks A & B</small></a><a href="block-a.html" data-zh="A座景觀&lt;small&gt;2、3室，所有樓層&lt;/small&gt;">Block A views<small>Flats 2 & 3, every floor</small></a><a href="block-b.html" data-zh="B座景觀&lt;small&gt;9、10室，所有樓層&lt;/small&gt;">Block B views<small>Flats 9 & 10, every floor</small></a></nav>
 
     <div>
       <div class="eyebrow" id="eyebrow">Ying Fai Court · Block A · 36/F</div>
@@ -362,7 +382,7 @@ svg.sscale { height: 11px; margin-top: 3px; }
 
     <div class="ctl">
       <span class="t" id="flatLbl" data-zh="單位">Flat</span>
-      <div class="seg four" id="flats" role="group" aria-labelledby="flatLbl"></div>
+      <div class="flatpick" id="flats" role="group" aria-labelledby="flatLbl"></div>
       <div class="floorline">
         <label class="t" for="floorIn" data-zh="樓層">Floor</label>
         <div class="mpd" id="mpd"></div>
@@ -728,13 +748,24 @@ const FLATS = {
   B9: { id: 'B9', type: 'B', block: 'B', no: 9, ox: -22.6, oy: -73.638, sy: -1, sea: [-26.6, -75.9], F0: 3, F1: 38, finTop: 0, side: 'north' },
   B10: { id: 'B10', type: 'B', block: 'B', no: 10, ox: -22.6, oy: -85.462, sy: 1, sea: [-26.6, -83.2], F0: 3, F1: 38, finTop: 0, side: 'south', mirror: true }
 };
+// the four flats above have plans of their own; every other flat on the typical floor (Block A 3/F-39/F, Block B
+// 4/F-38/F) is built from the brochure's floor plan as read into YF.PLAN (see the shared runtime)
 const FLAT_IDS = ['A2', 'A3', 'B9', 'B10'];
-let FLAT = FLATS.A2, FLOOR = 36, FL = 0, EYE_H = 0;
+for (const blk of ['A', 'B']) for (const no of YF.FLAT_NOS) {
+  const id = blk + no; if (FLATS[id]) continue;
+  const [F0, F1] = YF.TYPICAL[blk];
+  FLATS[id] = { id, type: id, block: blk, no, F0, F1, finTop: 0, generic: true, frame: YF.flatFrame(blk, no) };
+}
+for (const f of Object.values(FLATS)) if (!f.frame) f.frame = { O: [f.ox - 8.115, f.oy], ex: [1, 0], ey: [0, f.sy], rot: 0 };
+let FLAT = FLATS.A2, FLOOR = 36, FL = 0, EYE_H = 0, FR = FLAT.frame;
 const floorLevel = F => 57.55 + (F - 2) * 2.75;
-// plan mm -> world metres (x east, y north) for the flat on show, and back
-const wx = X => FLAT.ox + (X - 8115) / 1000;
-const wy = Y => FLAT.oy + FLAT.sy * Y / 1000;
-const pX = x => (x - FLAT.ox) * 1000 + 8115, pY = y => (y - FLAT.oy) * 1000 / FLAT.sy;
+// plan mm -> world metres (x east, y north) for the flat on show, and back. Each flat has its own frame: flats 2 and 9 are
+// X east and Y south, flats 3 and 10 X east and Y north, and the flats in the diagonal wings are turned through 45°
+const W2 = (X, Y) => [FR.O[0] + (X * FR.ex[0] + Y * FR.ey[0]) / 1000, FR.O[1] + (X * FR.ex[1] + Y * FR.ey[1]) / 1000];
+const PL2 = (x, y) => { const dx = x - FR.O[0], dy = y - FR.O[1]; return [(dx * FR.ex[0] + dy * FR.ex[1]) * 1000, (dx * FR.ey[0] + dy * FR.ey[1]) * 1000]; };
+const PW = (X, Y, h) => { const [x, y] = W2(X, Y); return P(x, y, h); };
+// a plan direction as a compass bearing, and back
+const yawOf = (dX, dY) => { const x = dX * FR.ex[0] + dY * FR.ey[0], y = dX * FR.ex[1] + dY * FR.ey[1]; return (Math.atan2(x, y) * 180 / Math.PI + 360) % 360; };
 const finHere = () => FLAT.finTop >= FLOOR;
 
 // ---------------- flats 2 and 3 (type A) ----------------
@@ -1472,27 +1503,213 @@ const TYPES = {
     stops: STOPDEF_B, winNames: WIN_NAMES_B, furnAll: FURN_ALL_B, furnCommon: FURN_COMMON_B, ctr: [4000, 1600], mirrorTxt: {},
     leaves: [[530, 1420, 4155, 4200, 0, 2.1, 'door'], [2600, 2640, 3850, 4600, 0, 2.05, 'white'], [3510, 3550, 2525, 3275, 0, 2.05, 'white']] }
 };
+// ---------------- every other flat: built from the brochure's typical floor plan ----------------
+// Walls, windows, doors and rooms come from YF.PLAN (read off the plan). Each gets two layouts: bare, as handed over, and
+// one with simple furniture; the kitchen and bathroom fittings are laid out from the shape of each room.
+const ROOM_NAME = { living: 'Living & dining', bay: 'The bay', kitchen: 'Kitchen', bath: 'Bathroom' };
+const DIR8 = { N: ['north', '北'], NE: ['north-east', '東北'], E: ['east', '東'], SE: ['south-east', '東南'], S: ['south', '南'], SW: ['south-west', '西南'], W: ['west', '西'], NW: ['north-west', '西北'] };
+const GEN = {};
+function genericType(id) {
+  if (GEN[id]) return GEN[id];
+  const f = FLATS[id], PLb = YF.PLAN[f.block], pl = PLb.f[f.no], fr = f.frame, zh = {};
+  const say = (en, z) => { zh[en] = z; return en; };
+  const loc = (x, y) => { const dx = x - fr.O[0], dy = y - fr.O[1]; return [(dx * fr.ex[0] + dy * fr.ex[1]) * 1000, (dx * fr.ey[0] + dy * fr.ey[1]) * 1000]; };
+  const yawL = (dX, dY) => { const x = dX * fr.ex[0] + dY * fr.ey[0], y = dX * fr.ex[1] + dY * fr.ey[1]; return Math.round((Math.atan2(x, y) * 180 / Math.PI + 360) % 360); };
+  const r5 = v => Math.round(v / 5) * 5;
+  const pieces = [];
+  for (const ri of pl.cl) {
+    const [cx, cy, lx, ly, ang] = PLb.r[ri], a = ang * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+    const cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([u, v]) => loc(cx + (u * lx * c - v * ly * s) / 2, cy + (u * lx * s + v * ly * c) / 2));
+    pieces.push(['wall', r5(Math.min(...cs.map(q => q[0]))), r5(Math.max(...cs.map(q => q[0]))), r5(Math.min(...cs.map(q => q[1]))), r5(Math.max(...cs.map(q => q[1])))]);
+  }
+  const wins = pl.w.map((w, i) => ({ id: 'w' + (i + 1), X0: w[0], X1: w[1], Y0: w[2], Y1: w[3], sill: w[4], head: w[5], out: w[6], room: w[7], dir: w[8], len: Math.max(w[1] - w[0], w[3] - w[2]) }));
+  for (const w of wins) pieces.push(['win', w.X0, w.X1, w.Y0, w.Y1, { sill: w.sill, head: w.head, id: w.id, out: w.out }]);
+  const doors = pl.d.map(([k, X0, X1, Y0, Y1, head]) => ({ k: k === 'd' ? 'door' : 'open', X0, X1, Y0, Y1, head }));
+  for (const d of doors) pieces.push([d.k, d.X0, d.X1, d.Y0, d.Y1, { head: d.head }]);
+  const floors = pl.f.map(([m, X0, X1, Y0, Y1]) => [m === 'k' ? 'kit' : m === 'b' ? 'bath' : 'main', X0, X1, Y0, Y1]);
+  const leaves = pl.lv.map(([X0, X1, Y0, Y1, m]) => [X0, X1, Y0, Y1, 0, m === 'd' ? 2.1 : 2.05, m === 'd' ? 'door' : 'white']);
+  // windows: where they face and a point just inside each
+  const OUT = { X0: [-1, 0], X1: [1, 0], Y0: [0, -1], Y1: [0, 1] };
+  const dirEn = d => DIR8[d][0], dirZh = d => DIR8[d][1];
+  const inside = (w, d) => { const [ox, oy] = OUT[w.out]; return [(w.X0 + w.X1) / 2 - ox * ((w.X1 - w.X0) * Math.abs(ox) / 2 + d), (w.Y0 + w.Y1) / 2 - oy * ((w.Y1 - w.Y0) * Math.abs(oy) / 2 + d)]; };
+  const rects = id => (pl.rm.find(r => r[0] === id) || [])[3] || [];
+  const big = id => { const rs = rects(id); return rs.length ? rs.reduce((a, r) => ((r[1] - r[0]) * (r[3] - r[2]) > (a[1] - a[0]) * (a[3] - a[2]) ? r : a)) : null; };
+  const ctrOf = r => [(r[0] + r[1]) / 2, (r[2] + r[3]) / 2];
+  const dims = r => { const m = v => (Math.round(v / 100) / 10).toFixed(1); return [m(Math.max(r[1] - r[0], r[3] - r[2])), m(Math.min(r[1] - r[0], r[3] - r[2]))]; };
+  const winName = w => say(`${ROOM_NAME[w.room] ? ROOM_NAME[w.room].toLowerCase().replace('the ', '') : 'living'} window, faces ${dirEn(w.dir)}`, `${{ living: '客飯廳', bay: '凸出位', kitchen: '廚房', bath: '浴室' }[w.room] || '客飯廳'}窗，向${dirZh(w.dir)}`);
+  const winNames = {}; for (const w of wins) winNames[w.id] = winName(w);
+  const roomWins = id => wins.filter(w => w.room === id);
+  const facing = id => { const ws = roomWins(id); if (!ws.length) return say('No window', '沒有窗'); const ds = [...new Set(ws.map(w => w.dir))]; return say(`Faces ${ds.map(dirEn).join(' and ')}`, `向${ds.map(dirZh).join('及')}`); };
+  const rooms = pl.rm.map(([rid, t, at, rs]) => {
+    const o = { id: rid, name: ROOM_NAME[rid] || 'Room', rects: rs, at, win: facing(rid) };
+    if (rid !== 'living') o.only = roomWins(rid).map(w => w.id);
+    if (rid === 'living' || rid === 'bay') o.role = rid;
+    return o;
+  });
+  const liv = big('living'), lc = ctrOf(liv);
+  const mainWin = roomWins('living').sort((a, b) => b.len - a.len)[0] || wins.sort((a, b) => b.len - a.len)[0];
+  // ---- tour stops
+  const stops = {};
+  const e = pl.e || lc;
+  stops.door = { name: 'Front door', sub: 'Entrance', X: e[0], Y: e[1], yaw: yawL(lc[0] - e[0], lc[1] - e[1]), pitch: -6,
+    text: say('Inside the front door. The kitchen and bathroom are by the entrance, and the living and dining room opens ahead.', '剛進大門。廚房和浴室在入口旁，前面是客飯廳。') };
+  const [lw, ld] = dims(liv);
+  if (mainWin) {
+    const [mx, my] = ctrOf([mainWin.X0, mainWin.X1, mainWin.Y0, mainWin.Y1]), [ox, oy] = OUT[mainWin.out];
+    stops.living = { name: 'Living room', sub: say(`${lw} × ${ld} m`, `${lw} × ${ld}米`), X: lc[0], Y: lc[1], yaw: yawL(mx - lc[0], my - lc[1]), pitch: -6,
+      text: say(`The middle of the living and dining room, about ${lw} × ${ld} m, looking towards the main window.`, `客飯廳中央，約${lw} × ${ld}米，面向主窗。`) };
+    const [wx_, wy_] = inside(mainWin, 750);
+    stops.window = { name: 'Main window', sub: say(`Faces ${dirEn(mainWin.dir)}`, `向${dirZh(mainWin.dir)}`), X: wx_, Y: wy_, yaw: yawL(ox, oy), pitch: -7,
+      text: say(`Close to the glass of the main window, which faces ${dirEn(mainWin.dir)}.`, `貼近主窗玻璃，窗向${dirZh(mainWin.dir)}。`) };
+  } else stops.living = { name: 'Living room', sub: '', X: lc[0], Y: lc[1], yaw: 0, pitch: -6, text: '' };
+  // the door into a small room, and a spot just inside it
+  const doorOf = r => doors.filter(d => d.k === 'door').find(d => d.X1 > r[0] - 120 && d.X0 < r[1] + 120 && d.Y1 > r[2] - 120 && d.Y0 < r[3] + 120);
+  const sideOf = (r, d) => { const [cx, cy] = ctrOf([d.X0, d.X1, d.Y0, d.Y1]), ds = { X0: Math.abs(cx - r[0]), X1: Math.abs(cx - r[1]), Y0: Math.abs(cy - r[2]), Y1: Math.abs(cy - r[3]) }; return Object.keys(ds).reduce((a, b) => (ds[a] < ds[b] ? a : b)); };
+  for (const [rid, pitch, en, z] of [['kitchen', -22, 'The kitchen, about %w × %d m: a worktop with the sink and hob along one wall, and wall cupboards above.', '廚房約%w × %d米：一邊是連洗滌盆和煮食爐的工作枱，上面有吊櫃。'],
+    ['bath', -20, 'The bathroom, about %w × %d m, with a shower, a toilet and a basin.', '浴室約%w × %d米，有淋浴間、坐廁和洗手盆。']]) {
+    const r = big(rid); if (!r) continue;
+    const d = doorOf(r), [cx, cy] = ctrOf(r), [w, dd] = dims(r);
+    let X = cx, Y = cy;
+    if (d) { const s = sideOf(r, d), dc = ctrOf([d.X0, d.X1, d.Y0, d.Y1]); X = s[0] === 'X' ? (s === 'X0' ? r[0] + 300 : r[1] - 300) : dc[0]; Y = s[0] === 'Y' ? (s === 'Y0' ? r[2] + 300 : r[3] - 300) : dc[1]; }
+    stops[rid] = { name: ROOM_NAME[rid], sub: say(`${w} × ${dd} m`, `${w} × ${dd}米`), X, Y, yaw: yawL(cx - X || .001, cy - Y), pitch, text: say(en.replace('%w', w).replace('%d', dd), z.replace('%w', w).replace('%d', dd)) };
+  }
+  const bay = big('bay');
+  if (bay) {
+    const [cx, cy] = ctrOf(bay), [w, dd] = dims(bay), bw = roomWins('bay')[0];
+    stops.bay = { name: 'The bay', sub: say(`${w} × ${dd} m`, `${w} × ${dd}米`), X: cx, Y: cy, yaw: bw ? yawL(...OUT[bw.out]) : 0, pitch: -12,
+      text: bw ? say(`A bay off the living room, about ${w} × ${dd} m, with its own window facing ${dirEn(bw.dir)}. It could take a single bed or a desk.`, `客廳旁的凸出位，約${w} × ${dd}米，有自己的窗向${dirZh(bw.dir)}，可放單人床或書枱。`)
+        : say(`A bay off the living room, about ${w} × ${dd} m.`, `客廳旁的凸出位，約${w} × ${dd}米。`) };
+  }
+  stops.doll = { name: 'Dollhouse', sub: 'Whole flat from above', doll: true,
+    text: say('The whole flat with the walls cut at chest height, and the rest of the floor round it. Drag to turn it; tap a room to step inside, or a flat number to move to that flat.', '整個單位，牆身在胸口高度剖開，連同同層其他單位。拖動可轉動；點一下房間走進去，或點單位號碼轉去該單位。') };
+  const order = ['door', 'kitchen', 'bath', 'living', 'window', 'bay', 'doll'].filter(k => stops[k]);
+  // ---- kitchen and bathroom fittings, laid out from each room's shape and where its door is
+  const furnAll = [];
+  const add = (X0, X1, Y0, Y1, z0, z1, m, plan) => furnAll.push([Math.min(X0, X1), Math.max(X0, X1), Math.min(Y0, Y1), Math.max(Y0, Y1), z0, z1, m, plan ? 1 : 0]);
+  // a band along one side of a rect: depth from the wall, along from a0 to a1
+  const band = (r, side, d0, d1, a0, a1) => side === 'X0' ? [r[0] + d0, r[0] + d1, a0, a1] : side === 'X1' ? [r[1] - d1, r[1] - d0, a0, a1] : side === 'Y0' ? [a0, a1, r[2] + d0, r[2] + d1] : [a0, a1, r[3] - d1, r[3] - d0];
+  const OPP = { X0: 'X1', X1: 'X0', Y0: 'Y1', Y1: 'Y0' };
+  const alongR = (r, side) => (side[0] === 'X' ? [r[2], r[3]] : [r[0], r[1]]);
+  const kit = big('kitchen');
+  if (kit) {
+    const d = doorOf(kit), ds = d ? sideOf(kit, d) : 'Y1', os = OPP[ds], [a0, a1] = alongR(kit, os);
+    const across = os[0] === 'X' ? kit[1] - kit[0] : kit[3] - kit[2], dep = across >= 1350 ? 600 : 520;
+    const kw = roomWins('kitchen')[0];
+    const b = (d0, d1, b0, b1, z0, z1, m, p) => { const q = band(kit, os, d0, d1, b0, b1); add(q[0], q[1], q[2], q[3], z0, z1, m, p); };
+    b(0, dep, a0, a1, 0, .85, 'white', 1); b(0, dep, a0, a1, .85, .89, 'worktop');
+    // sink under the window if it is on this wall, else at the far end; the hob at the other end
+    const wa = kw && kw.out === os ? (os[0] === 'X' ? (kw.Y0 + kw.Y1) / 2 : (kw.X0 + kw.X1) / 2) : a0 + 450;
+    const sinkAt = Math.max(a0 + 300, Math.min(a1 - 300, wa)), hobAt = Math.abs(a1 - 330 - sinkAt) > Math.abs(a0 + 330 - sinkAt) ? a1 - 330 : a0 + 330;
+    b(80, dep - 80, sinkAt - 230, sinkAt + 230, .89, .895, 'steel');
+    if (Math.abs(hobAt - sinkAt) > 520) b(60, dep - 60, hobAt - 260, hobAt + 260, .89, .9, 'black');
+    if (!(kw && kw.out === os)) b(0, 330, a0, a1, 1.5, 2.2, 'white');
+  }
+  const bth = big('bath');
+  if (bth) {
+    const d = doorOf(bth), ds = d ? sideOf(bth, d) : 'Y1', os = OPP[ds], [a0, a1] = alongR(bth, os);
+    const da = d ? (ds[0] === 'X' ? (d.Y0 + d.Y1) / 2 : (d.X0 + d.X1) / 2) : a0;
+    const across = os[0] === 'X' ? bth[1] - bth[0] : bth[3] - bth[2];
+    const sh = Math.min(900, across - 450, (a1 - a0) / 2);
+    // shower in the back corner away from the door, toilet beside it on the back wall, basin by the door
+    const far = Math.abs(da - a0) > Math.abs(da - a1) ? 'lo' : 'hi';
+    const sA = far === 'lo' ? [a0, a0 + sh] : [a1 - sh, a1];
+    const b = (side, d0, d1, b0, b1, z0, z1, m, p) => { const q = band(bth, side, d0, d1, b0, b1); add(q[0], q[1], q[2], q[3], z0, z1, m, p); };
+    b(os, 0, sh, sA[0], sA[1], 0, .04, 'white', 1);
+    b(os, sh - 10, sh, sA[0], sA[1], .04, 2.0, 'glass');
+    b(os, 0, sh, far === 'lo' ? sA[1] - 10 : sA[0], far === 'lo' ? sA[1] : sA[0] + 10, .04, 2.0, 'glass');
+    const tA = far === 'lo' ? sA[1] + 120 + 190 : sA[0] - 120 - 190;
+    if (Math.abs(tA - da) > 450 || across > 1300) {
+      b(os, 0, 200, tA - 190, tA + 190, 0, .8, 'white'); b(os, 150, 650, tA - 180, tA + 180, 0, .42, 'white', 1);
+    }
+    // basin on the back wall's other end if there is room, else on the door wall beside the door
+    const bA = far === 'lo' ? a1 - 300 : a0 + 300;
+    if (Math.abs(bA - tA) > 600) { b(os, 0, 450, bA - 260, bA + 260, 0, .8, 'white', 1); b(os, 0, 450, bA - 260, bA + 260, .8, .85, 'white'); b(os, 0, 10, bA - 200, bA + 200, 1.1, 1.8, 'mirror'); }
+    else { const s2 = ds, x = da > (a0 + a1) / 2 ? a0 + 300 : a1 - 300; b(s2, 0, 420, x - 240, x + 240, 0, .8, 'white', 1); b(s2, 0, 420, x - 240, x + 240, .8, .85, 'white'); }
+  }
+  // ---- furniture for the living room: sofa and TV facing each other across the room near the window, a dining table
+  // for four further in. Each piece has to fit inside the room and stay clear of the door swings.
+  const keep = [];   // swing areas and things already placed
+  for (const d of doors) {
+    if (d.k !== 'door') continue;
+    const w = Math.max(d.X1 - d.X0, d.Y1 - d.Y0), alongX = d.X1 - d.X0 > d.Y1 - d.Y0;
+    keep.push(alongX ? [d.X0, d.X1, d.Y0 - w - 100, d.Y1 + w + 100] : [d.X0 - w - 100, d.X1 + w + 100, d.Y0, d.Y1]);
+  }
+  const hit = (q, list) => list.some(k => q[0] < k[1] && q[1] > k[0] && q[2] < k[3] && q[3] > k[2]);
+  const inLiv = q => rects('living').some(r => q[0] >= r[0] - 5 && q[1] <= r[1] + 5 && q[2] >= r[2] - 5 && q[3] <= r[3] + 5);
+  const furn = [], chairs = []; let pend = null;
+  const place = (parts, plan) => { const q = parts[0]; if (!inLiv(q) || hit(q, keep)) return false; for (const p of parts) furn.push(p); keep.push(q); return true; };
+  if (mainWin && liv) {
+    // a: along the window wall, b: away from it
+    const ws = mainWin.out, alongX = ws[0] === 'Y', A0 = alongX ? liv[0] : liv[2], A1 = alongX ? liv[1] : liv[3];
+    const B0 = ws === 'Y0' ? liv[2] : ws === 'Y1' ? liv[3] : ws === 'X0' ? liv[0] : liv[1], bs = ws === 'Y0' || ws === 'X0' ? 1 : -1;
+    const Bd = alongX ? liv[3] - liv[2] : liv[1] - liv[0], A = A1 - A0;
+    const R = (a0, a1, b0, b1) => { const p = B0 + bs * b0, q = B0 + bs * b1; return alongX ? [A0 + a0, A0 + a1, Math.min(p, q), Math.max(p, q)] : [Math.min(p, q), Math.max(p, q), A0 + a0, A0 + a1]; };
+    const pc = (r, z0, z1, m, pl_) => [...r, z0, z1, m, pl_ ? 1 : 0];
+    const sb = Math.min(700, Bd * .15);
+    if (A >= 3000 && Bd >= 3200) {
+      for (const flip of [false, true]) {
+        const S = (a0, a1) => (flip ? [A - a1, A - a0] : [a0, a1]);
+        const sofa = R(...S(30, 830), sb, sb + 1800), tv = R(...S(A - 420, A - 20), sb + 300, sb + 1500);
+        if (!inLiv(sofa) || hit(sofa, keep) || !inLiv(tv) || hit(tv, keep)) continue;
+        const ok = place([pc(sofa, .12, .42, 'fabric', 1), pc(R(...S(30, 260), sb, sb + 1800), .42, .86, 'fabric'), pc(R(...S(30, 830), sb, sb + 160), .42, .62, 'fabric'), pc(R(...S(30, 830), sb + 1640, sb + 1800), .42, .62, 'fabric'),
+          pc(R(...S(260, 810), sb + 170, sb + 890), .42, .52, 'fabric2'), pc(R(...S(260, 810), sb + 910, sb + 1630), .42, .52, 'fabric2'), pc(R(...S(260, 390), sb + 220, sb + 590), .52, .84, 'terracotta')]);
+        if (!ok) continue;
+        place([pc(tv, 0, .45, 'oak', 1), pc(R(...S(A - 100, A - 60), sb + 350, sb + 1450), .8, 1.45, 'black')]);
+        const ct = R(...S(1150, 1650), sb + 500, sb + 1300);
+        if (!hit(ct, keep.slice(0, -2))) { furn.push(pc(ct, .38, .42, 'oak', 1), pc(R(...S(1180, 1220), sb + 530, sb + 570), 0, .38, 'oak'), pc(R(...S(1580, 1620), sb + 1230, sb + 1270), 0, .38, 'oak'), pc(R(...S(950, A - 700), sb + 150, sb + 1650), 0, .008, 'rug')); }
+        break;
+      }
+    }
+    // dining table, 1.2 × 0.75 m with four chairs, centred across the room further from the window
+    const tb = Math.min(Bd - 900, Math.max(sb + 2500, Bd - 1300)), am = A / 2;
+    const table = R(am - 600, am + 600, tb - 375, tb + 375);
+    if (Bd >= 3600 && A >= 2200 && inLiv(table) && !hit(R(am - 600, am + 600, tb - 800, tb + 800), keep)) {
+      furn.push(pc(table, .72, .76, 'oak', 1));
+      for (const [da, db] of [[-560, -340], [560, -340], [-560, 340], [560, 340]]) { const q = R(am + da - 25, am + da + 25, tb + db - 25, tb + db + 25); furn.push(pc(q, 0, .72, 'oak')); }
+      keep.push(R(am - 600, am + 600, tb - 800, tb + 800));
+      // chairs: two along each long side, backs away from the table
+      for (const da of [-300, 300]) for (const sgn of [-1, 1]) {
+        const q = R(am + da - 10, am + da + 10, tb + sgn * 590 - 10, tb + sgn * 590 + 10), cx = (q[0] + q[1]) / 2, cy = (q[2] + q[3]) / 2;
+        // which plan side the back is on: away from the table
+        const tc = ctrOf(table), back = alongX ? (cy < tc[1] ? 'N' : 'S') : (cx < tc[0] ? 'W' : 'E');
+        chairs.push([Math.round(cx), Math.round(cy), back]);
+      }
+      pend = ctrOf(table).map(Math.round);
+    }
+  }
+  const T0 = { name: 'Furnished', sub: 'Simple furniture', furnished: true, desc: say('As handed over, with simple furniture: a sofa and TV near the main window and a dining table for four further in. The kitchen and bathroom fittings are laid out to suit each room.', '按交樓狀態加上簡單傢俬：主窗附近放梳化和電視，較內放四人餐枱。廚房和浴室設備按房間形狀擺放。'),
+    parts: [], leaves: [], rooms, furn, chairs, pend, stops: order, over: {},
+    wins: wins.map(w => [ROOM_NAME[w.room] || 'Living & dining', say(`faces ${dirEn(w.dir)}`, `向${dirZh(w.dir)}`), ...inside(w, 500), [w.id], w.room === 'living' ? 'living' : w.room === 'bay' ? 'bay' : null]) };
+  const bare = Object.assign({}, T0, { name: 'Bare', sub: 'As handed over', furnished: false, desc: say('The flat as the HA hands it over: one living and dining room, with the kitchen and bathroom enclosed.', '房委會交樓狀態：一個客飯廳，只有廚房和浴室有間隔。'), furn: [], chairs: [], pend: null });
+  // the dollhouse looks across the flat towards its main window
+  let dollFrom = [-6800, -8000];
+  if (mainWin) { const [ox, oy] = OUT[mainWin.out], k = 9000; dollFrom = [-ox * k - oy * 3500, (oy * k - ox * 3500)]; }
+  return (GEN[id] = { pieces, floors, fin: null, layouts: { A: T0, bare }, keys: ['A', 'bare'], def: 'A', stops, winNames, furnAll, furnCommon: [],
+    ctr: lc.map(Math.round), mirrorTxt: {}, leaves, zh, dollFrom, area: pl.a, sea: mainWin ? (() => { const [X, Y] = inside(mainWin, 500); const [x, y] = [fr.O[0] + (X * fr.ex[0] + Y * fr.ey[0]) / 1000, fr.O[1] + (X * fr.ex[1] + Y * fr.ey[1]) / 1000]; return [x, y]; })() : null });
+}
 // the data of the flat on show; switching flat or floor reassigns these
 let TY, PIECES, FLOORS, FIN, LAYOUTS, LAYOUT_KEYS, STOPDEF, WIN_NAMES, FURN_ALL, FURN_COMMON;
 function setFlatData(id, F) {
-  FLAT = FLATS[id]; TY = TYPES[FLAT.type];
+  FLAT = FLATS[id]; TY = FLAT.generic ? genericType(id) : TYPES[FLAT.type]; FR = FLAT.frame;
+  if (FLAT.generic) FLAT.sea = TY.sea || W2(TY.ctr[0], TY.ctr[1]);
   FLOOR = Math.max(FLAT.F0, Math.min(FLAT.F1, F));
   FL = floorLevel(FLOOR); EYE_H = FL + EYE;
   ({ pieces: PIECES, floors: FLOORS, layouts: LAYOUTS, keys: LAYOUT_KEYS, stops: STOPDEF, winNames: WIN_NAMES, furnAll: FURN_ALL, furnCommon: FURN_COMMON } = TY);
   FIN = TY.fin && finHere() ? TY.fin : null;
 }
 setFlatData('A2', 36);
-{ const m = /^#(A2|A3|B9|B10)-(\d{1,2})$/.exec(location.hash || ''); if (m) setFlatData(m[1], +m[2]); }
+{ const m = /^#([AB]\d{1,2})-(\d{1,2})$/.exec(location.hash || ''); if (m && FLATS[m[1]]) setFlatData(m[1], +m[2]); }
 
 // ---------------- language ----------------
 const ZH = {"Plan A": "方案A", "Master on the hill side": "主人房向山", "The first layout. The master bedroom takes the quiet hillside corner, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "最初的方案：主人房設在寧靜的向山角落，兒童房取海景角落，工人房佔用整個凸位，有自己的窗。", "Rug by the sofa": "梳化旁的地氈", "Master bedroom": "主人房", "North, hillside": "北窗，山景", "Kids & office": "兒童房兼書房", "East, sea": "東窗，海景", "Helper's room": "工人房", "East (bay), sea slice": "東窗（凸位），少量海景", "Living & dining": "客飯廳", "Kitchen": "廚房", "East, into the gap": "東窗，望向單位之間的空隙", "Bathroom": "浴室", "South, into the gap": "南窗，望向單位之間的空隙", "Foyer": "玄關", "Living room": "客廳", "east, north half": "東窗北半", "east, south half": "東窗南半", "bay, faces east": "凸位窗，向東", "north": "北窗", "east, down the gap": "東窗，望向空隙", "Plan B": "方案B", "Sea-view master": "海景主人房", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the hillside room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "主人房搬到海景一邊，再從客廳多取0.9米，面積更大。兒童房改為向山的房間。工人房縮小成凸位後方一間無窗小房，騰出凸位窗做兒童窗邊座位，而沿海景窗的一列空間就成為遊戲區。", "Sea-window strip (about 3.6 m² clear) + window seat": "海景窗前空間（約3.6平方米）＋窗邊座位", "Kids’ room": "兒童房", "None": "沒有", "Living & play": "客廳及遊戲區", "East + bay seat": "東窗＋凸位座位", "east, south half + 0.9 m": "東窗南半＋0.9米", "east, north part": "東窗北段", "Window seat": "窗邊座位", "none": "沒有", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the right.": "四人餐桌放在兒童房門旁，近廚房。主人房門就在你身後，右方是設有窗邊座位的凸位。", "Sofa facing the sea": "梳化面向海景", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your right.": "站在梳化後面。梳化面向海景，不是電視。沿窗約2.9 × 1.6米的空間是兒童遊戲區，鋪了地墊，放了矮玩具櫃。右邊是主人房的牆。", "Play zone": "遊戲區", "At the sea window": "海景窗前", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, the fin cuts the view to the north-east, and the master bedroom’s wall meets the window on your right.": "在海景窗前的遊戲區。銀線灣在山脊後面，隔音鰭擋住東北面的景觀，右邊是主人房與窗相接的牆。", "2.45 × 2.5 m": "2.45 × 2.5米", "Bunk beds along the west wall, a desk under the north window and a wardrobe by the door, with a rug to play on. The window looks onto the wooded hillside: no sea, but it is the quietest room.": "碌架床靠西牆，北窗下放書桌，門邊有衣櫃，中間鋪地氈給小朋友玩。窗外是樹木茂密的山坡：看不到海，但最寧靜。", "2.9 × 2.8 m": "2.9 × 2.8米", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the south half of the sea window plus 0.9 m of the north half. The new wall has to meet a window frame post.": "5呎雙人床床頭靠浴室牆，新間牆前放1.7米衣櫃，窗前放書桌。房間取得海景窗的南半，再加北半的0.9米。新間牆要對正窗框直料。", "1.3 × 2.0 m, no window": "1.3 × 2.0米，無窗", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your right. It has no window, so it needs an extractor fan or air-con.": "凸位後方的一間小房：單人床上有高層架，配窄衣櫃，右邊的趟門通往窗邊座位。房間沒有窗，需要抽氣扇或冷氣。", "Plan C": "方案C", "Master suite": "主人套房", "The master takes the whole east window and wraps round into a dressing area. The kids get the hillside room, the helper gets a small room with the little south window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "主人房佔用整扇東窗，再繞過去延伸成衣帽間。兒童房改為向山的房間，工人房是一間有細南窗的小房，整個凸位變成開放式遊戲室。代價是客廳沒有自己的窗。", "Bay playroom (4.6 m²) + mat by the sofa": "凸位遊戲室（4.6平方米）＋梳化前地墊", "East, whole window": "整扇東窗", "Small south window": "細南窗", "None of its own": "沒有自己的窗", "Playroom": "遊戲室", "Bay, sea": "凸位窗，海景", "whole east window": "整扇東窗", "through the playroom": "經遊戲室", "small south window": "細南窗", "The dining table sits by the kids’ room door. The playroom opens to the right, and the doors to the master suite and the helper’s room are behind you.": "餐桌放在兒童房門旁。右邊是遊戲室，主人套房和工人房的門在你身後。", "Sofa and play mat": "梳化及遊戲地墊", "The sofa backs onto the master suite wall, with a play mat in front that runs into the bay playroom. The living room has no window of its own in this plan: its daylight and its sea view come through the playroom.": "梳化背靠主人套房的牆，前面的遊戲地墊一直伸延到凸位遊戲室。這個方案的客廳沒有自己的窗：日光和海景都要經遊戲室進來。", "2.1 × 2.5 m + dressing": "2.1 × 2.5米＋衣帽間", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the north wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "主人房佔用整扇4.5米闊的東窗。4呎6雙人床靠北牆，兩邊各有床頭櫃，房間再繞過工人房延伸成衣帽間。", "1.6 × 1.9 m": "1.6 × 1.9米", "A small room off the living room, with a single bed under the little south window. That window looks down the gap between the flats to the hills: light and air, but no sea.": "客廳旁的一間小房，單人床放在細南窗下。這扇窗望向單位之間的空隙和遠處的山：有光有風，但看不到海。", "Bare": "吉屋", "As handed over": "交樓原貌", "The flat as the HA hands it over: one open L-shaped space, with only the kitchen and bathroom enclosed.": "房委會交樓時的模樣：一個開放的L形空間，只有廚房和浴室是獨立間隔。", "Open-plan living": "開放式空間", "Main room": "主廳", "east window": "東窗", "The bay": "凸位", "faces east": "向東", "North-west corner": "西北角", "Inside the front door. As handed over, the flat is one open L-shaped space; only the kitchen and bathroom are enclosed.": "剛進大門。交樓時全屋是一個開放的L形空間，只有廚房和浴室是獨立間隔。", "The end of the foyer. The kitchen door is on your right, the bathroom straight ahead, and the open main room on your left.": "玄關盡頭。廚房門在你右邊，浴室在正前方，左邊是開放式主廳。", "The HA hands over the sink and the gas and washing-machine connections. The window looks east down the gap between flats 2 and 3.": "交樓時已有洗滌盆，並預留煤氣和洗衣機接駁位。窗口向東，望向2室與3室之間的空隙。", "Middle of the room": "房間中央", "Open plan": "開放式", "The middle of the open plan. The bay is straight ahead and the east window to the right.": "開放空間的中央。凸位在正前方，東窗在右邊。", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its left (north) edge.": "未加任何間隔的整扇4.5米東窗。隔音鰭在窗的左（北）邊外面。", "South-east corner": "東南角", "2.9 × 2.0 m": "2.9 × 2.0米", "The south half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "東窗的南半。方案A把這裡做兒童房，方案B和C就撥給主人房。", "The north window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "北窗所在的角落。方案A把這裡做主人房，方案B和C改做兒童房。", "2.15 × 2.0 m": "2.15 × 2.0米", "A 2.15 × 2.0 m bay off the main room, with its own east window.": "主廳旁一個2.15 × 2.0米的凸位，有自己的東窗。", "The whole flat as handed over, with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "交樓原貌的全屋，牆身在胸口高度剖開。拖動可以旋轉，點一下房間就可以走進去。", "Front door": "大門", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the left and the kitchen wall on the right. At the end it turns right into a short hall.": "剛進大門。前面是1.6米闊的玄關，左邊是鞋櫃，右邊是廚房牆。走到盡頭右轉就是一段短走廊。", "Hall": "走廊", "Kitchen, bath, living": "廚房、浴室、客廳", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living and dining room opens on the left, and the north-west bedroom door is just round that corner.": "玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊通往客飯廳，西北角睡房的門就在轉角。", "1.6 × 2.0 m": "1.6 × 2.0米", "Counter and sink along the east wall under the window, hob and washing machine on the south counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "東牆窗下是工作枱和洗滌盆，南面工作枱有煮食爐和洗衣機，雪櫃在門邊。廚房窗向東，望向2室與3室之間的空隙。", "1.5 × 2.0 m": "1.5 × 2.0米", "Shower on the right, toilet under a small south window, basin and mirror by the door.": "右邊是企缸，座廁在細南窗下，洗手盆和鏡在門邊。", "Dining": "飯廳", "Table for four": "四人餐桌", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the right.": "餐桌放在通道盡頭。工人房門在正前方，右邊是客廳和客廳窗。", "Sofa and TV": "梳化及電視", "About 5.4 × 2.5 m including the dining area. The living room gets the north half of the big east window. The acoustic fin is just outside its left edge.": "連飯廳約5.4 × 2.5米。客廳取得大東窗的北半，隔音鰭就在窗的左邊外面。", "Living-room window": "客廳窗", "Best view": "最佳景觀", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the north-east.": "貼近玻璃。銀線灣在前方山脊後面，牛尾海在它左邊展開。隔音鰭擋住東北面的景觀。", "2.9 × 1.9 m": "2.9 × 1.9米", "Bunk bed along the south wall, desk at the south half of the east window, wardrobe by the door. It sees as much sea as the living room, and there is no fin on this side.": "碌架床靠南牆，東窗南半前放書桌，門邊有衣櫃。這裡看到的海景與客廳一樣多，而且這一邊沒有隔音鰭。", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the north window. It looks onto the wooded hillside behind the estate, so there is no sea from here, but it is the quietest room.": "4呎6雙人床，床頭上方有儲物櫃，配1.5米衣櫃和北窗。窗外是屋苑後面樹木茂密的山坡，看不到海，但最寧靜。", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the north-east.": "凸位變成一間46平方呎的房：單人床上有層架，配窄衣櫃，還有自己的東窗，可以看到東北面少量海景。", "Front of the bay": "凸位前段", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your left, with a sliding door off this nook.": "凸位前段做成兒童窗邊座位，下面可以儲物，保留凸位窗的少量海景。工人房在你左邊的牆後，從這裡的趟門出入。", "The whole bay": "整個凸位", "With the helper moved out, the whole bay becomes an open playroom off the living room: play mat, toy shelves and a kids’ table, plus the bay window’s slice of sea.": "工人房搬走後，整個凸位變成客廳旁的開放式遊戲室：遊戲地墊、玩具櫃和兒童枱，加上凸位窗的少量海景。", "Dressing area": "衣帽間", "South half of the window": "東窗南半", "The south half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "東窗南半照亮衣帽間，沿工人房的牆有1.8米衣櫃。方案A裡這個角落是兒童房。", "Dollhouse": "鳥瞰全屋", "Whole flat from above": "從上面看全屋", "The whole flat with the walls cut at chest height. Drag to turn it; tap a room to step inside.": "牆身在胸口高度剖開的全屋。拖動可以旋轉，點一下房間就可以走進去。", "north window": "北窗", "bay window": "凸位窗", "east window (north half)": "東窗（北半）", "east window (south half)": "東窗（南半）", "bathroom window": "浴室窗", "kitchen window": "廚房窗", "Silverstrand Bay": "銀線灣", "Port Shelter": "牛尾海", "Kau Sai Chau": "滘西洲", "Clear Water Bay hills": "清水灣山嶺", "Hillside behind the estate": "屋苑後山", "Acoustic fin": "隔音鰭", "Block A": "A座", "Block B": "B座", "Helper": "工人房", "Living": "客廳", "Master": "主人房", "Kids": "兒童房", "Master by the south window": "主人房向南", "The first layout. The master bedroom takes the corner with the south window, the kids get the sea-view corner, and the helper gets the whole bay with its own window.": "最初的方案：主人房設在有南窗的角落，兒童房取海景角落，工人房佔用整個凸位，有自己的窗。", "South, towards Block B": "南窗，望向B座", "North, into the gap": "北窗，望向單位之間的空隙", "south": "南窗", "The master bedroom moves to the sea side and grows by taking 0.9 m off the living room. The kids get the south-facing room. The helper gets a small windowless room at the back of the bay, which frees the bay window for a kids’ window seat, and the strip along the sea window becomes a play zone.": "主人房搬到海景一邊，再從客廳多取0.9米，面積更大。兒童房改為向南的房間。工人房縮小成凸位後方一間無窗小房，騰出凸位窗做兒童窗邊座位，而沿海景窗的一列空間就成為遊戲區。", "east, north half + 0.9 m": "東窗北半＋0.9米", "east, south part": "東窗南段", "The dining table for four sits by the kids’ room door, close to the kitchen. The master bedroom door is right behind you, and the bay with its window seat is off to the left.": "四人餐桌放在兒童房門旁，近廚房。主人房門就在你身後，左方是設有窗邊座位的凸位。", "Behind the sofa, which faces the sea instead of a TV. The strip along the window, about 2.9 × 1.6 m, is the kids’ play zone, with a mat and low toy shelves. The master bedroom wall is on your left.": "站在梳化後面。梳化面向海景，不是電視。沿窗約2.9 × 1.6米的空間是兒童遊戲區，鋪了地墊，放了矮玩具櫃。左邊是主人房的牆。", "In the play zone by the sea window. Silverstrand Bay sits beyond the ridge, and the master bedroom’s wall meets the window on your left. The fin cuts the view to the south-east.": "在海景窗前的遊戲區。銀線灣在山脊後面，左邊是主人房與窗相接的牆。隔音鰭擋住東南面的景觀。", "Bunk beds along the west wall, a desk under the south window and a wardrobe by the door, with a rug to play on. The window faces south over the podium towards Block B rather than the hillside.": "碌架床靠西牆，南窗下放書桌，門邊有衣櫃，中間鋪地氈給小朋友玩。窗口向南，望向平台和B座，而不是山坡。", "A 5′ queen bed with its head on the bathroom wall, 1.7 m of wardrobe along the new wall, and a desk at the window. It gets the north half of the sea window plus 0.9 m of the south half. The new wall has to meet a window frame post.": "5呎雙人床床頭靠浴室牆，新間牆前放1.7米衣櫃，窗前放書桌。房間取得海景窗的北半，再加南半的0.9米。新間牆要對正窗框直料。", "A small room at the back of the bay: a single bed under a high shelf and a narrow wardrobe, with a sliding door to the window seat on your left. It has no window, so it needs an extractor fan or air-con.": "凸位後方的一間小房：單人床上有高層架，配窄衣櫃，左邊的趟門通往窗邊座位。房間沒有窗，需要抽氣扇或冷氣。", "The master takes the whole east window and wraps round into a dressing area. The kids get the south-facing room, the helper gets a small room with the little north window, and the whole bay becomes an open playroom. The catch: the living room has no window of its own.": "主人房佔用整扇東窗，再繞過去延伸成衣帽間。兒童房改為向南的房間，工人房是一間有細北窗的小房，整個凸位變成開放式遊戲室。代價是客廳沒有自己的窗。", "Small north window": "細北窗", "small north window": "細北窗", "The dining table sits by the kids’ room door. The playroom opens to the left, and the doors to the master suite and the helper’s room are behind you.": "餐桌放在兒童房門旁。左邊是遊戲室，主人套房和工人房的門在你身後。", "The master takes the whole 4.5 m east window. A 4′6″ double bed sits against the south wall with a bedside table each side, and the room wraps round the helper’s room into a dressing area.": "主人房佔用整扇4.5米闊的東窗。4呎6雙人床靠南牆，兩邊各有床頭櫃，房間再繞過工人房延伸成衣帽間。", "A small room off the living room, with a single bed under the little north window. That window faces flat 2 across the gap between the flats: light and air, but no sea.": "客廳旁的一間小房，單人床放在細北窗下。這扇窗隔著單位之間的空隙望向2室：有光有風，但看不到海。", "The end of the foyer. The kitchen door is on your left, the bathroom straight ahead, and the open main room on your right.": "玄關盡頭。廚房門在你左邊，浴室在正前方，右邊是開放式主廳。", "The middle of the open plan. The bay is straight ahead and the east window to the left.": "開放空間的中央。凸位在正前方，東窗在左邊。", "The full 4.5 m east window, before any partitions. The acoustic fin is outside its right (south) edge.": "未加任何間隔的整扇4.5米東窗。隔音鰭在窗的右（南）邊外面。", "North-east corner": "東北角", "The north half of the east window. Plan A makes this the kids’ room; plans B and C give it to the master bedroom.": "東窗的北半。方案A把這裡做兒童房，方案B和C就撥給主人房。", "South-west corner": "西南角", "The south window corner. Plan A makes this the master bedroom; plans B and C make it the kids’ room.": "南窗所在的角落。方案A把這裡做主人房，方案B和C改做兒童房。", "Inside the front door. A 1.6 m-wide foyer runs ahead, with the shoe cabinet on the right and the kitchen wall on the left. At the end it turns left into a short hall.": "剛進大門。前面是1.6米闊的玄關，右邊是鞋櫃，左邊是廚房牆。走到盡頭左轉就是一段短走廊。", "The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The living and dining room opens on the right, and the south-west bedroom door is just round that corner.": "玄關盡頭的走廊。廚房門在你左邊，浴室在正前方。右邊通往客飯廳，西南角睡房的門就在轉角。", "Counter and sink along the east wall under the window, hob and washing machine on the north counter, fridge by the door. The kitchen window looks east down the gap between flats 2 and 3.": "東牆窗下是工作枱和洗滌盆，北面工作枱有煮食爐和洗衣機，雪櫃在門邊。廚房窗向東，望向2室與3室之間的空隙。", "Shower on the left, toilet under a small north window, basin and mirror by the door.": "左邊是企缸，座廁在細北窗下，洗手盆和鏡在門邊。", "The dining table sits at the top of the passage. The helper’s room door is straight ahead; the living area and its window are to the left.": "餐桌放在通道盡頭。工人房門在正前方，左邊是客廳和客廳窗。", "About 5.4 × 2.5 m including the dining area. The living room gets the south half of the big east window. The acoustic fin is just outside its right edge.": "連飯廳約5.4 × 2.5米。客廳取得大東窗的南半。隔音鰭就在窗的右邊外面。", "Close to the glass. Silverstrand Bay sits beyond the ridge in front; Port Shelter opens to the left of it. The fin cuts off the view to the south-east.": "貼近玻璃。銀線灣在前方山脊後面，牛尾海在它左邊展開。隔音鰭擋住東南面的景觀。", "Bunk bed along the north wall, desk at the north half of the east window, wardrobe by the door. It sees as much sea as the living room. There is no fin on this side.": "碌架床靠北牆，東窗北半前放書桌，門邊有衣櫃。這裡看到的海景與客廳一樣多。這一邊沒有隔音鰭。", "A 4′6″ double bed with storage above the headboard, a 1.5 m wardrobe, and the south window. It faces south over the podium towards Block B rather than the hillside.": "4呎6雙人床，床頭上方有儲物櫃，配1.5米衣櫃和南窗。窗口向南，望向平台和B座，而不是山坡。", "The bay becomes a 46 sq ft room: a single bed under a shelf, a narrow wardrobe and its own east window, which catches a slice of sea to the south-east.": "凸位變成一間46平方呎的房：單人床上有層架，配窄衣櫃，還有自己的東窗，可以看到東南面少量海景。", "The front of the bay becomes a window seat for the kids, with storage underneath, and keeps the bay window’s slice of sea. The helper’s room is behind the wall on your right, with a sliding door off this nook.": "凸位前段做成兒童窗邊座位，下面可以儲物，保留凸位窗的少量海景。工人房在你右邊的牆後，從這裡的趟門出入。", "North half of the window": "東窗北半", "The north half of the window lights a dressing area with 1.8 m of wardrobes along the helper’s wall. In plan A this corner was the kids’ room.": "東窗北半照亮衣帽間，沿工人房的牆有1.8米衣櫃。方案A裡這個角落是兒童房。", "south window": "南窗", "Furnished": "連家具", "One open room": "一個開放式空間", "A furnished example: a queen bed at the west end behind a low shelf, a dining table in the middle, a sofa facing the sea window and a small study in the bay.": "連家具的例子：西端低櫃後放一張雙人床，中間放餐桌，梳化面向海景窗，凸位做成小書房。", "The flat as the HA hands it over: one long open room with a bay, with only the kitchen and bathroom enclosed.": "房委會交樓時的模樣：一個連凸位的長形開放空間，只有廚房和浴室是獨立間隔。", "Living & sleeping": "客廳及睡眠區", "Bay": "凸位", "East (bay)": "東窗（凸位）", "Into the gap": "望向單位之間的空隙", "Living area": "客廳區", "Sleeping area": "睡眠區", "West end": "西端", "side window": "側窗", "small side window": "細側窗", "window onto the gap": "望向空隙的窗", "onto the gap": "望向空隙", "By the front door": "大門旁", "By the bay": "凸位旁", "Inside the front door, at the west end of the flat. It is one long room: the sleeping area is around you, the kitchen and bathroom open off the corridor side, the bay is off the far side, and the big sea window is at the east end.": "剛進大門，位於單位西端。全屋是一個長形空間：睡眠區就在你身邊，廚房和浴室在走廊一邊，凸位在另一邊，大海景窗在東端。", "1.65 × 2.07 m": "1.65 × 2.07米", "Counters along two walls, with the sink under a small window that looks into the gap between flats 9 and 10. The fridge stands by the door and the washing machine goes under the counter.": "兩邊牆都有工作枱，洗滌盆在小窗下，窗外是9室與10室之間的空隙。雪櫃在門邊，洗衣機放在工作枱下。", "1.47 × 2.0 m": "1.47 × 2.0米", "Shower, toilet and basin. The plan shows no window, so the bathroom relies on an extractor fan.": "有企缸、座廁和洗手盆。平面圖上浴室沒有窗，要靠抽氣扇通風。", "The west end of the room, about 3.4 × 4 m with a small side window. Here it holds a queen bed and a wardrobe behind a low shelf; a curtain or partition could close it off as a bedroom.": "房間西端，約3.4 × 4米，有一扇細側窗。這裡放了雙人床和衣櫃，前面有矮櫃分隔；加簾或間牆就可以變成睡房。", "The dining table sits in the middle of the room, with the bay straight ahead and the living area and sea window to one side.": "餐桌放在房間中間，凸位在正前方，客廳區和海景窗在一旁。", "The east end of the room, about 2.9 × 4.5 m, with the full-width sea window. The sofa faces the view, and two smaller side windows add light from either side.": "房間東端，約2.9 × 4.5米，有整幅海景窗。梳化面向景觀，兩邊各有一扇較細的側窗透光。", "East window": "東窗", "Close to the glass of the 4.5 m east window. There is no acoustic fin beside flats 9 and 10, so only the window frame limits the view.": "貼近4.5米闊的東窗玻璃。9室和10室旁邊沒有隔音鰭，只有窗框限制視野。", "2.1 × 2.4 m": "2.1 × 2.4米", "A deep bay off the middle of the room with its own east-facing window. Here it is a small study, with a desk under the window and shelves.": "房間中部旁一個深凸位，有自己向東的窗。這裡做成小書房，窗下放書桌，旁邊有書架。", "Inside the front door. As handed over, the flat is one long open room with a bay; only the kitchen and bathroom are enclosed.": "剛進大門。交樓時全屋是一個連凸位的長形開放空間，只有廚房和浴室是獨立間隔。", "The west end of the room, about 3.4 × 4 m, with a small side window. Many owners put the bed here.": "房間西端，約3.4 × 4米，有一扇細側窗。不少業主會把床放在這裡。", "The middle of the room, with the bay straight ahead.": "房間中央，凸位在正前方。", "The east end of the room with the full-width sea window, before any furniture.": "房間東端，有整幅海景窗，未放家具。", "A deep bay off the middle of the room with its own east-facing window.": "房間中部旁一個深凸位，有自己向東的窗。", "Lifts": "升降機", "Refuse room": "垃圾房", "east window (bay side)": "東窗（近凸位一邊）", "east window (gap side)": "東窗（近空隙一邊）", "second small side window": "第二扇細側窗", "Three bedrooms · sea-view bedrooms": "三房 · 睡房向海", "Three bedrooms · sea-view living room": "三房 · 客廳向海", "Four bedrooms": "四房", "Three bedrooms: the two by the big east window split the sea view between them, divided by a wardrobe wall, and the bay becomes the third. The living room stays by the front door, with the TV on the end wall and only the two small side windows, so it has no sea view.": "三房：大東窗旁的兩間睡房以一幅衣櫃牆分隔，平分海景，凸位就成為第三間睡房。客廳留在大門旁，電視靠尾牆，只有兩扇細側窗，看不到海。", "Three bedrooms. The living room moves to the big east window, with the sofa against the side wall and the TV on the master bedroom wall. A bedroom goes in the corner by the front door, under the two small side windows, and the bay is the third bedroom.": "三房。客廳搬到大東窗前，梳化靠側牆，電視掛在主人房的牆上。大門旁的角落間出一間睡房，有兩扇細側窗，凸位就是第三間睡房。", "Four bedrooms. As in plan B, but the corner by the front door is split into two small bedrooms, one under each small side window, each just big enough for a 4′ bed and with a sliding door.": "四房。與方案B相同，但大門旁的角落再分成兩間細睡房，每間各有一扇細側窗，剛好放得下一張4呎床，用趟門出入。", "Bay bedroom": "凸位睡房", "Sea-view bedroom": "海景睡房", "Corner bedroom": "角落睡房", "Small bedroom 1": "細睡房一", "Small bedroom 2": "細睡房二", "Bed 3": "睡房三", "Bed 4": "睡房四", "Small window, into the gap": "細窗，望向單位之間的空隙", "Two small side windows": "兩扇細側窗", "Small side window": "細側窗", "two small side windows": "兩扇細側窗", "Entrance": "入口", "Table for six": "六人餐桌", "TV on the end wall": "電視靠尾牆", "TV on the west wall": "電視靠西牆", "2.2 × 2.5 m": "2.2 × 2.5米", "2.1 × 2.5 m": "2.1 × 2.5米", "1.95 × 2.35 m": "1.95 × 2.35米", "1.25 × 2.45 m": "1.25 × 2.45米", "1.2 × 2.45 m": "1.2 × 2.45米", "2.1 × 2.1 m": "2.1 × 2.1米", "2.15 × 2.1 m": "2.15 × 2.1米", "Bedrooms": "睡房數目", "Third bedroom": "第三間睡房", "Fourth bedroom": "第四間睡房", "Inside the front door. Tall cabinets and the TV run along the end wall, with the sofa facing them, and the fridge stands against the kitchen wall beside you. The dining table is further in, with the three bedroom doors beyond it.": "剛進大門。高櫃和電視沿尾牆排開，梳化面向它們，雪櫃就在你身旁靠著廚房牆。再走進去是餐桌，三間睡房的門在餐桌後面。", "Counters along two walls, with the sink under a small window into the gap between flats 9 and 10. In this plan the fridge stands outside, against the kitchen wall by the front door.": "兩邊牆都有工作枱，洗滌盆在小窗下，窗外是9室與10室之間的空隙。這個方案把雪櫃放在廚房外，靠著大門旁的廚房牆。", "Behind the sofa, facing the TV on the end wall. The living room is about 3.4 × 4 m by the entrance and is lit by the two small side windows. In this plan the sea window belongs to the bedrooms.": "站在梳化後面，面向尾牆上的電視。客廳在入口旁，約3.4 × 4米，靠兩扇細側窗採光。這個方案的海景窗歸睡房所有。", "A 4′6″ double bed with its head under the window onto the gap, a tall wardrobe against the bathroom wall, and the gap-side pane of the east window. The wardrobe wall to the next bedroom meets the window at its middle pier.": "4呎6雙人床床頭靠望向空隙的窗，浴室牆前放高衣櫃，房間取得東窗近空隙一邊的一格。與隔壁睡房之間的衣櫃牆，剛好在窗中間的牆柱處與窗相接。", "A 4′ bed with its head under the side window, a desk by the door and a wall of wardrobe shared with the master bedroom. It gets the bay-side pane of the east window, the wider of the two.": "4呎床床頭靠側窗，門邊放書桌，與主人房之間是一整幅衣櫃牆。房間取得東窗近凸位一邊的一格，是較闊的一格。", "Inside the front door. Tall cabinets line the end wall beside the sliding door of the first small bedroom. The second small bedroom, the kitchen and the dining table are further in, and the living room is at the sea window.": "剛進大門。尾牆排著高櫃，旁邊是第一間細睡房的趟門。再走進去是第二間細睡房、廚房和餐桌，客廳在海景窗前。", "A small room about 1.25 × 2.45 m, filled by a 4′ bed, with low storage under its own small side window. A sliding door opens onto the entrance.": "一間約1.25 × 2.45米的小房，一張4呎床已經放滿，自己那扇細側窗下有矮儲物櫃。趟門開向入口。", "The HA hands over the sink and the gas and washing-machine connections. The window looks into the gap between flats 9 and 10.": "交樓時已有洗滌盆，並預留煤氣和洗衣機接駁位。窗口望向9室與10室之間的空隙。", "The west end of the room, about 3.4 × 4 m, with two small side windows. Plans B and C put one or two bedrooms here.": "房間西端，約3.4 × 4米，有兩扇細側窗。方案B和C在這裡間出一至兩間睡房。", "Inside the front door. An L of tall cabinets wraps round the corner bedroom ahead and the kitchen is beside you. The dining table and the sea-view living room lie beyond.": "剛進大門。一列L形高櫃包著前面角落睡房的外牆，廚房就在你身旁。再走進去是餐桌和向海的客廳。", "Counters along two walls, with the fridge by the door and the sink under a small window into the gap between flats 9 and 10.": "兩邊牆都有工作枱，雪櫃在門邊，洗滌盆在小窗下，窗外是9室與10室之間的空隙。", "Shower, toilet and basin, with a small high window into the gap between flats 9 and 10.": "有企缸、座廁和洗手盆，另有一扇高位細窗望向9室與10室之間的空隙。", "The table for six sits between the bathroom and the bay. Its end runs right up to the bathroom door, so in practice a shorter table would be needed to get into the bathroom. The bay bedroom door is straight ahead.": "六人餐桌放在浴室與凸位之間。桌尾緊貼浴室門，實際上要用短一點的餐桌才進得了浴室。凸位睡房的門在正前方。", "The living room takes the wider, bay-side pane of the east window and is about 2.9 × 2.4 m. The sofa sits against the side wall under the side window, and the TV faces it from the master bedroom wall, with a rug between.": "客廳取得東窗較闊、近凸位一邊的一格，約2.9 × 2.4米。梳化靠側牆放在側窗下，電視掛在主人房的牆上與梳化相對，中間鋪地氈。", "Close to the glass of the wider, bay-side pane of the east window. There is no acoustic fin beside flats 9 and 10; only the window frame and the pier limit the view.": "貼近東窗較闊、近凸位一邊的玻璃。9室和10室旁邊沒有隔音鰭，只有窗框和窗中間的牆柱限制視野。", "A 4′6″ double bed with its head under the window onto the gap, and a full-width wardrobe along the bathroom wall. It gets the gap-side pane of the east window; its wall meets the glass at the window’s middle pier.": "4呎6雙人床床頭靠望向空隙的窗，沿浴室牆放一整排衣櫃。房間取得東窗近空隙一邊的一格；間牆剛好在窗中間的牆柱處與窗相接。", "A 4′ bed along the side wall under both small side windows, with a wardrobe at the far end. It sits by the front door, away from the living room.": "4呎床沿側牆放在兩扇細側窗下，盡頭有衣櫃。房間在大門旁，與客廳分開。", "The second small room, the same size: a 4′ bed under the other small side window and a wardrobe at its foot, with a sliding door onto the dining area.": "第二間小房，大小一樣：4呎床放在另一扇細側窗下，床尾有衣櫃，趟門開向飯廳。", "The bay becomes a bedroom about 2.1 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.": "凸位變成一間約2.1 × 2.1米的睡房：4呎床床頭靠盡頭的牆，門旁有衣櫃，凸位窗就在床尾。", "Three bedrooms. Two of them share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the north window, so it has no sea view.": "三房：兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有北窗，看不到海。", "Three bedrooms. Two of them share the big east window, split at its middle post with a wardrobe wall between them, and the bay becomes the third. The living room stays by the hall, with the TV on the west wall and only the south window, so it has no sea view.": "三房：兩間睡房分享大東窗，在窗的中間直料處以一幅衣櫃牆分隔，凸位就成為第三間睡房。客廳留在走廊旁，電視靠西牆，只有南窗，看不到海。", "Three bedrooms. The living room takes the north half of the east window, with the sofa against the north wall and the TV on the master bedroom wall. A bedroom goes in the north-west corner under the north window, and the bay is the third bedroom.": "三房。客廳取得東窗北半，梳化靠北牆，電視掛在主人房的牆上。西北角間出一間睡房，有北窗，凸位就是第三間睡房。", "Three bedrooms. The living room takes the south half of the east window, with the sofa against the south wall and the TV on the master bedroom wall. A bedroom goes in the south-west corner under the south window, and the bay is the third bedroom.": "三房。客廳取得東窗南半，梳化靠南牆，電視掛在主人房的牆上。西南角間出一間睡房，有南窗，凸位就是第三間睡房。", "Four bedrooms. As in plan B, but the north-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the north window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.": "四房。與方案B相同，但西北角再分成兩間細睡房，每間剛好放得下一張4呎床，共用北窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。", "Four bedrooms. As in plan B, but the south-west corner becomes two small bedrooms, each just big enough for a 4′ bed, sharing the south window: the wall between them needs a new frame post where it meets the glass. Both have sliding doors.": "四房。與方案B相同，但西南角再分成兩間細睡房，每間剛好放得下一張4呎床，共用南窗：兩房之間的間牆碰到玻璃的位置要加一條新窗框直料。兩間都用趟門。", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The living room opens on the left, with the TV on the west wall.": "玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊是客廳，電視靠西牆。", "The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The living room opens on the right, with the TV on the west wall.": "玄關盡頭的走廊。廚房門在你左邊，浴室在正前方。右邊是客廳，電視靠西牆。", "The table for six sits between the bathroom and the bay, with the bay bedroom door straight ahead. The two sea-view bedrooms open off the far end, by the east window.": "六人餐桌放在浴室與凸位之間，凸位睡房的門在正前方。兩間海景睡房在盡頭東窗旁。", "The table for six sits between the bathroom and the bay, with the bay bedroom door straight ahead. Its end runs up to the bathroom wall, so the way through to the living room is round the bay end of the table.": "六人餐桌放在浴室與凸位之間，凸位睡房的門在正前方。桌尾貼著浴室牆，所以要從近凸位那一端繞過餐桌才到客廳。", "Behind the sofa, facing the TV on the west wall. The living room keeps the north window, which looks onto the hillside; in this plan the sea window belongs to the bedrooms.": "站在梳化後面，面向西牆上的電視。客廳保留北窗，窗外是山坡；這個方案的海景窗歸睡房所有。", "Behind the sofa, facing the TV on the west wall. The living room keeps the south window, which faces Block B across the podium; in this plan the sea window belongs to the bedrooms.": "站在梳化後面，面向西牆上的電視。客廳保留南窗，隔著平台望向B座；這個方案的海景窗歸睡房所有。", "A 4′6″ double bed with its head on the south wall, a tall wardrobe against the bathroom wall, and the south half of the east window plus the small south window. The new wall meets the window at its middle post.": "4呎6雙人床床頭靠南牆，浴室牆前放高衣櫃，房間取得東窗南半和細南窗。新間牆在窗的中間直料處與窗相接。", "A 4′6″ double bed with its head on the north wall, a tall wardrobe against the bathroom wall, and the north half of the east window plus the small north window. The new wall meets the window at its middle post.": "4呎6雙人床床頭靠北牆，浴室牆前放高衣櫃，房間取得東窗北半和細北窗。新間牆在窗的中間直料處與窗相接。", "A 4′ bed with its head on the north wall, a desk by the door and a wall of wardrobe shared with the master bedroom. It gets the north half of the east window. The acoustic fin is just outside.": "4呎床床頭靠北牆，門邊放書桌，與主人房之間是一整幅衣櫃牆。房間取得東窗北半。窗外就是隔音鰭。", "A 4′ bed with its head on the south wall, a desk by the door and a wall of wardrobe shared with the master bedroom. It gets the south half of the east window. The acoustic fin is just outside.": "4呎床床頭靠南牆，門邊放書桌，與主人房之間是一整幅衣櫃牆。房間取得東窗南半。窗外就是隔音鰭。", "The living room takes the north half of the east window and is about 2.9 × 2.5 m. The sofa sits against the north wall and the TV faces it from the master bedroom wall, with a rug between. The acoustic fin is just outside the window’s north edge.": "客廳取得東窗北半，約2.9 × 2.5米。梳化靠北牆，電視掛在主人房的牆上與梳化相對，中間鋪地氈。隔音鰭就在窗的北邊外面。", "The living room takes the south half of the east window and is about 2.9 × 2.5 m. The sofa sits against the south wall and the TV faces it from the master bedroom wall, with a rug between. The acoustic fin is just outside the window’s south edge.": "客廳取得東窗南半，約2.9 × 2.5米。梳化靠南牆，電視掛在主人房的牆上與梳化相對，中間鋪地氈。隔音鰭就在窗的南邊外面。", "A 4′6″ double bed with its head on the south wall, a full-width wardrobe along the bathroom wall, and the south half of the east window plus the small south window.": "4呎6雙人床床頭靠南牆，沿浴室牆放一整排衣櫃，房間取得東窗南半和細南窗。", "A 4′6″ double bed with its head on the north wall, a full-width wardrobe along the bathroom wall, and the north half of the east window plus the small north window.": "4呎6雙人床床頭靠北牆，沿浴室牆放一整排衣櫃，房間取得東窗北半和細北窗。", "A 4′ bed along the north wall under the north window, with a wardrobe at the far end. The window looks onto the wooded hillside: no sea, but it is the quietest room.": "4呎床沿北牆放在北窗下，盡頭有衣櫃。窗外是樹木茂密的山坡：看不到海，但最寧靜。", "A 4′ bed along the south wall under the south window, with a wardrobe at the far end. The window faces south over the podium towards Block B rather than the hillside.": "4呎床沿南牆放在南窗下，盡頭有衣櫃。窗口向南，望向平台和B座，而不是山坡。", "The hall at the end of the foyer. The kitchen door is on your right and the bathroom is straight ahead. The two small bedrooms open off the left, one with a sliding door onto the hall.": "玄關盡頭的走廊。廚房門在你右邊，浴室在正前方。左邊是兩間細睡房，其中一間的趟門開向走廊。", "The hall at the end of the foyer. The kitchen door is on your left and the bathroom is straight ahead. The two small bedrooms open off the right, one with a sliding door onto the hall.": "玄關盡頭的走廊。廚房門在你左邊，浴室在正前方。右邊是兩間細睡房，其中一間的趟門開向走廊。", "A small room about 1.25 × 2.45 m, filled by a 4′ bed, with low storage under its part of the north window. A sliding door opens onto the hall.": "一間約1.25 × 2.45米的小房，一張4呎床已經放滿，分到的一段北窗下有矮儲物櫃。趟門開向走廊。", "A small room about 1.25 × 2.45 m, filled by a 4′ bed, with low storage under its part of the south window. A sliding door opens onto the hall.": "一間約1.25 × 2.45米的小房，一張4呎床已經放滿，分到的一段南窗下有矮儲物櫃。趟門開向走廊。", "The second small room: a 4′ bed under the rest of the north window and a wardrobe at its foot, with a sliding door onto the dining area.": "第二間小房：4呎床放在北窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。", "The second small room: a 4′ bed under the rest of the south window and a wardrobe at its foot, with a sliding door onto the dining area.": "第二間小房：4呎床放在南窗餘下一段之下，床尾有衣櫃，趟門開向飯廳。", "The bay becomes a bedroom about 2.15 × 2.1 m: a 4′ bed with its head on the end wall, a wardrobe beside the door, and the bay window at the foot of the bed.": "凸位變成一間約2.15 × 2.1米的睡房：4呎床床頭靠盡頭的牆，門旁有衣櫃，凸位窗就在床尾。", "The south half of the east window. All three plans make this the master bedroom.": "東窗的南半。三個方案都把這裡做主人房。", "The north half of the east window. All three plans make this the master bedroom.": "東窗的北半。三個方案都把這裡做主人房。", "The north window corner. Plan A keeps it in the living room; plan B makes it a bedroom and plan C two small ones.": "北窗所在的角落。方案A把這裡留作客廳；方案B間成一間睡房，方案C間成兩間細房。", "The south window corner. Plan A keeps it in the living room; plan B makes it a bedroom and plan C two small ones.": "南窗所在的角落。方案A把這裡留作客廳；方案B間成一間睡房，方案C間成兩間細房。", "The north window corner. Plan A makes it two small bedrooms, plan B one bedroom, and plan C keeps it in the living room.": "北窗所在的角落。方案A間成兩間細睡房，方案B間成一間睡房，方案C留作客廳。", "The south window corner. Plan A makes it two small bedrooms, plan B one bedroom, and plan C keeps it in the living room.": "南窗所在的角落。方案A間成兩間細睡房，方案B間成一間睡房，方案C留作客廳。", "The west end of the room, about 3.4 × 4 m, with two small side windows. Plans A and B put bedrooms here.": "房間西端，約3.4 × 4米，有兩扇細側窗。方案A和B在這裡間出睡房。"};
+Object.assign(ZH, { "Simple furniture": "簡單傢俬", "Main window": "主窗", "Flat": "單位" });
 const T = YF.t;
 // text for the flat on show: flat 3 takes flat 2's wording mirrored, and flat 3 above 25/F has no fin to mention
 const dropFin = s => YF.lang === 'zh' ? s.replace(/[^。]*隔音鰭[^。]*。/g, '') : s.replace(/(^|\s+)[^.]*\bfin\b[^.]*\./g, '').trim();
 const tr = s => {
   if (s == null) return s;
   const e = FLAT.mirror && TY.mirrorTxt[s] ? TY.mirrorTxt[s] : s;
-  const out = YF.lang === 'zh' && ZH[e] != null ? ZH[e] : e;
+  const out = YF.lang === 'zh' ? (ZH[e] != null ? ZH[e] : TY.zh && TY.zh[e] != null ? TY.zh[e] : e) : e;
   return FLAT.type === 'A' && !FIN && /[.。]/.test(out) && /\bfin\b|隔音鰭/.test(out) ? dropFin(out) : out;
 };
 const sqm = a => T(`${a.toFixed(1)} m² · ${Math.round(a * 10.764)} sq ft`, `${a.toFixed(1)}平方米 · ${Math.round(a * 10.764)}平方呎`);
@@ -1507,7 +1724,8 @@ function stopFor(id, layout) {
 
 // ---------------- state ----------------
 const st = { layout: TY.def, furn: true, doors: true, trees: false, mode: 'doll', stop: 'doll' };
-const cs = { x: wx(1050), y: wy(5250), yaw: 90, pitch: -6 };   // walking eye
+const cs = { x: 0, y: 0, yaw: 90, pitch: -6 };   // walking eye
+[cs.x, cs.y] = W2(1050, 5250);
 
 // ---------------- sight from the window: hills and sea ----------------
 function ray(ox, oy, H, canopy, az) {
@@ -1531,7 +1749,7 @@ function seaTable() {
 }
 
 // ---------------- 2D sight lines inside the flat ----------------
-function obbFromPlan(X0, X1, Y0, Y1) { const xa = wx(X0), xb = wx(X1), ya = wy(Y0), yb = wy(Y1); return { cx: (xa + xb) / 2, cy: (ya + yb) / 2, hx: Math.abs(xb - xa) / 2, hy: Math.abs(yb - ya) / 2, c: 1, s: 0 }; }
+function obbFromPlan(X0, X1, Y0, Y1) { const [cx, cy] = W2((X0 + X1) / 2, (Y0 + Y1) / 2); return { cx, cy, hx: Math.abs(X1 - X0) / 2000, hy: Math.abs(Y1 - Y0) / 2000, c: Math.cos(FR.rot), s: Math.sin(FR.rot) }; }
 // distance along a ray to a wall segment [x1, y1, x2, y2] of a tower outline
 function segT(g, ox, oy, dx, dy) {
   const ex = g[2] - g[0], ey = g[3] - g[1], den = dx * ey - dy * ex;
@@ -2292,7 +2510,7 @@ function box(g, X0, X1, Y0, Y1, z0, z1, m, abs) {
   const sx = (X1 - X0) / 1000, sy = (Y1 - Y0) / 1000, sz = z1 - z0;
   if (sx <= 0 || sy <= 0 || sz <= 0) return null;
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sz, sy), m);
-  mesh.position.copy(P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), (abs ? 0 : FL) + (z0 + z1) / 2));
+  mesh.position.copy(PW((X0 + X1) / 2, (Y0 + Y1) / 2, (abs ? 0 : FL) + (z0 + z1) / 2)); mesh.rotation.y = FR.rot;
   g.add(mesh); return mesh;
 }
 const shell = new THREE.Group(), ceilGrp = new THREE.Group(), outside = new THREE.Group(), above = new THREE.Group(), ceilShadow = new THREE.Group();
@@ -2355,7 +2573,7 @@ function buildShell() {
     box(ceilShadow, X0, X1, Y0, Y1, CEIL, CEIL + .15, CASTER);
   }
   // the towers around the flat: open on this floor where the flat is
-  est.cut({ block: FLAT.block, lo: FL - .15, hi: FL + 2.75, box: YF.FLATKEY[FLAT.id].box });
+  est.cut({ block: FLAT.block, F: FLOOR, flat: FLAT.id });
   // dollhouse section caps: solid tops where the walls are cut at 1.3 m
   const c0 = CUT - .03, c1 = CUT - .001;
   for (const [k, X0, X1, Y0, Y1, o] of PIECES) {
@@ -2398,9 +2616,9 @@ function buildDoors(g, openings, leaves, lay) {
     const face = side > 0 ? b1 : b0, len = slide ? a1 - a0 + 30 : a1 - a0 - 5;
     // the hinge (or a sliding leaf's near end), and the world direction of a plan vector
     const [hx, hy] = slide ? at(a0 - 15, face + side * (T / 2 + 8)) : at(hi ? a1 - T / 2 : a0 + T / 2, face + side * T / 2);
-    const ang = (vx, vy) => Math.atan2(wy(hy + vy) - wy(hy), wx(hx + vx) - wx(hx));   // P maps plan y to -z, so this is three's rotation.y
+    const ang = (vx, vy) => { const a = W2(hx + vx, hy + vy), b = W2(hx, hy); return Math.atan2(a[1] - b[1], a[0] - b[0]); };   // P maps plan y to -z, so this is three's rotation.y
     const shut = ang(...at(slide || !hi ? 1 : -1, 0)), open = ang(...at(0, side));
-    const pivot = new THREE.Group(); pivot.position.copy(P(wx(hx), wy(hy), FL)); pivot.rotation.y = shut; g.add(pivot);
+    const pivot = new THREE.Group(); pivot.position.copy(PW(hx, hy, FL)); pivot.rotation.y = shut; g.add(pivot);
     // a hinged leaf starts half its thickness behind the hinge, so shut it reaches the jamb and open it tucks into the wall
     const Lm = len / 1000, Tm = T / 1000, x0 = slide ? 0 : -Tm / 2, xe = x0 + Lm;
     const leaf = new THREE.Mesh(new THREE.BoxGeometry(Lm, H, Tm), M.white); leaf.position.set(x0 + Lm / 2, H / 2, 0); pivot.add(leaf);
@@ -2412,10 +2630,10 @@ function buildDoors(g, openings, leaves, lay) {
       const rs = new THREE.Mesh(new THREE.BoxGeometry(.05, .07, .03), M.steel); rs.position.set(xe - .065, 1.0, s * (Tm / 2 + .015)); pivot.add(rs);
     }
     let p0 = null, p1 = null, turn = 0;
-    if (slide) { p0 = pivot.position.clone(); const [ex, ey] = at(a0 - 15 + o.slide[1] * (a1 - a0), face + side * (T / 2 + 8)); p1 = P(wx(ex), wy(ey), FL); }
+    if (slide) { p0 = pivot.position.clone(); const [ex, ey] = at(a0 - 15 + o.slide[1] * (a1 - a0), face + side * (T / 2 + 8)); p1 = PW(ex, ey, FL); }
     else { turn = open - shut; while (turn > Math.PI) turn -= 2 * Math.PI; while (turn < -Math.PI) turn += 2 * Math.PI; }
-    const c = P(wx((X0 + X1) / 2), wy((Y0 + Y1) / 2), FL), [ux, uy] = at(a0, (b0 + b1) / 2), [vx, vy] = at(a1, (b0 + b1) / 2);
-    DOORS.push({ pivot, cap, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z, line: [wx(ux), wy(uy), wx(vx), wy(vy)] });
+    const c = PW((X0 + X1) / 2, (Y0 + Y1) / 2, FL), [ux, uy] = at(a0, (b0 + b1) / 2), [vx, vy] = at(a1, (b0 + b1) / 2);
+    DOORS.push({ pivot, cap, lay, slide, shut, turn, p0, p1, open: 0, cx: c.x, cz: c.z, line: [...W2(ux, uy), ...W2(vx, vy)] });
   }
 }
 function setDoor(d, f) {
@@ -2469,7 +2687,7 @@ function buildFurniture() {
     // pendant over the table
     if (L.pend) {
       const [X, Y] = L.pend;
-      const pend = new THREE.Mesh(new THREE.CylinderGeometry(.06, .2, .16, 20), M.charcoal); pend.position.copy(P(wx(X), wy(Y), FL + 1.9)); g.add(pend);
+      const pend = new THREE.Mesh(new THREE.CylinderGeometry(.06, .2, .16, 20), M.charcoal); pend.position.copy(PW(X, Y, FL + 1.9)); g.add(pend);
       box(g, X - 5, X + 5, Y - 5, Y + 5, 1.98, CEIL, M.black);
     }
   }
@@ -2603,9 +2821,17 @@ function placeWideLabels() {
 const wideLabelHtml = L => (L.kind === 'peak' ? `${T(L.en, L.zh)}<small>${L.ele}${T(' m', '米')}</small>` : T(L.en, L.zh));
 // the lift lobby and refuse room on the floor on show, labelled in the dollhouse
 const CORE_L = [{ t: 'Lifts', core: 'lift' }, { t: 'Refuse room', core: 'rs' }].map(L => Object.assign(L, { el: mkLabel('core ' + L.core, '') }));
+// every flat's number on the floor on show, in the dollhouse: tap one to move to that flat
+const FLAT_L = [];
+for (const blk of ['A', 'B']) for (const no of YF.FLAT_NOS) {
+  const el = mkLabel('flatno', String(no)), L = { blk, no, id: blk + no, el, v: new THREE.Vector3() };
+  el.addEventListener('click', e => { e.stopPropagation(); setFlat(L.id); });
+  FLAT_L.push(L);
+}
 function placeFlatLabels() {
   const B = YF.BLOCKS[FLAT.block], fin = XLABELS.find(L => L.fin);
-  fin.x = wx(8865); fin.y = wy(-125); fin.h = FL + 2; fin.v = P(fin.x, fin.y, fin.h);
+  for (const L of FLAT_L) { const lb = YF.PLAN[L.blk].f[L.no].lb; L.v.copy(P(lb[0], lb[1], FL + CUT + .35)); L.el.title = T(`Go to flat ${L.no}`, `轉去${L.no}室`); }
+  [fin.x, fin.y] = W2(8865, -125); fin.h = FL + 2; fin.v = P(fin.x, fin.y, fin.h);
   CORE_L[0].v = P(B.lobby[0], B.lobby[1], FL + CUT + .5); CORE_L[1].v = P(B.rs[0], B.rs[1], FL + CUT + .5);
   CORE_L.forEach(L => { L.el.textContent = tr(L.t); });
 }
@@ -2646,11 +2872,11 @@ function buildRoomLabels() {
     const home = parts.find(q => ax >= q.X0 && ax <= q.X1 && ay >= q.Y0 && ay <= q.Y1) || parts[0];
     const el = mkLabel('room', `${tr(r.name)}<small>${roomDims(home)}</small>`);
     el.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
-    roomLabels.push({ el, v: P(wx(ax), wy(ay), FL + 1.45) });
+    roomLabels.push({ el, v: PW(ax, ay, FL + 1.45) });
     for (const q of parts) if (q !== home) {
       const t = mkLabel('dim', `${tr(r.name)} <b>${roomDims(q)}</b>`);
       t.addEventListener('click', e => { e.stopPropagation(); enterRoom(r); });
-      roomLabels.push({ el: t, v: P(wx((q.X0 + q.X1) / 2), wy((q.Y0 + q.Y1) / 2), FL + .9) });
+      roomLabels.push({ el: t, v: PW((q.X0 + q.X1) / 2, (q.Y0 + q.Y1) / 2, FL + .9) });
     }
   }
 }
@@ -2710,6 +2936,7 @@ function placeLabels() {
   for (const L of OUT_L) put(L.el, L.v, !L.hidden);
   for (const r of roomLabels) put(r.el, r.v, st.mode === 'doll' && !inArea());
   for (const L of CORE_L) put(L.el, L.v, st.mode === 'doll' && !inArea() && camDist() > 9);
+  for (const L of FLAT_L) put(L.el, L.v, st.mode === 'doll' && !inArea() && L.blk === FLAT.block && L.id !== FLAT.id && camDist() > 7);
   // places across Hong Kong: higher tiers first, and a label that would overlap one already placed is left out
   const kept = [];
   for (const L of WIDE_L) {
@@ -2736,8 +2963,9 @@ const controls = new THREE.OrbitControls(cam, canvas);
 controls.enableDamping = false; controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 4; controls.maxDistance = 55000; controls.zoomSpeed = 2;
 // the dollhouse looks at the flat from above its inner corner, on the side of the gap
 function dollStartPose() {
-  const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]);
-  return { pos: P(cx - 6.8, cy + 8 * FLAT.sy, FL + 10.1), tgt: P(cx, cy, FL + .3) };
+  const [cx, cy] = W2(TY.ctr[0], TY.ctr[1]), v = TY.dollFrom || [-6800, -8000];
+  const [px, py] = W2(TY.ctr[0] + v[0], TY.ctr[1] - v[1]);
+  return { pos: P(px, py, FL + 10.1), tgt: P(cx, cy, FL + .3) };
 }
 let DOLL_START = dollStartPose(), FLAT_C = DOLL_START.tgt.clone();
 controls.target.copy(FLAT_C);
@@ -2844,7 +3072,7 @@ function cancelDive() {
 const ROOM_STOP = { foyer: 'door', open: 'living' };
 const roomStop = r => { const id = r && (ROOM_STOP[r.id] || r.id); return id && stopFor(id) ? id : null; };
 function roomContaining(x, y) {
-  const X = pX(x), Y = pY(y);
+  const [X, Y] = PL2(x, y);
   return LAYOUTS[st.layout].rooms.find(r => r.rects.some(([X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1)) || null;
 }
 function enterRoom(r) {
@@ -2852,7 +3080,7 @@ function enterRoom(r) {
   const id = roomStop(r);
   if (id) { goStop(id); return; }
   dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() }; st.stop = null;
-  diveTo(wx(r.at[0]), wy(r.at[1]), camYaw(), -8); refreshPanel();
+  diveTo(...W2(r.at[0], r.at[1]), camYaw(), -8); refreshPanel();
 }
 function goStop(id) {
   const s = stopFor(id); if (!s) return;
@@ -2865,10 +3093,10 @@ function goStop(id) {
   } else {
     if (st.mode === 'doll') {
       dollPose = { pos: cam.position.clone(), tgt: controls.target.clone() };
-      if (inArea()) { setMode('walk'); cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }   // from the area, cut straight in
-      else diveTo(wx(s.X), wy(s.Y), s.yaw, s.pitch);
+      if (inArea()) { setMode('walk'); [cs.x, cs.y] = W2(s.X, s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch; applyWalkCam(); }   // from the area, cut straight in
+      else diveTo(...W2(s.X, s.Y), s.yaw, s.pitch);
     }
-    else glideTo(wx(s.X), wy(s.Y), s.yaw, s.pitch);
+    else glideTo(...W2(s.X, s.Y), s.yaw, s.pitch);
   }
   refreshPanel(); updateSight(); updateLabelVisibility(); updateCompassMarker(); dirty = true;
 }
@@ -2913,7 +3141,7 @@ window.addEventListener('pointerup', e => {
 canvas.addEventListener('wheel', e => { if (st.mode !== 'walk') return; e.preventDefault(); cam.fov = Math.max(35, Math.min(80, cam.fov + Math.sign(e.deltaY) * 4)); cam.updateProjectionMatrix(); dirty = true; }, { passive: false });
 
 function walkable(x, y) {
-  const X = pX(x), Y = pY(y);
+  const [X, Y] = PL2(x, y);
   const onFloor = FLOORS.some(([k, X0, X1, Y0, Y1]) => X >= X0 && X <= X1 && Y >= Y0 && Y <= Y1);
   if (!onFloor) return false;
   const r = .18;
@@ -3008,7 +3236,7 @@ function updateSight() {
 }
 // bedrooms and bathroom: inside one, only its own window counts (door shut); elsewhere the bathroom door is shut
 function roomAt(x, y) {
-  const X = pX(x), Y = pY(y), e = 80;
+  const [X, Y] = PL2(x, y), e = 80;
   return LAYOUTS[st.layout].rooms.find(r => r.only && r.rects.some(([X0, X1, Y0, Y1]) => X >= X0 - e && X <= X1 + e && Y >= Y0 - e && Y <= Y1 + e)) || null;
 }
 function compassSVG(sight) {
@@ -3039,10 +3267,9 @@ function updateCompassMarker() {
 }
 const SHORT = { 'Living & dining': 'Living', 'Master bedroom': 'Master', 'Bay bedroom': 'Bay', 'Sea-view bedroom': 'Bed 3', 'Corner bedroom': 'Bed 3', 'Small bedroom 1': 'Bed 3', 'Small bedroom 2': 'Bed 4', 'Open-plan living': 'Open plan' };
 // the plan is drawn north up in world millimetres, so flats 3 and 10 come out as the mirror images they are
-const PX = X => Math.round(wx(X) * 1000), PY = Y => Math.round(-wy(Y) * 1000);
+const PXY = (X, Y) => { const [x, y] = W2(X, Y); return [Math.round(x * 1000), Math.round(-y * 1000)]; };
 function rectS(cls, X0, X1, Y0, Y1) {
-  const a = PX(X0), b = PX(X1), c = PY(Y0), d = PY(Y1);
-  return `<rect class="${cls}" x="${Math.min(a, b)}" y="${Math.min(c, d)}" width="${Math.abs(b - a)}" height="${Math.abs(d - c)}"/>`;
+  return `<polygon class="${cls}" points="${[[X0, Y0], [X1, Y0], [X1, Y1], [X0, Y1]].map(([X, Y]) => PXY(X, Y).join(',')).join(' ')}"/>`;
 }
 function drawPlan() {
   const L = LAYOUTS[st.layout], furn = L.furnished && st.furn;
@@ -3055,11 +3282,10 @@ function drawPlan() {
     if (cls) s += rectS(cls, X0, X1, Y0, Y1);
   }
   if (FIN) s += rectS('fn', FIN[0], FIN[1], FIN[2], FIN[3]);
-  for (const r of L.rooms) if (r.id !== 'foyer') s += `<text class="rl" x="${PX(r.at[0])}" y="${PY(r.at[1]) + 120}">${tr(SHORT[r.name] || r.name)}</text>`;
+  for (const r of L.rooms) if (r.id !== 'foyer') { const [ax, ay] = PXY(r.at[0], r.at[1]); s += `<text class="rl" x="${ax}" y="${ay + 120}">${tr(SHORT[r.name] || r.name)}</text>`; }
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   for (const [, X0, X1, Y0, Y1] of FLOORS.concat(TY.fin ? [[''].concat(TY.fin)] : [])) {
-    for (const X of [X0, X1]) { x0 = Math.min(x0, PX(X)); x1 = Math.max(x1, PX(X)); }
-    for (const Y of [Y0, Y1]) { y0 = Math.min(y0, PY(Y)); y1 = Math.max(y1, PY(Y)); }
+    for (const X of [X0, X1]) for (const Y of [Y0, Y1]) { const [a, b] = PXY(X, Y); x0 = Math.min(x0, a); x1 = Math.max(x1, a); y0 = Math.min(y0, b); y1 = Math.max(y1, b); }
   }
   x0 -= 350; y0 -= 400; x1 += 1100; y1 += 350;
   const nx = x1 - 550, ny = y0 + 350;
@@ -3087,7 +3313,7 @@ function winRows(layout) {
   const key = FLAT.id + FLOOR + layout + st.trees;
   if (winCache[key]) return winCache[key];
   buildBlockers(layout);
-  const rows = LAYOUTS[layout].wins.map(([n, w, X, Y, only, role]) => ({ n, w, role, north: (only || []).includes('north'), deg: X == null ? null : summarise(sightFrom(wx(X), wy(Y)), only).deg }));
+  const rows = LAYOUTS[layout].wins.map(([n, w, X, Y, only, role]) => ({ n, w, role, north: (only || []).includes('north'), deg: X == null ? null : summarise(sightFrom(...W2(X, Y)), only).deg }));
   buildBlockers();
   return (winCache[key] = rows);
 }
@@ -3210,23 +3436,38 @@ function sunHud() {
 }
 
 // ---------------- flat and floor ----------------
+// every flat on the floor, as a grid of numbers per block; the four with ready-made bedroom plans are marked
+function flatGrid(cls) {
+  return ['A', 'B'].map(b => `<div class="fp-row"><span class="fp-b">${T(`Block ${b}`, `${b}座`)}</span><div class="fp-g">${YF.FLAT_NOS.map(no => {
+    const id = b + no, f = FLATS[id], a = f.generic ? YF.PLAN[b].f[no].a : (f.type === 'A' ? 44.7 : 43.6);
+    return `<button type="button" data-f="${id}" aria-pressed="${id === FLAT.id}" class="${f.generic ? '' : 'plans'}" title="${T(`Block ${b}, flat ${no} · about ${Math.round(a)} m² inside${f.generic ? '' : ' · bedroom plans'}`, `${b}座${no}室 · 室內約${Math.round(a)}平方米${f.generic ? '' : ' · 有間房方案'}`)}">${no}</button>`;
+  }).join('')}</div></div>`).join('') + `<p class="fp-note"><i></i>${T('Flats 2, 3, 9 and 10 have three bedroom plans to compare. Every other flat is built from the HA floor plan, bare or simply furnished.', '2、3、9、10室有三個間房方案可比較；其他單位按房委會平面圖建模，可選吉屋或簡單傢俬。')}</p>`;
+}
+function bindFlatGrid(el, after) { el.querySelectorAll('button[data-f]').forEach(b => { b.onclick = () => { setFlat(b.dataset.f); if (after) after(); }; }); }
 function drawHeader() {
   $('eyebrow').textContent = T(`Ying Fai Court · Block ${FLAT.block} · ${FLOOR}/F`, `影輝苑 · ${FLAT.block}座 · ${FLOOR}樓`);
   $('ttl').textContent = T(`Flat ${FLAT.no} walk-through`, `${FLAT.no}室室內導覽`);
-  $('sub').textContent = (FLAT.type === 'A' ? T('560 sq ft, laid out', '面積約560平方呎，按房委會') : T('Laid out', '按房委會'))
+  if (FLAT.generic) $('sub').textContent = T(`About ${Math.round(TY.area)} m² inside, built from the HA's typical floor plan. Walk through it bare or simply furnished, look out of every window at the real hills and sea from ${FLOOR}/F, and see when the sun comes in.`,
+    `室內約${Math.round(TY.area)}平方米，按房委會標準樓層平面圖建模。可選吉屋或簡單傢俬，逐個房間走走，從${FLOOR}樓每扇窗望出去看真實的山景和海景，看看太陽幾時照入。`);
+  else $('sub').textContent = (FLAT.type === 'A' ? T('560 sq ft, laid out', '面積約560平方呎，按房委會') : T('Laid out', '按房委會'))
     + T(` from the HA floor plan. Compare three ways to split it into three or four bedrooms, walk through each one, and look out of every window at the real hills and sea from ${FLOOR}/F.`,
       `平面圖繪畫。比較三種間隔（三房或四房），逐一走進每個房間，再從${FLOOR}樓每扇窗望出去，看看真實的山景和海景。`);
   $('floorVal').innerHTML = `${FLOOR}<small>${T('/F', '樓')}</small>`;
   $('mpd').textContent = T(`floor +${FL.toFixed(2)} mPD`, `樓面 +${FL.toFixed(2)} mPD`);
   const fi = $('floorIn'); fi.min = FLAT.F0; fi.max = FLAT.F1; fi.value = FLOOR;
   fi.setAttribute('aria-valuetext', T(`${FLOOR}/F`, `${FLOOR}樓`));
-  $('flats').innerHTML = FLAT_IDS.map(id => {
-    const f = FLATS[id], side = f.side === 'north' ? T('north', '北側') : T('south', '南側');
-    return `<button data-f="${id}" aria-pressed="${id === FLAT.id}">${T(`Flat ${f.no}`, `${f.no}室`)}<small>${T(`Block ${f.block} · ${side}`, `${f.block}座 · ${side}`)}</small></button>`;
-  }).join('');
-  $('flats').querySelectorAll('button').forEach(b => { b.onclick = () => setFlat(b.dataset.f); });
+  $('flats').innerHTML = flatGrid(); bindFlatGrid($('flats'));
+  if (!$('flatPop').hidden) { $('flatPop').innerHTML = flatGrid(); bindFlatGrid($('flatPop'), () => setFlatPop(false)); }
   const kp = YF.keyPlan(FLAT.id, FLOOR); $('keyPlan').innerHTML = kp.svg; $('kpNote').innerHTML = kp.note;
+  $('keyPlan').querySelectorAll('[data-f]').forEach(g => { g.onclick = () => setFlat(g.dataset.f); });
 }
+// the dock's flat button opens the same grid over the 3D view
+function setFlatPop(open) {
+  const p = $('flatPop'); p.hidden = !open; $('dFlat').setAttribute('aria-expanded', String(open));
+  if (open) { p.innerHTML = flatGrid(); bindFlatGrid(p, () => setFlatPop(false)); }
+}
+$('dFlat').onclick = e => { e.stopPropagation(); setFlatPop($('flatPop').hidden); };
+document.addEventListener('pointerdown', e => { if (!$('flatPop').hidden && !$('flatPop').contains(e.target) && e.target !== $('dFlat')) setFlatPop(false); });
 // switch flat or floor: rebuild the flat, its sea table and the tower cut, and keep the camera where it makes sense
 function applyFlat(id, F) {
   cancelDive();
@@ -3245,7 +3486,7 @@ function applyFlat(id, F) {
     if (st.mode === 'doll' && !inArea()) { dollGlide = null; cam.position.copy(ds.pos); controls.target.copy(ds.tgt); controls.update(); }
     if (st.mode === 'walk') {
       const sid = st.stop && st.stop !== 'doll' && stopFor(st.stop) ? st.stop : stopFor('window') ? 'window' : 'living', s = stopFor(sid);
-      glide = null; st.stop = sid; lastWalk = sid; cs.x = wx(s.X); cs.y = wy(s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch;
+      glide = null; st.stop = sid; lastWalk = sid; [cs.x, cs.y] = W2(s.X, s.Y); cs.yaw = s.yaw; cs.pitch = s.pitch;
     }
   }
   if (lastWalk && !stopFor(lastWalk)) lastWalk = null;
@@ -3254,7 +3495,7 @@ function applyFlat(id, F) {
   dockKey = ''; dirty = true;
   try { history.replaceState(null, '', '#' + FLAT.id + '-' + FLOOR); } catch (e) {}
 }
-function setFlat(id) { if (id !== FLAT.id) applyFlat(id, FLOOR); }
+function setFlat(id) { if (id !== FLAT.id && FLATS[id]) applyFlat(id, FLOOR); }
 function setFloor(F) { F = Math.max(FLAT.F0, Math.min(FLAT.F1, F)); if (F !== FLOOR) applyFlat(FLAT.id, F); return F === FLOOR; }
 let floorRaf = 0;
 $('floorIn').addEventListener('input', e => { const F = +e.target.value; cancelAnimationFrame(floorRaf); floorRaf = requestAnimationFrame(() => setFloor(F)); });
@@ -3363,7 +3604,7 @@ function syncDock() {
   $('dDn').disabled = FLOOR <= FLAT.F0; $('dUp').disabled = FLOOR >= FLAT.F1;
   $('dDn').setAttribute('aria-label', T('One floor down', '下一層')); $('dUp').setAttribute('aria-label', T('One floor up', '上一層'));
   $('dDn').title = T('One floor down (Page Down)', '下一層（Page Down 鍵）'); $('dUp').title = T('One floor up (Page Up)', '上一層（Page Up 鍵）');
-  FLAT_IDS.forEach(id => { const b = $('d' + id); b.setAttribute('aria-pressed', String(id === FLAT.id)); b.title = T(`Flat ${FLATS[id].no}, Block ${FLATS[id].block}`, `${FLATS[id].block}座${FLATS[id].no}室`); });
+  $('dFlat').innerHTML = `${FLAT.block}${FLAT.no}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M7 14l5-5 5 5"/></svg>`; $('dFlat').title = T(`Block ${FLAT.block}, flat ${FLAT.no}: pick another flat`, `${FLAT.block}座${FLAT.no}室：揀另一個單位`);
   $('dFloorGrp').setAttribute('aria-label', T('Floor', '樓層')); $('dFlatGrp').setAttribute('aria-label', T('Flat', '單位'));
   [['dWalk', 'Inside', '室內', 'Walk around inside the flat', '在單位內四處走'],
    ['dDoll', 'Dollhouse', '鳥瞰全屋', 'The whole flat from above', '從上面看整個單位'],
@@ -3387,7 +3628,6 @@ function showDoll(area) {
 $('dWalk').onclick = () => { if (st.mode !== 'walk') goStop(lastWalk && stopFor(lastWalk) ? lastWalk : stopFor('window') ? 'window' : 'living'); };
 $('dDoll').onclick = () => showDoll(false);
 $('dArea').onclick = () => showDoll(true);
-FLAT_IDS.forEach(id => { $('d' + id).onclick = () => setFlat(id); });
 // press and hold the floor stepper to keep going
 let holdTimer = null;
 const stopHold = () => { clearTimeout(holdTimer); holdTimer = null; };
@@ -3470,7 +3710,7 @@ const hourName = h => (h === 12 ? T('noon', '正午') : T(`${(h + 11) % 12 + 1} 
 let HOR = null, horKey = '';
 function horizon() {
   const key = FLAT.id + FLOOR + st.trees + WIDE.ver; if (key === horKey) return HOR; horKey = key;
-  const cx = wx(TY.ctr[0]), cy = wy(TY.ctr[1]), h0 = FL + 1.5, can = st.trees ? 10 : 0;
+  const [cx, cy] = W2(TY.ctr[0], TY.ctr[1]), h0 = FL + 1.5, can = st.trees ? 10 : 0;
   HOR = new Float32Array(360);
   for (let a = 0; a < 360; a++) {
     const dx = Math.sin(a * RAD), dy = Math.cos(a * RAD); let best = -Infinity;
@@ -3494,8 +3734,9 @@ function sunGeometry() {
     if (k !== 'win') continue;
     const alongY = X1 - X0 < Y1 - Y0, th = alongY ? X1 - X0 : Y1 - Y0, mx = (X0 + X1) / 2, my = (Y0 + Y1) / 2;
     const s = alongY ? (inside(mx - th / 2 - 300, my) ? 1 : -1) : (inside(mx, my - th / 2 - 300) ? 1 : -1), off = s * (th / 2 + 10);
-    const pts = [.1, .3, .5, .7, .9].map(f => (alongY ? [wx(mx + off), wy(Y0 + (Y1 - Y0) * f)] : [wx(X0 + (X1 - X0) * f), wy(my + off)]));
-    SUNWIN[o.id] = { pts, nx: alongY ? s : 0, ny: alongY ? 0 : s * FLAT.sy, z: FL + (o.sill + o.head) / 2 };
+    const pts = [.1, .3, .5, .7, .9].map(f => (alongY ? W2(mx + off, Y0 + (Y1 - Y0) * f) : W2(X0 + (X1 - X0) * f, my + off)));
+    const nX = alongY ? s : 0, nY = alongY ? 0 : s;
+    SUNWIN[o.id] = { pts, nx: nX * FR.ex[0] + nY * FR.ey[0], ny: nX * FR.ex[1] + nY * FR.ey[1], z: FL + (o.sill + o.head) / 2 };
   }
   const roof = k => YF.BLOCKS[k].roof + 1.3, box = YF.FLATKEY[FLAT.id].box;
   SUNBLK = PIECES.filter(p => p[0] === 'wall' || p[0] === 'mull').map(([, X0, X1, Y0, Y1]) => ({ b: obbFromPlan(X0, X1, Y0, Y1), top: roof(FLAT.block) }));
@@ -3606,7 +3847,7 @@ const sunView = () => (st.mode === 'walk' ? 'walk' : inArea() ? 'area' : 'doll')
 const EST_C = [(YF.BLOCKS.A.label[0] + YF.BLOCKS.B.label[0]) / 2, (YF.BLOCKS.A.label[1] + YF.BLOCKS.B.label[1]) / 2];
 function sunCentre(v) {
   v = v || sunView();
-  return v === 'walk' ? P(wx(TY.ctr[0]), wy(TY.ctr[1]), EYE_H) : v === 'doll' ? FLAT_C.clone() : controls.target.clone();
+  return v === 'walk' ? PW(TY.ctr[0], TY.ctr[1], EYE_H) : v === 'doll' ? FLAT_C.clone() : controls.target.clone();
 }
 function buildSunPath() {
   for (const o of sunObjs) { if (o.parent) o.parent.remove(o); if (o.geometry) o.geometry.dispose(); }
