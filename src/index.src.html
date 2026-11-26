@@ -2563,11 +2563,17 @@ const corGeo = {};
 function corridorGeo(blk) {
   if (corGeo[blk]) return corGeo[blk];
   const c = YF.corridorGrid(blk), rects = [];
-  // runs of walkable cells, joined down the rows while they line up
+  // grown by a cell so the floor and ceiling run into the walls instead of stepping short of the slanting ones
+  const G = new Uint8Array(c.w * c.h);
+  for (let j = 0; j < c.h; j++) for (let i = 0; i < c.w; i++) {
+    let v = 0; for (let dj = -1; dj <= 1 && !v; dj++) for (let di = -1; di <= 1 && !v; di++) { const ii = i + di, jj = j + dj; if (ii >= 0 && jj >= 0 && ii < c.w && jj < c.h && c.g[jj * c.w + ii]) v = 1; }
+    G[j * c.w + i] = v;
+  }
+  // runs of those cells, joined down the rows while they line up
   let open = new Map();
   for (let j = 0; j <= c.h; j++) {
     const runs = [];
-    if (j < c.h) { let i = 0; while (i < c.w) { if (c.g[j * c.w + i]) { const a = i; while (i < c.w && c.g[j * c.w + i]) i++; runs.push([a, i]); } else i++; } }
+    if (j < c.h) { let i = 0; while (i < c.w) { if (G[j * c.w + i]) { const a = i; while (i < c.w && G[j * c.w + i]) i++; runs.push([a, i]); } else i++; } }
     const next = new Map();
     for (const [a, b] of runs) { const k = a + ',' + b; next.set(k, open.has(k) ? open.get(k) : j); open.delete(k); }
     for (const [k, j0] of open) { const [a, b] = k.split(',').map(Number); rects.push([c.x0 + a * c.c, c.x0 + b * c.c, c.y1 - j * c.c, c.y1 - j0 * c.c]); }
