@@ -1643,13 +1643,15 @@ function genericType(id) {
     // a runs along the main window's wall, b into the room from it; both across the whole living room
     const ws = mainWin.out, alongX = ws[0] === 'Y';
     const bx0 = Math.min(...livR.map(r => r[0])), bx1 = Math.max(...livR.map(r => r[1])), by0 = Math.min(...livR.map(r => r[2])), by1 = Math.max(...livR.map(r => r[3]));
-    const A0 = alongX ? bx0 : by0, A = (alongX ? bx1 : by1) - A0;
-    const B0 = ws === 'Y0' ? by0 : ws === 'Y1' ? by1 : ws === 'X0' ? bx0 : bx1, bs = ws === 'Y0' || ws === 'X0' ? 1 : -1, Bd = alongX ? by1 - by0 : bx1 - bx0;
+    // across the room: the biggest rectangle's side walls (window recesses left out); into it: from that rectangle's window side
+    const A0 = alongX ? liv[0] : liv[2], A = (alongX ? liv[1] : liv[3]) - A0;
+    const B0 = ws === 'Y0' ? liv[2] : ws === 'Y1' ? liv[3] : ws === 'X0' ? liv[0] : liv[1], bs = ws === 'Y0' || ws === 'X0' ? 1 : -1;
+    const Bd = ws === 'Y0' ? by1 - B0 : ws === 'Y1' ? B0 - by0 : ws === 'X0' ? bx1 - B0 : B0 - bx0;
     const R = (a0, a1, b0, b1) => { const p = B0 + bs * b0, q = B0 + bs * b1; return alongX ? [A0 + a0, A0 + a1, Math.min(p, q), Math.max(p, q)] : [Math.min(p, q), Math.max(p, q), A0 + a0, A0 + a1]; };
     const pc = (r, z0, z1, m, p) => [...r, z0, z1, m, p ? 1 : 0];
     // sofa against one side wall and the TV against the facing one, a little in from the window
     let placed = false;
-    for (const sb of [500, 300, 800, 150, 1100]) {
+    for (const sb of [350, 150, 600, 900]) {
       for (const flip of [false, true]) {
         if (placed) break;
         const S = (a0, a1) => (flip ? [A - a1, A - a0] : [a0, a1]);
