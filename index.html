@@ -3311,7 +3311,7 @@ const floorMeshes = [], mainFloors = [];
 // The lift lobby and corridors of the floor on show come from the plan as a 0.1 m grid (YF.corridorGrid): they get a tiled
 // floor and a ceiling, the six lift cars get steel doors with the floor number over them, and every flat's front door
 // its number. Walk up to another flat's front door and you go in: the tour switches to that flat around you.
-const CORM = { floor: mat(0xcfc9bd), ceil: mat(0xf1efe9), liftFrame: mat(0x6c7378) };
+const CORM = { floor: mat(0xa9a398), ceil: mat(0xf1efe9, { emissive: 0x2a2926 }), liftFrame: mat(0x6c7378) };   // the ceiling a touch lit, as the corridor lights are always on
 const corGeo = {};
 function corridorGeo(blk) {
   if (corGeo[blk]) return corGeo[blk];
