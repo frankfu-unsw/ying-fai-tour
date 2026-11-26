@@ -13,13 +13,14 @@ Steps (each leaves its result in the scratch folder):
   5 rects     the walls cut into rectangles, square to the main wings and to the 45-degree wings -> rects_*.pkl
   6 flats     each flat in its own frame: doors, rooms (from the room labels), windows and their sills -> flats_all.pkl
   7 export    everything in each flat's millimetres plus the floor's walls in metres -> export.pkl, plan.json
-  8 inject    plan.json into src/common.js.html
+  8 corridor  the lift lobby and corridors as a walkable grid, and the lift cars -> plan.json
+  9 inject    plan.json into src/common.js.html
 """
 import os, sys, json, pickle, subprocess, re
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, here)
 # `pipeline.py flats` starts again from that step, reusing what the earlier steps left in the folder
-STEPS = ['extract', 'fit', 'masks', 'analyze', 'rects', 'flats', 'export', 'inject']
+STEPS = ['extract', 'fit', 'masks', 'analyze', 'rects', 'flats', 'export', 'corridor', 'inject']
 start = STEPS.index(sys.argv[1]) if len(sys.argv) > 1 else 0
 run = lambda name: subprocess.run([sys.executable, os.path.join(here, name)] + ([] if name != 'extract.py' else ['vec.pkl']), check=True, env=dict(os.environ, PYTHONPATH=here))
 
@@ -63,6 +64,6 @@ def inject():
     open(cj, 'w').write(s[:i] + '  const PLAN = ' + plan + ';' + s[j:]); print('PLAN written,', len(plan), 'bytes')
 
 DO = {'extract': lambda: run('extract.py'), 'fit': fit, 'masks': masks, 'analyze': lambda: run('analyze.py'), 'rects': rects,
-      'flats': lambda: run('runall.py'), 'export': lambda: (run('export.py'), run('tojson.py')), 'inject': inject}
+      'flats': lambda: run('runall.py'), 'export': lambda: (run('export.py'), run('tojson.py')), 'corridor': lambda: run('corridor.py'), 'inject': inject}
 for name in STEPS[start:]:
     print('--', name, flush=True); DO[name]()
