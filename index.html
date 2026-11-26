@@ -3629,7 +3629,10 @@ function buildRoomLabels() {
   roomLabels.forEach(r => r.el.remove());
   roomLabels = [];
   for (const r of LAYOUTS[st.layout].rooms) {
-    const parts = roomParts(r.rects), [ax, ay] = r.at;
+    let parts = roomParts(r.rects), [ax, ay] = r.at;
+    // a flat read off the floor plan: the name sits in the room's biggest clear part, and only a sizeable second part
+    // (an L-shaped room's other leg) gets a size tag of its own
+    if (FLAT.generic && parts.length) { ax = (parts[0].X0 + parts[0].X1) / 2; ay = (parts[0].Y0 + parts[0].Y1) / 2; parts = parts.filter((q, i) => !i || (q.w * q.d >= 3e6 && Math.min(q.w, q.d) >= 1400)); }
     // the name label gives the size of the part it sits in; any other part gets its own size tag
     const home = parts.find(q => ax >= q.X0 && ax <= q.X1 && ay >= q.Y0 && ay <= q.Y1) || parts[0];
     const el = mkLabel('room', `${tr(r.name)}<small>${roomDims(home)}</small>`);
