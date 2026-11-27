@@ -3,7 +3,7 @@ the shared runtime (src/common.js.html, the `const PLAN = ...;` line).
 
 Run it from a scratch folder holding the brochure as brochure.pdf, with this folder on the path:
     cd work && cp .../Sales-Brochure-YingFai.pdf brochure.pdf && PYTHONPATH=.. python3 -I ../pipeline.py
-It needs pdfplumber, numpy, scipy, opencv-python and Pillow; the whole run takes ten minutes or so.
+It needs pdfplumber, numpy, scipy, opencv-python, scikit-image, networkx and Pillow; the whole run takes ten minutes or so.
 
 Steps (each leaves its result in the scratch folder):
   1 extract   the vector paths and text of the two typical floor plans (pages 26 and 30) -> vec.pkl
@@ -14,13 +14,14 @@ Steps (each leaves its result in the scratch folder):
   6 flats     each flat in its own frame: doors, rooms (from the room labels), windows and their sills -> flats_all.pkl
   7 export    everything in each flat's millimetres plus the floor's walls in metres -> export.pkl, plan.json
   8 corridor  the lift lobby and corridors as a walkable grid, and the lift cars -> plan.json
-  9 inject    plan.json into src/common.js.html
+  9 signs     way-finding signs: lobby directories and a sign wherever the way to the flats splits -> plan.json
+ 10 inject    plan.json into src/common.js.html
 """
 import os, sys, json, pickle, subprocess, re
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, here)
 # `pipeline.py flats` starts again from that step, reusing what the earlier steps left in the folder
-STEPS = ['extract', 'fit', 'masks', 'analyze', 'rects', 'flats', 'export', 'corridor', 'inject']
+STEPS = ['extract', 'fit', 'masks', 'analyze', 'rects', 'flats', 'export', 'corridor', 'signs', 'inject']
 start = STEPS.index(sys.argv[1]) if len(sys.argv) > 1 else 0
 run = lambda name: subprocess.run([sys.executable, os.path.join(here, name)] + ([] if name != 'extract.py' else ['vec.pkl']), check=True, env=dict(os.environ, PYTHONPATH=here))
 
@@ -64,6 +65,6 @@ def inject():
     open(cj, 'w').write(s[:i] + '  const PLAN = ' + plan + ';' + s[j:]); print('PLAN written,', len(plan), 'bytes')
 
 DO = {'extract': lambda: run('extract.py'), 'fit': fit, 'masks': masks, 'analyze': lambda: run('analyze.py'), 'rects': rects,
-      'flats': lambda: run('runall.py'), 'export': lambda: (run('export.py'), run('tojson.py')), 'corridor': lambda: run('corridor.py'), 'inject': inject}
+      'flats': lambda: run('runall.py'), 'export': lambda: (run('export.py'), run('tojson.py')), 'corridor': lambda: run('corridor.py'), 'signs': lambda: run('signs.py'), 'inject': inject}
 for name in STEPS[start:]:
     print('--', name, flush=True); DO[name]()

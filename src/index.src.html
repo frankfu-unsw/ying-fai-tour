@@ -2623,6 +2623,59 @@ const flatDoors = blk => YF.FLAT_NOS.map(no => {
   for (let k = 0; k < 80; k++) { const t = dep / 2 + k * .005, sx = cx + ox * t + oy * (wid / 2 + .05), sy = cy + oy * t - ox * (wid / 2 + .05); if (!inWall(sx, sy) && !inWall(cx + ox * t - oy * (wid / 2 + .05), cy + oy * t + ox * (wid / 2 + .05))) { tf = t; break; } }
   return { id: blk + no, no, cx, cy, ox, oy, px: cx + ox * tf, py: cy + oy * tf, wid, dep };
 }).filter(Boolean);
+// way-finding signs (from the plan, see tools/plan/signs.py): a directory on the lobby wall between two lifts of each
+// row, and a sign hung where the way on splits, facing you as you come from the lifts; white on the dark blue of the flat
+// numbers, the way to the flat on show in amber. The back of a hung sign points back to the lifts.
+const flatRange = nos => { const out = []; for (let i = 0; i < nos.length;) { let j = i; while (j + 1 < nos.length && nos[j + 1] === nos[j] + 1) j++;
+  out.push(j > i + 1 ? `${nos[i]}–${nos[j]}` : j === i + 1 ? `${nos[i]}, ${nos[j]}` : `${nos[i]}`); i = j + 1; } return out.join(', '); };
+function signArrow(x, cx, cy, s, deg) {
+  x.save(); x.translate(cx, cy); x.rotate(deg * Math.PI / 180); x.beginPath();
+  x.moveTo(0, -s / 2); x.lineTo(s * .44, -s * .02); x.lineTo(s * .15, -s * .02); x.lineTo(s * .15, s / 2); x.lineTo(-s * .15, s / 2); x.lineTo(-s * .15, -s * .02); x.lineTo(-s * .44, -s * .02);
+  x.closePath(); x.fill(); x.restore();
+}
+const wayTex = {};
+function wayTexture(rows, mine, wm, hm, back) {
+  const key = JSON.stringify([rows, mine, wm, hm, back]); if (wayTex[key]) return wayTex[key];
+  const W = 640, H = Math.round(W * hm / wm), pad = Math.round(H * .1 / (rows.length || 1)) + 10;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  x.fillStyle = '#1f3a46'; x.fillRect(0, 0, W, H); x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 3; x.strokeRect(7, 7, W - 14, H - 14);
+  x.textBaseline = 'middle';
+  const lines = back ? [[0, null]] : rows, rh = (H - 2 * pad) / lines.length;
+  lines.forEach(([rel, nos], k) => {
+    const cy = pad + rh * (k + .5), s = rh * .62, right = rel > 0 && !back, hot = !back && nos.includes(mine);
+    x.fillStyle = hot ? '#ffb547' : '#ffffff';
+    signArrow(x, right ? W - pad - s * .55 : pad + s * .55, cy, s, rel);
+    const big = `700 ${Math.round(rh * .62)}px "Barlow Condensed", "Barlow", sans-serif`, small = `600 ${Math.round(rh * .3)}px "Barlow", "Noto Sans TC", sans-serif`;
+    const word = back ? ['升降機', 'Lifts'] : ['室', 'Flats'], num = back ? '' : flatRange(nos);
+    x.font = big; const nw = x.measureText(num).width; x.font = small; const ww = Math.max(x.measureText(word[0]).width, x.measureText(word[1]).width);
+    // the numbers beside the arrow, the words 室 / Flats on two small lines beyond them
+    let at = right ? W - pad - s * 1.25 : pad + s * 1.25;
+    x.textAlign = right ? 'right' : 'left'; x.font = big; x.fillText(num, at, cy + rh * .03);
+    at += (right ? -1 : 1) * (nw + (num ? rh * .18 : 0));
+    x.font = small; x.globalAlpha = hot ? 1 : .8; x.fillText(word[0], at, cy - rh * .16); x.fillText(word[1], at, cy + rh * .18); x.globalAlpha = 1;
+  });
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 4; return (wayTex[key] = t);
+}
+const SIGNM = { edge: mat(0x16262e), rod: mat(0x8a9196) };
+function buildSigns(blk) {
+  const mine = FLAT.no;
+  for (const [kind, x, y, head, rows] of YF.PLAN[blk].signs || []) {
+    const rot = -head * Math.PI / 180, face = m => new THREE.MeshBasicMaterial({ map: m, clippingPlanes: [CLIP] });
+    if (kind === 'w') {   // on the lobby wall, at eye height
+      const wm = .78, hm = .16 * rows.length + .08;
+      const sg = new THREE.Mesh(new THREE.BoxGeometry(wm, hm, .015), [SIGNM.edge, SIGNM.edge, SIGNM.edge, SIGNM.edge, face(wayTexture(rows, mine, wm, hm)), SIGNM.edge]);
+      sg.position.copy(P(x, y, FL + 1.62)); sg.rotation.y = rot; shell.add(sg);
+    } else {              // hung from the ceiling on two rods, the lifts on the back
+      const wm = .96, hm = .14 * rows.length + .07, top = 2.43;
+      const sg = new THREE.Mesh(new THREE.BoxGeometry(wm, hm, .03), [SIGNM.edge, SIGNM.edge, SIGNM.edge, SIGNM.edge, face(wayTexture(rows, mine, wm, hm)), face(wayTexture([], mine, wm, .21, true))]);
+      sg.position.copy(P(x, y, FL + top - hm / 2)); sg.rotation.y = rot; shell.add(sg);
+      for (const s of [-1, 1]) {
+        const rod = new THREE.Mesh(new THREE.BoxGeometry(.012, 2.5 - top + .01, .012), SIGNM.rod);
+        rod.position.copy(P(x + Math.cos(head * Math.PI / 180) * s * (wm / 2 - .1), y - Math.sin(head * Math.PI / 180) * s * (wm / 2 - .1), FL + (2.5 + top) / 2)); shell.add(rod);
+      }
+    }
+  }
+}
 let FDOORS = [];
 function buildCorridor() {
   const blk = FLAT.block, g = corridorGeo(blk);
@@ -2644,6 +2697,7 @@ function buildCorridor() {
     const sg = signMesh(String(d.no), .24, .15, '#1f3a46', '#ffffff');
     sg.position.copy(P(d.px + d.ox * .005, d.py + d.oy * .005, FL + 2.3)); sg.rotation.y = Math.atan2(d.ox, -d.oy); shell.add(sg);
   }
+  buildSigns(blk);
 }
 // a route along the corridors: breadth-first over the 0.1 m grid kept 0.3 m clear of the walls, then pulled tight so
 // it runs in straight legs
@@ -2737,8 +2791,8 @@ function liftStop() {
   }
   const [X, Y] = PL2(at.x, at.y);
   return { id: 'lift', name: 'Lift lobby', sub: 'Out of the lift', X, Y, yaw: at.yaw, pitch: -3,
-    text: T(`Out of the lift on ${FLOOR}/F. Walk along the corridor to your front door (it opens as you reach it), or walk up to any other flat's door to go into that flat.`,
-      `在${FLOOR}樓步出升降機。沿走廊走到你的大門（行近時會打開），或走到任何其他單位門口就會進入該單位。`) };
+    text: T(`Out of the lift on ${FLOOR}/F. The signs on the lobby walls, and where the corridors split, show which way each flat is (the way to flat ${FLAT.no} in amber). Walk along to your front door (it opens as you reach it), or up to any other flat's door to go into that flat.`,
+      `在${FLOOR}樓步出升降機。大堂牆上及走廊分岔處的指示牌標明各單位的方向（往${FLAT.no}室的以琥珀色顯示）。沿走廊走到你的大門（行近時會打開），或走到任何其他單位門口就會進入該單位。`) };
 }
 // through any front doorway on the floor: from just inside the flat to just outside in the corridor
 function inDoorway(x, y) {
