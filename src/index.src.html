@@ -2642,10 +2642,10 @@ function wayTexture(rows, mine, wm, hm, back) {
   x.textBaseline = 'middle';
   const lines = back ? [[0, null]] : rows, rh = (H - 2 * pad) / lines.length;
   lines.forEach(([rel, nos], k) => {
-    const cy = pad + rh * (k + .5), s = rh * .62, right = rel > 0 && !back, hot = !back && nos.includes(mine);
+    const cy = pad + rh * (k + .5), s = rh * .66, right = rel > 0 && !back, hot = !back && nos.includes(mine);
     x.fillStyle = hot ? '#ffb547' : '#ffffff';
     signArrow(x, right ? W - pad - s * .55 : pad + s * .55, cy, s, rel);
-    const big = `700 ${Math.round(rh * .62)}px "Barlow Condensed", "Barlow", sans-serif`, small = `600 ${Math.round(rh * .3)}px "Barlow", "Noto Sans TC", sans-serif`;
+    const big = `700 ${Math.round(rh * .74)}px "Barlow Condensed", "Barlow", sans-serif`, small = `600 ${Math.round(rh * .3)}px "Barlow", "Noto Sans TC", sans-serif`;
     const word = back ? ['升降機', 'Lifts'] : ['室', 'Flats'], num = back ? '' : flatRange(nos);
     x.font = big; const nw = x.measureText(num).width; x.font = small; const ww = Math.max(x.measureText(word[0]).width, x.measureText(word[1]).width);
     // the numbers beside the arrow, the words 室 / Flats on two small lines beyond them
@@ -2666,7 +2666,7 @@ function buildSigns(blk) {
       const sg = new THREE.Mesh(new THREE.BoxGeometry(wm, hm, .015), [SIGNM.edge, SIGNM.edge, SIGNM.edge, SIGNM.edge, face(wayTexture(rows, mine, wm, hm)), SIGNM.edge]);
       sg.position.copy(P(x, y, FL + 1.62)); sg.rotation.y = rot; shell.add(sg);
     } else {              // hung from the ceiling on two rods, the lifts on the back
-      const wm = .96, hm = .14 * rows.length + .07, top = 2.43;
+      const wm = 1.1, hm = .16 * rows.length + .07, top = 2.44;
       const sg = new THREE.Mesh(new THREE.BoxGeometry(wm, hm, .03), [SIGNM.edge, SIGNM.edge, SIGNM.edge, SIGNM.edge, face(wayTexture(rows, mine, wm, hm)), face(wayTexture([], mine, wm, .21, true))]);
       sg.position.copy(P(x, y, FL + top - hm / 2)); sg.rotation.y = rot; shell.add(sg);
       for (const s of [-1, 1]) {
